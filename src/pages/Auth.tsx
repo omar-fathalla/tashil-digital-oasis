@@ -11,8 +11,8 @@ import { useToast } from "@/components/ui/use-toast";
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("fathalla80800@gmail.com");
+  const [password, setPassword] = useState("Omar3005");
   const navigate = useNavigate();
   const { toast } = useToast();
 
