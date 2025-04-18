@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 import { formSchema, type FormData, type UploadedFiles } from "@/components/request-submission/types";
 
 export const useRequestSubmission = () => {
@@ -27,22 +26,18 @@ export const useRequestSubmission = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      employeeName: "",
+      firstName: "",
+      midName: "",
+      lastName: "",
       employeeId: "",
-      nationality: "",
-      position: "",
+      insuranceNumber: "",
+      position: undefined,
       requestType: "",
+      companyId: "",
+      sex: undefined,
+      area: undefined,
     },
   });
-
-  const uploadFile = async (file: File, path: string) => {
-    const { data, error } = await supabase.storage
-      .from('application_documents')
-      .upload(`${user?.id}/${path}`, file);
-
-    if (error) throw error;
-    return data.path;
-  };
 
   const handleFileUpload = (fileType: keyof UploadedFiles, file: File) => {
     setUploadedFiles(prev => ({
@@ -66,35 +61,10 @@ export const useRequestSubmission = () => {
     setIsSubmitting(true);
     
     try {
-      const [idDocPath, authLetterPath, receiptPath, photoPath] = await Promise.all([
-        uploadFile(uploadedFiles.idDocument!, `${values.employeeId}/id-document`),
-        uploadFile(uploadedFiles.authorizationLetter!, `${values.employeeId}/auth-letter`),
-        uploadFile(uploadedFiles.paymentReceipt!, `${values.employeeId}/payment-receipt`),
-        uploadFile(uploadedFiles.employeePhoto!, `${values.employeeId}/photo`),
-      ]);
-
-      const notesContent = `Position: ${values.position}, Nationality: ${values.nationality}`;
+      // Mock API call - replace with real implementation
+      const mockRequestId = crypto.randomUUID();
       
-      const requestId = crypto.randomUUID();
-      const { data, error } = await supabase
-        .from('applications')
-        .insert({
-          id: requestId,
-          employee_name: values.employeeName,
-          employee_id: values.employeeId,
-          status: "under-review",
-          type: values.requestType,
-          notes: notesContent,
-          user_id: user?.id,
-          created_at: new Date().toISOString(),
-          request_date: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setRequestId(requestId);
+      setRequestId(mockRequestId);
       setIsCompleted(true);
       
     } catch (error) {

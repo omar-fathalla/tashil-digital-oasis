@@ -34,12 +34,21 @@ export const FormNavigation = ({
         <Button 
           onClick={() => {
             if (formStep === 0) {
-              form.trigger(['employeeName', 'employeeId', 'nationality', 'position', 'requestType']);
-              const isValid = !form.formState.errors.employeeName && 
+              form.trigger([
+                'firstName', 'midName', 'lastName', 'employeeId', 
+                'insuranceNumber', 'position', 'requestType', 
+                'companyId', 'sex', 'area'
+              ]);
+              const isValid = !form.formState.errors.firstName && 
+                !form.formState.errors.midName &&
+                !form.formState.errors.lastName &&
                 !form.formState.errors.employeeId && 
-                !form.formState.errors.nationality && 
+                !form.formState.errors.insuranceNumber && 
                 !form.formState.errors.position && 
-                !form.formState.errors.requestType;
+                !form.formState.errors.requestType &&
+                !form.formState.errors.companyId &&
+                !form.formState.errors.sex &&
+                !form.formState.errors.area;
               if (isValid) setFormStep(1);
             } else {
               setFormStep(2);
@@ -53,7 +62,7 @@ export const FormNavigation = ({
           onClick={form.handleSubmit(onSubmit)}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Submitting..." : "Submit Request"}
+          {isSubmitting ? "Registering..." : "Register Employee"}
         </Button>
       )}
     </div>
