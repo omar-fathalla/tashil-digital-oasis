@@ -75,9 +75,11 @@ export const useRequestSubmission = () => {
 
       const notesContent = `Position: ${values.position}, Nationality: ${values.nationality}`;
       
+      const requestId = crypto.randomUUID();
       const { data, error } = await supabase
         .from('applications')
         .insert({
+          id: requestId,
           employee_name: values.employeeName,
           employee_id: values.employeeId,
           status: "under-review",
@@ -92,7 +94,7 @@ export const useRequestSubmission = () => {
 
       if (error) throw error;
 
-      setRequestId(data.id);
+      setRequestId(requestId);
       setIsCompleted(true);
       
     } catch (error) {

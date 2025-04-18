@@ -1,5 +1,4 @@
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { ProgressSteps } from "@/components/request-submission/ProgressSteps";
 import { EmployeeForm } from "@/components/request-submission/EmployeeForm";
@@ -8,6 +7,7 @@ import { ReviewStep } from "@/components/request-submission/ReviewStep";
 import { SuccessState } from "@/components/request-submission/SuccessState";
 import { RequestHeader } from "@/components/request-submission/RequestHeader";
 import { FormNavigation } from "@/components/request-submission/FormNavigation";
+import { FormCard } from "@/components/request-submission/FormCard";
 import { useRequestSubmission } from "@/hooks/useRequestSubmission";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +36,32 @@ const RequestSubmission = () => {
     return <SuccessState requestId={requestId} />;
   }
 
+  const getStepTitle = () => {
+    switch (formStep) {
+      case 0:
+        return "Employee Information";
+      case 1:
+        return "Required Documents";
+      case 2:
+        return "Review Request";
+      default:
+        return "";
+    }
+  };
+
+  const getStepDescription = () => {
+    switch (formStep) {
+      case 0:
+        return "Enter employee and request details";
+      case 1:
+        return "Upload the required documents";
+      case 2:
+        return "Verify all information before submission";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <RequestHeader />
@@ -45,39 +71,10 @@ const RequestSubmission = () => {
           <div className="max-w-3xl mx-auto">
             <ProgressSteps currentStep={formStep} />
             
-            <Card className="border-none shadow-lg">
-              <CardHeader>
-                <CardTitle>
-                  {formStep === 0 && "Employee Information"}
-                  {formStep === 1 && "Required Documents"}
-                  {formStep === 2 && "Review Request"}
-                </CardTitle>
-                <CardDescription>
-                  {formStep === 0 && "Enter employee and request details"}
-                  {formStep === 1 && "Upload the required documents"}
-                  {formStep === 2 && "Verify all information before submission"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {formStep === 0 && <EmployeeForm form={form} />}
-                    {formStep === 1 && (
-                      <DocumentUpload
-                        uploadedFiles={uploadedFiles}
-                        onFileUpload={handleFileUpload}
-                      />
-                    )}
-                    {formStep === 2 && (
-                      <ReviewStep
-                        formData={form.getValues()}
-                        uploadedFiles={uploadedFiles}
-                      />
-                    )}
-                  </form>
-                </Form>
-              </CardContent>
-              <CardFooter>
+            <FormCard
+              title={getStepTitle()}
+              description={getStepDescription()}
+              footer={
                 <FormNavigation
                   formStep={formStep}
                   setFormStep={setFormStep}
@@ -85,8 +82,26 @@ const RequestSubmission = () => {
                   isSubmitting={isSubmitting}
                   onSubmit={onSubmit}
                 />
-              </CardFooter>
-            </Card>
+              }
+            >
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {formStep === 0 && <EmployeeForm form={form} />}
+                  {formStep === 1 && (
+                    <DocumentUpload
+                      uploadedFiles={uploadedFiles}
+                      onFileUpload={handleFileUpload}
+                    />
+                  )}
+                  {formStep === 2 && (
+                    <ReviewStep
+                      formData={form.getValues()}
+                      uploadedFiles={uploadedFiles}
+                    />
+                  )}
+                </form>
+              </Form>
+            </FormCard>
           </div>
         </div>
       </section>
