@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, FileCsv, Printer, Download } from "lucide-react";
+import { File, FileSpreadsheet, Printer, Download } from "lucide-react";
 
 type ExportOptionsProps = {
   onExport: (format: "csv" | "excel") => void;
@@ -15,7 +15,7 @@ export const ExportOptions = ({ onExport, onPrint }: ExportOptionsProps) => {
         className="flex items-center gap-2"
         onClick={() => onExport("csv")}
       >
-        <FileCsv className="h-4 w-4" />
+        <File className="h-4 w-4" />
         Export CSV
       </Button>
       <Button
