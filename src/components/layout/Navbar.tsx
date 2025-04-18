@@ -1,7 +1,8 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Menu, 
   ChevronDown, 
@@ -12,11 +13,19 @@ import {
   LayoutDashboard,
   PanelLeft,
   Info,
-  HelpCircle
+  HelpCircle,
+  LogOut
 } from "lucide-react";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,7 +40,6 @@ const Navbar = () => {
           </Link>
         </div>
         
-        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-1">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/">
@@ -80,14 +88,32 @@ const Navbar = () => {
         <div className="flex-1"></div>
         
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="hidden md:flex">
-            Sign In
-          </Button>
-          <Button size="sm" className="hidden md:flex">
-            Register
-          </Button>
+          {user ? (
+            <>
+              <span className="hidden md:block text-sm text-gray-600">
+                {user.email}
+              </span>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={handleSignOut}
+                className="hidden md:flex"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" variant="outline" asChild className="hidden md:flex">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+              <Button size="sm" asChild className="hidden md:flex">
+                <Link to="/auth">Register</Link>
+              </Button>
+            </>
+          )}
           
-          {/* Mobile menu button */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -99,7 +125,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="space-y-1 px-4 pb-3 pt-2">
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
@@ -145,12 +170,32 @@ const Navbar = () => {
             </Link>
           </Button>
           <div className="flex space-x-2 mt-3 pt-3 border-t">
-            <Button size="sm" variant="outline" className="flex-1">
-              Sign In
-            </Button>
-            <Button size="sm" className="flex-1">
-              Register
-            </Button>
+            {user ? (
+              <>
+                <div className="pt-4 mt-4 border-t">
+                  <span className="block text-sm text-gray-600 mb-2">
+                    {user.email}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleSignOut}
+                    className="w-full"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex space-x-2 mt-3 pt-3 border-t">
+                <Button asChild variant="outline" className="flex-1">
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+                <Button asChild className="flex-1">
+                  <Link to="/auth">Register</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
