@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { companyRegistrationSchema, type CompanyRegistrationFormData } from "@/schemas/companyRegistration";
 import { CompanyInformationForm } from "@/components/company-registration/CompanyInformationForm";
 import { AccountAccessForm } from "@/components/company-registration/AccountAccessForm";
@@ -61,16 +61,21 @@ const CompanyRegistration = () => {
         <Card className="w-full max-w-lg border-none shadow-lg">
           <CardHeader className="text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100 mb-4">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+              <BadgeCheck className="h-12 w-12 text-green-600" />
             </div>
             <CardTitle className="text-2xl">Registration Successful!</CardTitle>
             <CardDescription className="text-lg">
-              Your company has been successfully registered with Tashil Platform.
+              تم تسجيل شركتك بنجاح في منصة تشيل
             </CardDescription>
           </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 mb-4">
+              لقد اكتملت عملية التسجيل. يمكنك الآن الوصول إلى جميع خدمات المنصة
+            </p>
+          </CardContent>
           <CardFooter className="flex justify-center gap-4">
-            <Button asChild>
-              <Link to="/dashboard">Go to Dashboard</Link>
+            <Button asChild className="bg-primary hover:bg-primary-700">
+              <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
             </Button>
           </CardFooter>
         </Card>
