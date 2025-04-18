@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowRight, User, CreditCard, Upload, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ImagePreview } from "@/components/request-submission/ImagePreview";
 
 // Form schema
 const formSchema = z.object({
@@ -54,6 +55,13 @@ const RequestSubmission = () => {
   const [formStep, setFormStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState({
+    idDocument: null as File | null,
+    authorizationLetter: null as File | null,
+    paymentReceipt: null as File | null,
+    employeePhoto: null as File | null,
+  });
+  const { toast } = useToast();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +75,17 @@ const RequestSubmission = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const allFilesUploaded = Object.values(uploadedFiles).every(file => file !== null);
+    
+    if (!allFilesUploaded) {
+      toast({
+        variant: "destructive",
+        title: "Missing Documents",
+        description: "Please upload all required documents before submitting.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     // Simulate API call
     setTimeout(() => {
@@ -74,6 +93,14 @@ const RequestSubmission = () => {
       setIsSubmitting(false);
       setIsCompleted(true);
     }, 1500);
+  };
+
+  // Handle file uploads
+  const handleFileUpload = (fileType: keyof typeof uploadedFiles, file: File) => {
+    setUploadedFiles(prev => ({
+      ...prev,
+      [fileType]: file
+    }));
   };
   
   if (isCompleted) {
@@ -271,101 +298,147 @@ const RequestSubmission = () => {
                     )}
 
                     {formStep === 1 && (
-                      <>
-                        <div className="space-y-6">
-                          {/* ID Document */}
-                          <div>
-                            <h3 className="font-medium mb-2">ID / Passport Copy</h3>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                              <p className="text-sm text-gray-500 mb-2">
-                                Upload a copy of the employee's ID or passport
-                              </p>
-                              <p className="text-xs text-gray-400 mb-4">
-                                PDF, JPG, or PNG (max. 5MB)
-                              </p>
-                              <Input 
-                                type="file" 
-                                className="hidden" 
-                                id="id-upload"
-                                accept=".pdf,.jpg,.jpeg,.png"
-                              />
-                              <Button variant="outline" className="text-sm" onClick={() => document.getElementById('id-upload')?.click()}>
-                                Select File
-                              </Button>
-                            </div>
+                      <div className="space-y-6">
+                        {/* ID Document */}
+                        <div>
+                          <h3 className="font-medium mb-2">ID / Passport Copy</h3>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500 mb-2">
+                              Upload a copy of the employee's ID or passport
+                            </p>
+                            <p className="text-xs text-gray-400 mb-4">
+                              PDF, JPG, or PNG (max. 5MB)
+                            </p>
+                            <Input 
+                              type="file" 
+                              className="hidden" 
+                              id="id-upload"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload('idDocument', file);
+                              }}
+                            />
+                            <Button 
+                              variant="outline" 
+                              className="text-sm" 
+                              onClick={() => document.getElementById('id-upload')?.click()}
+                            >
+                              Select File
+                            </Button>
                           </div>
-
-                          {/* Authorization Document */}
-                          <div>
-                            <h3 className="font-medium mb-2">Authorization Letter</h3>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                              <p className="text-sm text-gray-500 mb-2">
-                                Upload company authorization letter
-                              </p>
-                              <p className="text-xs text-gray-400 mb-4">
-                                PDF, JPG, or PNG (max. 5MB)
-                              </p>
-                              <Input 
-                                type="file" 
-                                className="hidden" 
-                                id="auth-upload"
-                                accept=".pdf,.jpg,.jpeg,.png"
-                              />
-                              <Button variant="outline" className="text-sm" onClick={() => document.getElementById('auth-upload')?.click()}>
-                                Select File
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Receipt Document */}
-                          <div>
-                            <h3 className="font-medium mb-2">Payment Receipt</h3>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                              <p className="text-sm text-gray-500 mb-2">
-                                Upload payment receipt for service fees
-                              </p>
-                              <p className="text-xs text-gray-400 mb-4">
-                                PDF, JPG, or PNG (max. 5MB)
-                              </p>
-                              <Input 
-                                type="file" 
-                                className="hidden" 
-                                id="receipt-upload"
-                                accept=".pdf,.jpg,.jpeg,.png"
-                              />
-                              <Button variant="outline" className="text-sm" onClick={() => document.getElementById('receipt-upload')?.click()}>
-                                Select File
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Photo Upload */}
-                          <div>
-                            <h3 className="font-medium mb-2">Employee Photo</h3>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                              <p className="text-sm text-gray-500 mb-2">
-                                Upload employee photo (recent, passport-sized)
-                              </p>
-                              <p className="text-xs text-gray-400 mb-4">
-                                JPG or PNG (max. 2MB)
-                              </p>
-                              <Input 
-                                type="file" 
-                                className="hidden" 
-                                id="photo-upload"
-                                accept=".jpg,.jpeg,.png"
-                              />
-                              <Button variant="outline" className="text-sm" onClick={() => document.getElementById('photo-upload')?.click()}>
-                                Select File
-                              </Button>
-                            </div>
-                          </div>
+                          <ImagePreview 
+                            file={uploadedFiles.idDocument}
+                            label="ID Document Preview"
+                          />
                         </div>
-                      </>
+
+                        {/* Authorization Document */}
+                        <div>
+                          <h3 className="font-medium mb-2">Authorization Letter</h3>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500 mb-2">
+                              Upload company authorization letter
+                            </p>
+                            <p className="text-xs text-gray-400 mb-4">
+                              PDF, JPG, or PNG (max. 5MB)
+                            </p>
+                            <Input 
+                              type="file" 
+                              className="hidden" 
+                              id="auth-upload"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload('authorizationLetter', file);
+                              }}
+                            />
+                            <Button 
+                              variant="outline" 
+                              className="text-sm" 
+                              onClick={() => document.getElementById('auth-upload')?.click()}
+                            >
+                              Select File
+                            </Button>
+                          </div>
+                          <ImagePreview 
+                            file={uploadedFiles.authorizationLetter}
+                            label="Authorization Letter Preview"
+                          />
+                        </div>
+
+                        {/* Receipt Document */}
+                        <div>
+                          <h3 className="font-medium mb-2">Payment Receipt</h3>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500 mb-2">
+                              Upload payment receipt for service fees
+                            </p>
+                            <p className="text-xs text-gray-400 mb-4">
+                              PDF, JPG, or PNG (max. 5MB)
+                            </p>
+                            <Input 
+                              type="file" 
+                              className="hidden" 
+                              id="receipt-upload"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload('paymentReceipt', file);
+                              }}
+                            />
+                            <Button 
+                              variant="outline" 
+                              className="text-sm" 
+                              onClick={() => document.getElementById('receipt-upload')?.click()}
+                            >
+                              Select File
+                            </Button>
+                          </div>
+                          <ImagePreview 
+                            file={uploadedFiles.paymentReceipt}
+                            label="Payment Receipt Preview"
+                          />
+                        </div>
+
+                        {/* Photo Upload */}
+                        <div>
+                          <h3 className="font-medium mb-2">Employee Photo</h3>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500 mb-2">
+                              Upload employee photo (recent, passport-sized)
+                            </p>
+                            <p className="text-xs text-gray-400 mb-4">
+                              JPG or PNG (max. 2MB)
+                            </p>
+                            <Input 
+                              type="file" 
+                              className="hidden" 
+                              id="photo-upload"
+                              accept=".jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload('employeePhoto', file);
+                              }}
+                            />
+                            <Button 
+                              variant="outline" 
+                              className="text-sm" 
+                              onClick={() => document.getElementById('photo-upload')?.click()}
+                            >
+                              Select File
+                            </Button>
+                          </div>
+                          <ImagePreview 
+                            file={uploadedFiles.employeePhoto}
+                            label="Employee Photo Preview"
+                          />
+                        </div>
+                      </div>
                     )}
 
                     {formStep === 2 && (
