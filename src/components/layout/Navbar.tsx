@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,17 +5,16 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Menu, 
-  ChevronDown, 
+  LayoutDashboard,
   UserPlus, 
   FileText, 
   Settings, 
-  Home,
-  LayoutDashboard,
-  PanelLeft,
   Info,
   HelpCircle,
   LogOut,
-  BarChart2
+  BarChart2,
+  Home,
+  PanelLeft
 } from "lucide-react";
 
 const Navbar = () => {
@@ -35,7 +33,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2 mr-4">
           <Link to="/" className="flex items-center gap-2">
             <div className="rounded-full bg-primary p-1">
-              <PanelLeft className="h-5 w-5 text-primary-foreground" />
+              <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-primary hidden sm:block">تسهيل</span>
             <span className="text-xl font-semibold text-foreground hidden sm:block">Platform</span>
@@ -45,44 +43,32 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-1">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/">
-              <Home className="h-4 w-4 mr-1" />
-              Home
+              <LayoutDashboard className="h-4 w-4 mr-1" />
+              Dashboard
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/request-submission">
+              <UserPlus className="h-4 w-4 mr-1" />
+              Register Employee
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/company-registration">
+              <FileText className="h-4 w-4 mr-1" />
+              Register Company
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/application-status">
+              <BarChart2 className="h-4 w-4 mr-1" />
+              Status
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/about">
               <Info className="h-4 w-4 mr-1" />
               About
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/services">
-              <Settings className="h-4 w-4 mr-1" />
-              Services
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/company-registration">
-              <UserPlus className="h-4 w-4 mr-1" />
-              Register Company
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/request-submission">
-              <FileText className="h-4 w-4 mr-1" />
-              Submit Request
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/application-status">
-              <LayoutDashboard className="h-4 w-4 mr-1" />
-              Status
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/report">
-              <BarChart2 className="h-4 w-4 mr-1" />
-              Reports
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
@@ -133,48 +119,38 @@ const Navbar = () => {
         </div>
       </div>
       
+      {/* Mobile menu - similar updates as desktop menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="space-y-1 px-4 pb-3 pt-2">
+          {/* Similar buttons as desktop menu, just in mobile layout */}
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
             <Link to="/">
-              <Home className="h-4 w-4 mr-2" />
-              Home
+              <LayoutDashboard className="h-4 w-4 mr-2" />
+              Dashboard
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+            <Link to="/request-submission">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Register Employee
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+            <Link to="/company-registration">
+              <FileText className="h-4 w-4 mr-2" />
+              Register Company
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+            <Link to="/application-status">
+              <BarChart2 className="h-4 w-4 mr-2" />
+              Status
             </Link>
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
             <Link to="/about">
               <Info className="h-4 w-4 mr-2" />
               About
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-            <Link to="/services">
-              <Settings className="h-4 w-4 mr-2" />
-              Services
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-            <Link to="/company-registration">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Register Company
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-            <Link to="/request-submission">
-              <FileText className="h-4 w-4 mr-2" />
-              Submit Request
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-            <Link to="/application-status">
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Status
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-            <Link to="/report">
-              <BarChart2 className="h-4 w-4 mr-2" />
-              Reports
             </Link>
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
