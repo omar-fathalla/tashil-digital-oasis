@@ -1,7 +1,11 @@
 
 import { CalendarRange, Clock, Users } from "lucide-react";
+import { useMemo } from "react";
 
 export const DashboardHeader = () => {
+  // Calculate the date once instead of on every render
+  const currentDate = useMemo(() => new Date(), []);
+  
   return (
     <div className="mb-8">
       <h1 className="text-3xl font-bold mb-1">Employee Registration Dashboard</h1>
@@ -11,7 +15,7 @@ export const DashboardHeader = () => {
       <div className="flex flex-wrap gap-6">
         <div className="flex items-center text-muted-foreground">
           <Clock className="h-4 w-4 mr-2" />
-          <span>Last updated: {new Date().toLocaleString()}</span>
+          <span>Last updated: {currentDate.toLocaleString()}</span>
         </div>
         <div className="flex items-center text-muted-foreground">
           <Users className="h-4 w-4 mr-2" />
@@ -19,7 +23,7 @@ export const DashboardHeader = () => {
         </div>
         <div className="flex items-center text-muted-foreground">
           <CalendarRange className="h-4 w-4 mr-2" />
-          <span>Viewing {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+          <span>Viewing {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
@@ -33,20 +33,25 @@ const Dashboard = () => {
     company: selectedCompany !== "all" ? selectedCompany : undefined
   });
 
-  const handleViewRequest = (request) => {
+  // Use useCallback to prevent recreation of these functions on every render
+  const handleViewRequest = useCallback((request) => {
     setSelectedRequest(request);
     setOpenDialog(true);
-  };
+  }, []);
 
-  const handleApproveRequest = async (requestId, notes) => {
+  const handleApproveRequest = useCallback(async (requestId, notes) => {
     await approveRequest(requestId, notes);
     setOpenDialog(false);
-  };
+  }, [approveRequest]);
 
-  const handleRejectRequest = async (requestId, reason) => {
+  const handleRejectRequest = useCallback(async (requestId, reason) => {
     await rejectRequest(requestId, reason);
     setOpenDialog(false);
-  };
+  }, [rejectRequest]);
+
+  const handleCloseDialog = useCallback(() => {
+    setOpenDialog(false);
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -86,7 +91,7 @@ const Dashboard = () => {
         <RequestDetailsDialog
           request={selectedRequest}
           open={openDialog}
-          onClose={() => setOpenDialog(false)}
+          onClose={handleCloseDialog}
           onApprove={handleApproveRequest}
           onReject={handleRejectRequest}
         />
