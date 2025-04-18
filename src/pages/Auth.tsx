@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -40,8 +41,8 @@ const Auth = () => {
         if (error) throw error;
         
         toast({
-          title: "تم إنشاء الحساب بنجاح",
-          description: "يرجى التحقق من بريدك الإلكتروني للتفعيل",
+          title: "Account Created Successfully",
+          description: "Please check your email for activation",
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -52,8 +53,8 @@ const Auth = () => {
         if (error) throw error;
         
         toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في نظام تسهيل",
+          title: "Login Successful",
+          description: "Welcome to Tashil Platform",
         });
         navigate("/");
       }
@@ -61,7 +62,7 @@ const Auth = () => {
       console.error("Authentication error:", error);
       setError(error.message);
       toast({
-        title: "خطأ",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -91,8 +92,8 @@ const Auth = () => {
         }
         
         toast({
-          title: "تم إنشاء الحساب",
-          description: "تم إنشاء حساب جديد. يرجى تسجيل الدخول.",
+          title: "Account Created",
+          description: "A new account has been created. Please log in.",
         });
       } else {
         navigate("/");
@@ -116,7 +117,7 @@ const Auth = () => {
       
       if (error) {
         toast({
-          title: "خطأ في تسجيل الخروج",
+          title: "Logout Error",
           description: error.message,
           variant: "destructive",
         });
@@ -124,8 +125,8 @@ const Auth = () => {
       }
 
       toast({
-        title: "تم تسجيل الخروج بنجاح",
-        description: "لقد تم تسجيل الخروج من حسابك",
+        title: "Logout Successful",
+        description: "You have been logged out of your account",
       });
 
       setEmail("");
@@ -134,8 +135,8 @@ const Auth = () => {
     } catch (error: any) {
       console.error("Logout error:", error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تسجيل الخروج",
+        title: "Error",
+        description: "An error occurred during logout",
         variant: "destructive",
       });
     }
@@ -145,11 +146,11 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول"}</CardTitle>
+          <CardTitle>{isSignUp ? "Create New Account" : "Login"}</CardTitle>
           <CardDescription>
             {isSignUp
-              ? "قم بإنشاء حساب جديد للوصول إلى نظام تسهيل"
-              : "مرحباً بعودتك! يرجى تسجيل الدخول إلى حسابك"}
+              ? "Create a new account to access Tashil Platform"
+              : "Welcome back! Please log in to your account"}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -160,37 +161,35 @@ const Auth = () => {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="أدخل بريدك الإلكتروني"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                dir="rtl"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="أدخل كلمة المرور"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                dir="rtl"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading
-                ? "جاري التحميل..."
+                ? "Loading..."
                 : isSignUp
-                ? "إنشاء حساب"
-                : "تسجيل الدخول"}
+                ? "Create Account"
+                : "Login"}
             </Button>
             <Button
               type="button"
@@ -198,8 +197,8 @@ const Auth = () => {
               onClick={() => setIsSignUp(!isSignUp)}
             >
               {isSignUp
-                ? "لديك حساب بالفعل؟ سجل دخولك"
-                : "ليس لديك حساب؟ سجل الآن"}
+                ? "Already have an account? Log in"
+                : "Don't have an account? Sign up now"}
             </Button>
             <Button 
               type="button" 
@@ -207,7 +206,7 @@ const Auth = () => {
               className="w-full mt-4"
               onClick={handleSignOut}
             >
-              تسجيل الخروج
+              Logout
             </Button>
           </CardFooter>
         </form>
