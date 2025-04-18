@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { DateRange } from "react-day-picker";
 
 // Types for our registration requests
 export type RegistrationRequest = {
@@ -31,7 +32,7 @@ export type RegistrationRequest = {
 type FilterOptions = {
   status?: string;
   searchQuery?: string;
-  dateRange?: { from: Date | null; to: Date | null };
+  dateRange?: { from: Date | null; to: Date | null } | DateRange;
   area?: string;
   company?: string;
 };
@@ -97,10 +98,11 @@ export const useRegistrationRequests = (filters: FilterOptions = {}) => {
       }
       
       // Filter by date range
-      if (filters.dateRange?.from || filters.dateRange?.to) {
+      if (filters.dateRange) {
+        const { from, to } = filters.dateRange;
         const submissionDate = new Date(request.submissionDate);
-        if (filters.dateRange.from && submissionDate < filters.dateRange.from) return false;
-        if (filters.dateRange.to && submissionDate > filters.dateRange.to) return false;
+        if (from && submissionDate < from) return false;
+        if (to && submissionDate > to) return false;
       }
       
       // Filter by area

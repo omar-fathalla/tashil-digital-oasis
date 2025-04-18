@@ -9,13 +9,14 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
 import { RequestDetailsDialog } from "@/components/dashboard/RequestDetailsDialog";
 import { useRegistrationRequests } from "@/hooks/useRegistrationRequests";
+import { DateRange } from "react-day-picker";
 
 const Dashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [dateRange, setDateRange] = useState({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
   const [selectedArea, setSelectedArea] = useState("all");
   const [selectedCompany, setSelectedCompany] = useState("all");
   
@@ -65,8 +66,15 @@ const Dashboard = () => {
     setActiveFilter(value);
   }, []);
 
-  const handleSetDateRange = useCallback((value) => {
-    setDateRange(value);
+  const handleSetDateRange = useCallback((value: DateRange | undefined) => {
+    if (value) {
+      setDateRange({
+        from: value.from,
+        to: value.to
+      });
+    } else {
+      setDateRange({ from: null, to: null });
+    }
   }, []);
 
   const handleSetSelectedArea = useCallback((value) => {
@@ -76,6 +84,17 @@ const Dashboard = () => {
   const handleSetSelectedCompany = useCallback((value) => {
     setSelectedCompany(value);
   }, []);
+
+  // Create a memoized DateRange object for the DatePickerWithRange component
+  const dateRangeForPicker = useMemo(() => {
+    if (dateRange.from || dateRange.to) {
+      return {
+        from: dateRange.from as Date,
+        to: dateRange.to as Date
+      };
+    }
+    return undefined;
+  }, [dateRange.from, dateRange.to]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -93,7 +112,7 @@ const Dashboard = () => {
         setSearchQuery={handleSetSearchQuery}
         activeFilter={activeFilter}
         setActiveFilter={handleSetActiveFilter}
-        dateRange={dateRange}
+        dateRange={dateRangeForPicker}
         setDateRange={handleSetDateRange}
         selectedArea={selectedArea}
         setSelectedArea={handleSetSelectedArea}

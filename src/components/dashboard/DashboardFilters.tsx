@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DateRange } from "react-day-picker";
 
 interface DashboardFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
-  dateRange: { from: Date | null; to: Date | null };
-  setDateRange: (range: { from: Date | null; to: Date | null }) => void;
+  dateRange?: DateRange;
+  setDateRange: (range: DateRange | undefined) => void;
   selectedArea: string;
   setSelectedArea: (area: string) => void;
   selectedCompany: string;
@@ -44,7 +45,7 @@ export const DashboardFilters = ({
   const handleClearFilters = useCallback(() => {
     setSearchQuery("");
     setActiveFilter("all");
-    setDateRange({ from: null, to: null });
+    setDateRange(undefined);
     setSelectedArea("all");
     setSelectedCompany("all");
   }, [setSearchQuery, setActiveFilter, setDateRange, setSelectedArea, setSelectedCompany]);
@@ -57,7 +58,7 @@ export const DashboardFilters = ({
     setSelectedCompany(value);
   }, [setSelectedCompany]);
   
-  const isFilterActive = searchQuery || activeFilter !== "all" || dateRange.from || dateRange.to || selectedArea !== "all" || selectedCompany !== "all";
+  const isFilterActive = searchQuery || activeFilter !== "all" || dateRange?.from || dateRange?.to || selectedArea !== "all" || selectedCompany !== "all";
   
   return (
     <div className="mb-6 space-y-4">
@@ -95,7 +96,7 @@ export const DashboardFilters = ({
           </SelectContent>
         </Select>
         
-        <DatePickerWithRange dateRange={dateRange} setDateRange={setDateRange} />
+        <DatePickerWithRange date={dateRange} setDate={setDateRange} />
       </div>
       
       <div className="flex items-center space-x-2">
