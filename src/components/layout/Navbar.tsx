@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import {
   PanelLeft,
   Info,
   HelpCircle,
-  LogOut
+  LogOut,
+  BarChart2
 } from "lucide-react";
 
 const Navbar = () => {
@@ -75,6 +77,12 @@ const Navbar = () => {
             <Link to="/application-status">
               <LayoutDashboard className="h-4 w-4 mr-1" />
               Status
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/report">
+              <BarChart2 className="h-4 w-4 mr-1" />
+              Reports
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
@@ -161,6 +169,12 @@ const Navbar = () => {
             <Link to="/application-status">
               <LayoutDashboard className="h-4 w-4 mr-2" />
               Status
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+            <Link to="/report">
+              <BarChart2 className="h-4 w-4 mr-2" />
+              Reports
             </Link>
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
