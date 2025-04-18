@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface Project {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   status: string;
   created_at: string;
+  updated_at: string;
 }
 
 const ProjectOverview = () => {
@@ -27,13 +27,13 @@ const ProjectOverview = () => {
         setIsLoading(true);
         
         const { data, error } = await supabase
-          .from("projects")
-          .select("*")
-          .eq("name", "tashil");
+          .from('projects')
+          .select('*')
+          .eq('name', 'tashil');
         
         if (error) throw error;
         
-        setProjects(data || []);
+        setProjects(data as Project[] || []);
         
       } catch (error: any) {
         toast({
@@ -74,7 +74,7 @@ const ProjectOverview = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-muted p-4 rounded-md">
                 <h3 className="font-medium text-sm text-muted-foreground">Status</h3>
-                <p className="font-semibold">{projects[0].status || "Active"}</p>
+                <p className="font-semibold">{projects[0].status}</p>
               </div>
               <div className="bg-muted p-4 rounded-md">
                 <h3 className="font-medium text-sm text-muted-foreground">Created</h3>
@@ -120,7 +120,7 @@ const ProjectOverview = () => {
                   <TableRow key={project.id}>
                     <TableCell className="font-medium">{project.name}</TableCell>
                     <TableCell>{project.description || "No description available"}</TableCell>
-                    <TableCell>{project.status || "Active"}</TableCell>
+                    <TableCell>{project.status}</TableCell>
                     <TableCell>{new Date(project.created_at).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
@@ -132,7 +132,7 @@ const ProjectOverview = () => {
               <Button onClick={async () => {
                 try {
                   const { data, error } = await supabase
-                    .from("projects")
+                    .from('projects')
                     .insert([
                       { 
                         name: "tashil", 
@@ -149,7 +149,7 @@ const ProjectOverview = () => {
                     description: "Tashil project has been created",
                   });
                   
-                  if (data) setProjects(data);
+                  if (data) setProjects(data as Project[]);
                 } catch (error: any) {
                   toast({
                     title: "Error creating project",
