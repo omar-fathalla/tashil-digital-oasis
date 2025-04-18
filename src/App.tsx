@@ -18,7 +18,15 @@ import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
-const queryClient = new QueryClient();
+// Create a new QueryClient instance outside of component to prevent recreation on each render
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -49,4 +57,3 @@ const App = () => (
 );
 
 export default App;
-

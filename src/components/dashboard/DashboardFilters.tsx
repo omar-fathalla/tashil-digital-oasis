@@ -1,17 +1,13 @@
 
-import { Search, CalendarRange, Building, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useCallback } from "react";
+import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DatePickerWithRange } from "@/components/dashboard/DatePickerWithRange";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { DatePickerWithRange } from "./DatePickerWithRange";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type DashboardFiltersProps = {
+interface DashboardFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   activeFilter: string;
@@ -22,7 +18,7 @@ type DashboardFiltersProps = {
   setSelectedArea: (area: string) => void;
   selectedCompany: string;
   setSelectedCompany: (company: string) => void;
-};
+}
 
 export const DashboardFilters = ({
   searchQuery,
@@ -34,92 +30,118 @@ export const DashboardFilters = ({
   selectedArea,
   setSelectedArea,
   selectedCompany,
-  setSelectedCompany,
+  setSelectedCompany
 }: DashboardFiltersProps) => {
+  // Use memoized callbacks for event handlers
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, [setSearchQuery]);
+  
+  const handleFilterClick = useCallback((filter: string) => {
+    setActiveFilter(filter);
+  }, [setActiveFilter]);
+  
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setActiveFilter("all");
+    setDateRange({ from: null, to: null });
+    setSelectedArea("all");
+    setSelectedCompany("all");
+  }, [setSearchQuery, setActiveFilter, setDateRange, setSelectedArea, setSelectedCompany]);
+
+  const handleAreaChange = useCallback((value: string) => {
+    setSelectedArea(value);
+  }, [setSelectedArea]);
+
+  const handleCompanyChange = useCallback((value: string) => {
+    setSelectedCompany(value);
+  }, [setSelectedCompany]);
+  
+  const isFilterActive = searchQuery || activeFilter !== "all" || dateRange.from || dateRange.to || selectedArea !== "all" || selectedCompany !== "all";
+  
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">Filters</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+    <div className="mb-6 space-y-4">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="Search by name, ID or national ID"
-            className="pl-10"
+            placeholder="Search by name, ID or national ID..."
+            className="pl-8"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
           />
         </div>
         
-        <div className="flex items-center space-x-2">
-          <DatePickerWithRange 
-            date={dateRange} 
-            setDate={setDateRange} 
-          />
-        </div>
+        <Select value={selectedCompany} onValueChange={handleCompanyChange}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Company" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Companies</SelectItem>
+            <SelectItem value="TechCorp">TechCorp</SelectItem>
+            <SelectItem value="GlobalServices">Global Services</SelectItem>
+            <SelectItem value="LocalBusiness">Local Business</SelectItem>
+          </SelectContent>
+        </Select>
         
-        <div className="flex items-center space-x-2">
-          <MapPin className="h-4 w-4 text-gray-400" />
-          <Select value={selectedArea} onValueChange={setSelectedArea}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="All areas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All areas</SelectItem>
-              <SelectItem value="alexandria">Alexandria</SelectItem>
-              <SelectItem value="cairo">Cairo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={selectedArea} onValueChange={handleAreaChange}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Area" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Areas</SelectItem>
+            <SelectItem value="alexandria">Alexandria</SelectItem>
+            <SelectItem value="cairo">Cairo</SelectItem>
+          </SelectContent>
+        </Select>
         
-        <div className="flex items-center space-x-2">
-          <Building className="h-4 w-4 text-gray-400" />
-          <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="All companies" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All companies</SelectItem>
-              <SelectItem value="TechCorp">TechCorp</SelectItem>
-              <SelectItem value="GlobalServices">GlobalServices</SelectItem>
-              <SelectItem value="LocalBusiness">LocalBusiness</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <DatePickerWithRange dateRange={dateRange} setDateRange={setDateRange} />
       </div>
       
-      <div className="flex flex-wrap gap-2">
-        <Button 
-          variant={activeFilter === "all" ? "default" : "outline"} 
-          onClick={() => setActiveFilter("all")}
-          size="sm"
-        >
-          All Requests
-        </Button>
-        <Button 
-          variant={activeFilter === "pending" ? "default" : "outline"}
-          onClick={() => setActiveFilter("pending")}
-          size="sm"
-          className={activeFilter !== "pending" ? "text-amber-600" : ""}
-        >
-          Pending
-        </Button>
-        <Button 
-          variant={activeFilter === "approved" ? "default" : "outline"} 
-          onClick={() => setActiveFilter("approved")}
-          size="sm"
-          className={activeFilter !== "approved" ? "text-green-600" : ""}
-        >
-          Approved
-        </Button>
-        <Button 
-          variant={activeFilter === "rejected" ? "default" : "outline"} 
-          onClick={() => setActiveFilter("rejected")}
-          size="sm"
-          className={activeFilter !== "rejected" ? "text-red-600" : ""}
-        >
-          Rejected
-        </Button>
+      <div className="flex items-center space-x-2">
+        <div className="text-sm font-medium">Status:</div>
+        <div className="flex flex-wrap gap-2">
+          <Badge
+            variant={activeFilter === "all" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => handleFilterClick("all")}
+          >
+            All
+          </Badge>
+          <Badge
+            variant={activeFilter === "pending" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => handleFilterClick("pending")}
+          >
+            Pending
+          </Badge>
+          <Badge
+            variant={activeFilter === "approved" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => handleFilterClick("approved")}
+          >
+            Approved
+          </Badge>
+          <Badge
+            variant={activeFilter === "rejected" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => handleFilterClick("rejected")}
+          >
+            Rejected
+          </Badge>
+        </div>
+        
+        {isFilterActive && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={handleClearFilters}
+          >
+            <X className="h-3.5 w-3.5" />
+            Clear filters
+          </Button>
+        )}
       </div>
     </div>
   );

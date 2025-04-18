@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
@@ -19,19 +19,22 @@ const Dashboard = () => {
   const [selectedArea, setSelectedArea] = useState("all");
   const [selectedCompany, setSelectedCompany] = useState("all");
   
+  // Use useMemo for filter options to prevent recreating the object on every render
+  const filterOptions = useMemo(() => ({ 
+    status: activeFilter !== "all" ? activeFilter : undefined, 
+    searchQuery, 
+    dateRange, 
+    area: selectedArea !== "all" ? selectedArea : undefined,
+    company: selectedCompany !== "all" ? selectedCompany : undefined
+  }), [activeFilter, searchQuery, dateRange, selectedArea, selectedCompany]);
+
   const { 
     registrationRequests, 
     isLoading, 
     error, 
     approveRequest, 
     rejectRequest 
-  } = useRegistrationRequests({ 
-    status: activeFilter !== "all" ? activeFilter : undefined, 
-    searchQuery, 
-    dateRange, 
-    area: selectedArea !== "all" ? selectedArea : undefined,
-    company: selectedCompany !== "all" ? selectedCompany : undefined
-  });
+  } = useRegistrationRequests(filterOptions);
 
   // Use useCallback to prevent recreation of these functions on every render
   const handleViewRequest = useCallback((request) => {
@@ -53,6 +56,27 @@ const Dashboard = () => {
     setOpenDialog(false);
   }, []);
 
+  // Memoize the filter state updater callbacks
+  const handleSetSearchQuery = useCallback((value) => {
+    setSearchQuery(value);
+  }, []);
+
+  const handleSetActiveFilter = useCallback((value) => {
+    setActiveFilter(value);
+  }, []);
+
+  const handleSetDateRange = useCallback((value) => {
+    setDateRange(value);
+  }, []);
+
+  const handleSetSelectedArea = useCallback((value) => {
+    setSelectedArea(value);
+  }, []);
+
+  const handleSetSelectedCompany = useCallback((value) => {
+    setSelectedCompany(value);
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <DashboardHeader />
@@ -66,15 +90,15 @@ const Dashboard = () => {
       
       <DashboardFilters 
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        setSearchQuery={handleSetSearchQuery}
         activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
+        setActiveFilter={handleSetActiveFilter}
         dateRange={dateRange}
-        setDateRange={setDateRange}
+        setDateRange={handleSetDateRange}
         selectedArea={selectedArea}
-        setSelectedArea={setSelectedArea}
+        setSelectedArea={handleSetSelectedArea}
         selectedCompany={selectedCompany}
-        setSelectedCompany={setSelectedCompany}
+        setSelectedCompany={handleSetSelectedCompany}
       />
       
       <div className="bg-white rounded-lg shadow-sm border p-6">
