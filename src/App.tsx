@@ -12,6 +12,7 @@ import Services from "./pages/Services";
 import CompanyRegistration from "./pages/CompanyRegistration";
 import RequestSubmission from "./pages/RequestSubmission";
 import ApplicationStatus from "./pages/ApplicationStatus";
+import ProjectOverview from "./pages/ProjectOverview";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/company-registration" element={<CompanyRegistration />} />
               <Route path="/request-submission" element={<RequestSubmission />} />
               <Route path="/application-status" element={<ApplicationStatus />} />
+              <Route path="/project-overview" element={<ProjectOverview />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="*" element={<NotFound />} />
             </Route>
