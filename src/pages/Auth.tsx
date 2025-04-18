@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ const Auth = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate("/");
@@ -34,7 +32,6 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        // Sign up flow
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -47,7 +44,6 @@ const Auth = () => {
           description: "يرجى التحقق من بريدك الإلكتروني للتفعيل",
         });
       } else {
-        // Sign in flow
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -74,17 +70,14 @@ const Auth = () => {
     }
   };
 
-  // Helper function to create account on first load
   const createAccountIfNeeded = async () => {
     try {
       setIsLoading(true);
-      // First try to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      // If sign in fails, try to sign up
       if (signInError) {
         console.log("Attempting to create account...");
         const { error: signUpError } = await supabase.auth.signUp({
@@ -102,7 +95,6 @@ const Auth = () => {
           description: "تم إنشاء حساب جديد. يرجى تسجيل الدخول.",
         });
       } else {
-        // If sign in succeeds, navigate to home
         navigate("/");
       }
     } catch (error) {
@@ -112,12 +104,42 @@ const Auth = () => {
     }
   };
 
-  // Try to create account on first load
   useEffect(() => {
     if (email && password) {
       createAccountIfNeeded();
     }
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast({
+          title: "خطأ في تسجيل الخروج",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "تم تسجيل الخروج بنجاح",
+        description: "لقد تم تسجيل الخروج من حسابك",
+      });
+
+      setEmail("");
+      setPassword("");
+      setError(null);
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تسجيل الخروج",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -178,6 +200,14 @@ const Auth = () => {
               {isSignUp
                 ? "لديك حساب بالفعل؟ سجل دخولك"
                 : "ليس لديك حساب؟ سجل الآن"}
+            </Button>
+            <Button 
+              type="button" 
+              variant="destructive" 
+              className="w-full mt-4"
+              onClick={handleSignOut}
+            >
+              تسجيل الخروج
             </Button>
           </CardFooter>
         </form>
