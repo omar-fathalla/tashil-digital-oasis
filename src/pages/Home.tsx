@@ -37,6 +37,17 @@ const Dashboard = () => {
     rejectRequest 
   } = useRegistrationRequests(filterOptions);
 
+  // Create a memoized DateRange object for the DatePickerWithRange component
+  const dateRangeForPicker = useMemo(() => {
+    if (dateRange.from || dateRange.to) {
+      return {
+        from: dateRange.from as Date,
+        to: dateRange.to as Date
+      };
+    }
+    return undefined;
+  }, [dateRange.from, dateRange.to]);
+
   // Use useCallback to prevent recreation of these functions on every render
   const handleViewRequest = useCallback((request) => {
     setSelectedRequest(request);
@@ -58,11 +69,11 @@ const Dashboard = () => {
   }, []);
 
   // Memoize the filter state updater callbacks
-  const handleSetSearchQuery = useCallback((value) => {
+  const handleSetSearchQuery = useCallback((value: string) => {
     setSearchQuery(value);
   }, []);
 
-  const handleSetActiveFilter = useCallback((value) => {
+  const handleSetActiveFilter = useCallback((value: string) => {
     setActiveFilter(value);
   }, []);
 
@@ -77,24 +88,13 @@ const Dashboard = () => {
     }
   }, []);
 
-  const handleSetSelectedArea = useCallback((value) => {
+  const handleSetSelectedArea = useCallback((value: string) => {
     setSelectedArea(value);
   }, []);
 
-  const handleSetSelectedCompany = useCallback((value) => {
+  const handleSetSelectedCompany = useCallback((value: string) => {
     setSelectedCompany(value);
   }, []);
-
-  // Create a memoized DateRange object for the DatePickerWithRange component
-  const dateRangeForPicker = useMemo(() => {
-    if (dateRange.from || dateRange.to) {
-      return {
-        from: dateRange.from as Date,
-        to: dateRange.to as Date
-      };
-    }
-    return undefined;
-  }, [dateRange.from, dateRange.to]);
 
   return (
     <div className="container mx-auto px-4 py-8">
