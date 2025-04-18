@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   Menu, 
   LayoutDashboard,
@@ -23,7 +22,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    console.log("Sign out clicked");
     navigate("/auth");
   };
 
@@ -119,10 +118,8 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile menu - similar updates as desktop menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="space-y-1 px-4 pb-3 pt-2">
-          {/* Similar buttons as desktop menu, just in mobile layout */}
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
             <Link to="/">
               <LayoutDashboard className="h-4 w-4 mr-2" />

@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
 import { FormData } from "./types";
+import { useCallback } from "react";
 
 interface FormNavigationProps {
   formStep: number;
@@ -18,12 +19,12 @@ export const FormNavigation = ({
   isSubmitting,
   onSubmit,
 }: FormNavigationProps) => {
-  // Create separate handler functions to avoid inline function creation on every render
-  const handlePrevious = () => {
+  // Create separate handler functions with useCallback to avoid recreation on every render
+  const handlePrevious = useCallback(() => {
     setFormStep(formStep - 1);
-  };
+  }, [formStep, setFormStep]);
   
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (formStep === 0) {
       form.trigger([
         'firstName', 'midName', 'lastName', 'employeeId', 
@@ -44,11 +45,11 @@ export const FormNavigation = ({
     } else {
       setFormStep(2);
     }
-  };
+  }, [formStep, form, setFormStep]);
   
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     form.handleSubmit(onSubmit)();
-  };
+  }, [form, onSubmit]);
 
   return (
     <div className="flex justify-between">
