@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -12,6 +11,8 @@ import { CompanyInformationForm } from "@/components/company-registration/Compan
 import { AccountAccessForm } from "@/components/company-registration/AccountAccessForm";
 import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 import { RegistrationSteps } from "@/components/company-registration/RegistrationSteps";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
@@ -21,6 +22,8 @@ const CompanyRegistration = () => {
     commercialRegister: null as File | null,
     taxCard: null as File | null,
   });
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
   const form = useForm<CompanyRegistrationFormData>({
     resolver: zodResolver(companyRegistrationSchema),
@@ -37,15 +40,78 @@ const CompanyRegistration = () => {
   });
 
   const onSubmit = async (values: CompanyRegistrationFormData) => {
-    setIsSubmitting(true);
-    console.log("Form values:", values);
-    console.log("Uploaded files:", uploadedFiles);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      setIsSubmitting(true);
+
+      // 1. إنشاء حساب مستخدم جديد
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: `${values.username}@tashil.com`,
+        password: values.password,
+      });
+
+      if (authError) throw authError;
+
+      // 2. تحميل المستندات إلى التخزين
+      let commercialRegisterUrl = null;
+      let taxCardUrl = null;
+
+      if (uploadedFiles.commercialRegister) {
+        const { data: commercialRegisterData, error: commercialRegisterError } = await supabase.storage
+          .from('documents')
+          .upload(
+            `commercial-registers/${values.companyName}-${Date.now()}`,
+            uploadedFiles.commercialRegister
+          );
+
+        if (commercialRegisterError) throw commercialRegisterError;
+        commercialRegisterUrl = commercialRegisterData.path;
+      }
+
+      if (uploadedFiles.taxCard) {
+        const { data: taxCardData, error: taxCardError } = await supabase.storage
+          .from('documents')
+          .upload(
+            `tax-cards/${values.companyName}-${Date.now()}`,
+            uploadedFiles.taxCard
+          );
+
+        if (taxCardError) throw taxCardError;
+        taxCardUrl = taxCardData.path;
+      }
+
+      // 3. إنشاء سجل الشركة
+      const { error: companyError } = await supabase
+        .from('companies')
+        .insert({
+          company_name: values.companyName,
+          address: values.address,
+          tax_card_number: values.taxCardNumber,
+          commercial_register_number: values.commercialRegisterNumber,
+          company_number: values.companyNumber,
+          username: values.username,
+          user_id: authData.user?.id,
+          commercial_register_url: commercialRegisterUrl,
+          tax_card_url: taxCardUrl,
+        });
+
+      if (companyError) throw companyError;
+
       setIsCompleted(true);
-    }, 1500);
+      toast({
+        title: "تم التسجيل بنجاح",
+        description: "تم إنشاء حساب شركتك بنجاح",
+      });
+
+    } catch (error) {
+      console.error('Error during registration:', error);
+      toast({
+        variant: "destructive",
+        title: "خطأ في التسجيل",
+        description: "حدث خطأ أثناء تسجيل الشركة. الرجاء المحاولة مرة أخرى.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileUpload = (type: 'commercialRegister' | 'taxCard', file: File) => {
