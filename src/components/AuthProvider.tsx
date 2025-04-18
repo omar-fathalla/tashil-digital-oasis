@@ -1,7 +1,14 @@
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { createContext, useContext, useState } from "react";
+
+type User = {
+  id: string;
+  email: string;
+};
+
+type Session = {
+  user: User;
+};
 
 type AuthContextType = {
   user: User | null;
@@ -11,24 +18,18 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({ user: null, session: null });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  // For demo purposes, we'll create a mock user
+  const mockUser = {
+    id: "mock-user-id",
+    email: "demo@example.com",
+  };
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-      }
-    );
+  const mockSession = {
+    user: mockUser,
+  };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [user] = useState<User | null>(mockUser);
+  const [session] = useState<Session | null>(mockSession);
 
   return (
     <AuthContext.Provider value={{ user, session }}>

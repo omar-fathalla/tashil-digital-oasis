@@ -1,6 +1,5 @@
+
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/components/AuthProvider";
 
 export type EmployeeRegion = {
   region: string;
@@ -38,13 +37,6 @@ export type ReportData = {
   reviewerActivity: ReviewerActivity[];
   incompleteSubmissions: IncompleteSubmission[];
   documentUploads: DocumentUpload[];
-};
-
-export type EnhancedReportData = {
-  totalEmployees: number;
-  approvedEmployees: number;
-  pendingEmployees: number;
-  rejectedEmployees: number;
   analyticInsights: {
     incompleteSubmissionRisk: number;
     averageReviewTime: number;
@@ -70,35 +62,27 @@ export type EnhancedReportData = {
 };
 
 export const useReportData = () => {
-  const { user } = useAuth();
-
   return useQuery({
-    queryKey: ["enhanced-report-data", user?.id],
-    queryFn: async (): Promise<EnhancedReportData> => {
-      const { data: applications, error } = await supabase
-        .from("applications")
-        .select("*, profiles(*)");
-
-      if (error) {
-        console.error("Error fetching applications:", error);
-        throw error;
-      }
-
-      const totalEmployees = applications.length;
-      const approvedEmployees = applications.filter(app => app.status === "approved").length;
-      const pendingEmployees = applications.filter(app => app.status === "under-review").length;
-      const rejectedEmployees = applications.filter(app => app.status === "rejected").length;
+    queryKey: ["report-data"],
+    queryFn: async (): Promise<ReportData> => {
+      // Mock data - no Supabase connection
+      const mockApplications = generateMockApplications();
+      
+      const totalEmployees = mockApplications.length;
+      const approvedEmployees = mockApplications.filter(app => app.status === "approved").length;
+      const pendingEmployees = mockApplications.filter(app => app.status === "under-review").length;
+      const rejectedEmployees = mockApplications.filter(app => app.status === "rejected").length;
 
       const analyticInsights = {
         incompleteSubmissionRisk: pendingEmployees / totalEmployees,
-        averageReviewTime: calculateAverageReviewTime(applications),
-        documentCompletionRate: calculateDocumentCompletionRate(applications),
-        reviewerPerformance: calculateReviewerPerformance(applications)
+        averageReviewTime: calculateAverageReviewTime(mockApplications),
+        documentCompletionRate: calculateDocumentCompletionRate(mockApplications),
+        reviewerPerformance: calculateReviewerPerformance(mockApplications)
       };
 
       const documentAnalytics = {
-        missingDocumentTypes: detectMissingDocumentTypes(applications),
-        documentCompletionByType: calculateDocumentCompletionByType(applications)
+        missingDocumentTypes: detectMissingDocumentTypes(mockApplications),
+        documentCompletionByType: calculateDocumentCompletionByType(mockApplications)
       };
 
       return {
@@ -111,13 +95,37 @@ export const useReportData = () => {
         employeesByRegion: generateEmployeesByRegion(),
         registrationsByDate: generateRegistrationsByDate(),
         reviewerActivity: generateReviewerActivity(),
-        incompleteSubmissions: generateIncompleteSubmissions(applications),
-        documentUploads: generateDocumentUploads(applications)
+        incompleteSubmissions: generateIncompleteSubmissions(mockApplications),
+        documentUploads: generateDocumentUploads(mockApplications)
       };
     },
-    enabled: !!user,
   });
 };
+
+// Mock application data generator
+function generateMockApplications() {
+  const statuses = ["approved", "under-review", "rejected"];
+  const applications = [];
+  
+  for (let i = 0; i < 50; i++) {
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    const employeeName = `Employee ${i + 1}`;
+    const notes = randomStatus === "approved" 
+      ? `All documents verified. Reviewed by: Reviewer${Math.floor(Math.random() * 3) + 1}`
+      : `Pending verification. Reviewed by: Reviewer${Math.floor(Math.random() * 3) + 1}`;
+    
+    applications.push({
+      id: `app-${i + 1}`,
+      employee_name: employeeName,
+      employee_id: `EMP-${1000 + i}`,
+      status: randomStatus,
+      notes: notes,
+      request_date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+    });
+  }
+  
+  return applications;
+}
 
 function calculateAverageReviewTime(applications) {
   const reviewTimes = applications
@@ -149,10 +157,12 @@ function calculateReviewerPerformance(applications) {
     if (app.notes) {
       const reviewer = app.notes.match(/Reviewed by: (\w+)/)?.[1];
       if (reviewer) {
-        performanceByReviewer[reviewer] = performanceByReviewer[reviewer] || {
-          totalReviewed: 0,
-          approved: 0
-        };
+        if (!performanceByReviewer[reviewer]) {
+          performanceByReviewer[reviewer] = {
+            totalReviewed: 0,
+            approved: 0
+          };
+        }
 
         performanceByReviewer[reviewer].totalReviewed++;
         if (app.status === "approved") {
@@ -163,14 +173,17 @@ function calculateReviewerPerformance(applications) {
   });
 
   return Object.fromEntries(
-    Object.entries(performanceByReviewer).map(([reviewer, stats]) => [
-      reviewer, 
-      {
-        totalReviewed: stats.totalReviewed,
-        approvalRate: stats.approved / stats.totalReviewed,
-        averageProcessingTime: 24 // Placeholder - hours
-      }
-    ])
+    Object.entries(performanceByReviewer).map(([reviewer, stats]) => {
+      const reviewerStats = stats as { totalReviewed: number; approved: number };
+      return [
+        reviewer, 
+        {
+          totalReviewed: reviewerStats.totalReviewed,
+          approvalRate: reviewerStats.approved / reviewerStats.totalReviewed,
+          averageProcessingTime: 24 // Placeholder - hours
+        }
+      ];
+    })
   );
 }
 
@@ -195,18 +208,22 @@ function calculateDocumentCompletionByType(applications) {
     "Employment Contract"
   ];
 
-  return Object.fromEntries(
-    documentTypes.map(docType => [
-      docType, 
-      {
-        total: applications.length,
-        uploaded: applications.filter(app => 
-          app.notes && app.notes.includes(docType)
-        ).length,
-        completionPercentage: 0 // Will be calculated dynamically
-      }
-    ])
-  );
+  const result = {};
+  documentTypes.forEach(docType => {
+    const uploaded = applications.filter(app => 
+      app.notes && app.notes.includes(docType)
+    ).length;
+    
+    const total = applications.length;
+    
+    result[docType] = {
+      total,
+      uploaded,
+      completionPercentage: (uploaded / total) * 100
+    };
+  });
+
+  return result;
 }
 
 function generateEmployeesByRegion() {

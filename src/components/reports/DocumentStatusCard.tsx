@@ -9,77 +9,70 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { FileCheck, FileX } from "lucide-react";
 
-export const DocumentStatusCard = () => {
-  // Mock data for document status
-  const totalDocumentsRequired = 8;
-  const documentsUploaded = 6;
-  const documentsVerified = 4;
-  const documentsMissing = 2;
-  
-  const uploadedPercentage = (documentsUploaded / totalDocumentsRequired) * 100;
-  const verifiedPercentage = (documentsVerified / totalDocumentsRequired) * 100;
-  const missingPercentage = (documentsMissing / totalDocumentsRequired) * 100;
+type DocumentAnalytics = {
+  missingDocumentTypes: string[];
+  documentCompletionByType: {
+    [documentType: string]: {
+      total: number;
+      uploaded: number;
+      completionPercentage: number;
+    }
+  };
+};
+
+type DocumentStatusCardProps = {
+  documentAnalytics?: DocumentAnalytics;
+};
+
+export const DocumentStatusCard = ({ documentAnalytics }: DocumentStatusCardProps) => {
+  const documentTypes = documentAnalytics?.documentCompletionByType 
+    ? Object.entries(documentAnalytics.documentCompletionByType)
+    : [];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Document Status per Employee</CardTitle>
-        <CardDescription>Overview of document submissions and verifications</CardDescription>
+        <CardTitle className="text-xl">Document Status</CardTitle>
+        <CardDescription>Overview of document verification status</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Uploaded Documents</span>
-              <span className="text-sm text-muted-foreground">{documentsUploaded} of {totalDocumentsRequired}</span>
-            </div>
-            <Progress value={uploadedPercentage} className="h-2" />
+        {documentTypes.length > 0 ? (
+          <div className="space-y-4">
+            {documentTypes.map(([docType, stats]) => {
+              const completionPercentage = Math.round((stats.uploaded / stats.total) * 100);
+              
+              return (
+                <div key={docType} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>{docType}</span>
+                    <span className="text-muted-foreground">{stats.uploaded}/{stats.total}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Progress value={completionPercentage} className="h-2" />
+                    <span className="text-xs w-10">{completionPercentage}%</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Verified Documents</span>
-              <span className="text-sm text-muted-foreground">{documentsVerified} of {totalDocumentsRequired}</span>
-            </div>
-            <Progress value={verifiedPercentage} className="h-2 bg-gray-200">
-              <div 
-                className="h-full bg-green-500 rounded-full" 
-                style={{ width: `${verifiedPercentage}%` }} 
-              />
-            </Progress>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Missing/Rejected Documents</span>
-              <span className="text-sm text-muted-foreground">{documentsMissing} of {totalDocumentsRequired}</span>
-            </div>
-            <Progress value={missingPercentage} className="h-2 bg-gray-200">
-              <div 
-                className="h-full bg-red-500 rounded-full" 
-                style={{ width: `${missingPercentage}%` }} 
-              />
-            </Progress>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="flex items-center space-x-2">
-              <FileCheck className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Verified</p>
-                <p className="text-xs text-muted-foreground">{documentsVerified} documents</p>
+        ) : (
+          <div className="flex flex-col space-y-4">
+            <div className="flex justify-between items-center p-3 bg-green-50 rounded-md">
+              <div className="flex gap-2 items-center">
+                <FileCheck className="h-5 w-5 text-green-500" />
+                <span>Verified Documents</span>
               </div>
+              <span className="font-semibold">24</span>
             </div>
-            
-            <div className="flex items-center space-x-2">
-              <FileX className="h-5 w-5 text-red-500" />
-              <div>
-                <p className="text-sm font-medium">Missing/Rejected</p>
-                <p className="text-xs text-muted-foreground">{documentsMissing} documents</p>
+            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-md">
+              <div className="flex gap-2 items-center">
+                <FileX className="h-5 w-5 text-yellow-500" />
+                <span>Pending Verification</span>
               </div>
+              <span className="font-semibold">12</span>
             </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

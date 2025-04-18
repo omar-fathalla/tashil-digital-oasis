@@ -1,6 +1,6 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/components/AuthProvider";
 import { useReportData } from "@/hooks/useReportData";
 import { TotalEmployeesCard } from "@/components/reports/TotalEmployeesCard";
 import { DocumentStatusCard } from "@/components/reports/DocumentStatusCard";
@@ -23,7 +23,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Report = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   
   const { data, isLoading, error } = useReportData();
@@ -46,24 +45,19 @@ const Report = () => {
   const handlePrint = () => {
     window.print();
   };
-  
-  if (!user) {
-    navigate("/auth");
-    return null;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-700">Loading report data...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (isLoading || error) {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-lg text-gray-700">Loading report data...</p>
-          </div>
-        </div>
-      );
-    }
-
+  if (error) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Card className="max-w-md w-full">
@@ -148,7 +142,7 @@ const Report = () => {
                   rejectedEmployees={data?.rejectedEmployees || 0}
                 />
                 <DocumentStatusCard 
-                  documentAnalytics={data?.documentAnalytics} 
+                  documentAnalytics={data?.documentAnalytics}
                 />
               </div>
               
@@ -219,7 +213,9 @@ const Report = () => {
             
             <TabsContent value="documents" className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DocumentStatusCard />
+                <DocumentStatusCard 
+                  documentAnalytics={data?.documentAnalytics}
+                />
                 <DocumentUploadsTable data={data?.documentUploads || []} />
               </div>
             </TabsContent>
