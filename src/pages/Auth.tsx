@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,41 +7,65 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/components/AuthProvider";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("fathalla80800@gmail.com");
   const [password, setPassword] = useState("Omar3005");
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       if (isSignUp) {
+        // Sign up flow
         const { error } = await supabase.auth.signUp({
           email,
           password,
         });
+
         if (error) throw error;
+        
         toast({
-          title: "Success!",
-          description: "Please check your email to verify your account.",
+          title: "تم إنشاء الحساب بنجاح",
+          description: "يرجى التحقق من بريدك الإلكتروني للتفعيل",
         });
       } else {
+        // Sign in flow
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
         if (error) throw error;
+        
+        toast({
+          title: "تم تسجيل الدخول بنجاح",
+          description: "مرحباً بك في نظام تسهيل",
+        });
         navigate("/");
       }
     } catch (error: any) {
+      console.error("Authentication error:", error);
+      setError(error.message);
       toast({
-        title: "Error",
+        title: "خطأ",
         description: error.message,
         variant: "destructive",
       });
@@ -50,49 +74,101 @@ const Auth = () => {
     }
   };
 
+  // Helper function to create account on first load
+  const createAccountIfNeeded = async () => {
+    try {
+      setIsLoading(true);
+      // First try to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      // If sign in fails, try to sign up
+      if (signInError) {
+        console.log("Attempting to create account...");
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (signUpError) {
+          console.error("Failed to create account:", signUpError);
+          return;
+        }
+        
+        toast({
+          title: "تم إنشاء الحساب",
+          description: "تم إنشاء حساب جديد. يرجى تسجيل الدخول.",
+        });
+      } else {
+        // If sign in succeeds, navigate to home
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Auto-creation error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Try to create account on first load
+  useEffect(() => {
+    if (email && password) {
+      createAccountIfNeeded();
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? "Create an Account" : "Sign In"}</CardTitle>
+          <CardTitle>{isSignUp ? "إنشاء حساب جديد" : "تسجيل الدخول"}</CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Get started by creating your account"
-              : "Welcome back! Please sign in to your account"}
+              ? "قم بإنشاء حساب جديد للوصول إلى نظام تسهيل"
+              : "مرحباً بعودتك! يرجى تسجيل الدخول إلى حسابك"}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">البريد الإلكتروني</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="أدخل بريدك الإلكتروني"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                dir="rtl"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">كلمة المرور</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="أدخل كلمة المرور"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                dir="rtl"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading
-                ? "Loading..."
+                ? "جاري التحميل..."
                 : isSignUp
-                ? "Create Account"
-                : "Sign In"}
+                ? "إنشاء حساب"
+                : "تسجيل الدخول"}
             </Button>
             <Button
               type="button"
@@ -100,8 +176,8 @@ const Auth = () => {
               onClick={() => setIsSignUp(!isSignUp)}
             >
               {isSignUp
-                ? "Already have an account? Sign in"
-                : "Need an account? Sign up"}
+                ? "لديك حساب بالفعل؟ سجل دخولك"
+                : "ليس لديك حساب؟ سجل الآن"}
             </Button>
           </CardFooter>
         </form>
