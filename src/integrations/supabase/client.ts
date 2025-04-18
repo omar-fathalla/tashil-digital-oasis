@@ -3,20 +3,20 @@
 // This file replaces the real Supabase client with a mock version
 
 class MockSupabaseClient {
-  from() {
+  from(table: string) {
     return {
       select: () => ({
-        eq: () => ({
-          order: () => ({
-            then: () => Promise.resolve({ data: [], error: null }),
+        eq: (column: string, value: any) => ({
+          order: (column: string, options?: { ascending?: boolean }) => ({
+            then: (callback: any) => Promise.resolve({ data: [], error: null }),
           }),
         }),
-        order: () => ({
-          then: () => Promise.resolve({ data: [], error: null }),
+        order: (column: string, options?: { ascending?: boolean }) => ({
+          then: (callback: any) => Promise.resolve({ data: [], error: null }),
         }),
       }),
-      insert: () => Promise.resolve({ data: null, error: null }),
-      update: () => Promise.resolve({ data: null, error: null }),
+      insert: (data: any) => Promise.resolve({ data: null, error: null }),
+      update: (data: any) => Promise.resolve({ data: null, error: null }),
       delete: () => Promise.resolve({ data: null, error: null }),
     };
   }
@@ -26,12 +26,15 @@ class MockSupabaseClient {
     onAuthStateChange: () => ({
       data: { subscription: { unsubscribe: () => {} } },
     }),
+    signUp: (data: any) => Promise.resolve({ data: { user: { id: "mock-user-id" } }, error: null }),
+    signInWithPassword: (data: any) => Promise.resolve({ data: { user: { id: "mock-user-id" } }, error: null }),
+    signOut: () => Promise.resolve({ error: null }),
   };
 
   storage = {
-    from: () => ({
-      upload: () => Promise.resolve({ data: null, error: null }),
-      getPublicUrl: () => ({ data: { publicUrl: '' } }),
+    from: (bucket: string) => ({
+      upload: (path: string, file: File) => Promise.resolve({ data: { path }, error: null }),
+      getPublicUrl: (path: string) => ({ data: { publicUrl: '' } }),
     }),
   };
 }

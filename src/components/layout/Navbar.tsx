@@ -119,10 +119,8 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile menu - similar updates as desktop menu */}
       <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="space-y-1 px-4 pb-3 pt-2">
-          {/* Similar buttons as desktop menu, just in mobile layout */}
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
             <Link to="/">
               <LayoutDashboard className="h-4 w-4 mr-2" />
