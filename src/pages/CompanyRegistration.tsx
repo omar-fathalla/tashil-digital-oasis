@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ const CompanyRegistration = () => {
     try {
       setIsSubmitting(true);
 
-      // 1. إنشاء حساب مستخدم جديد
+      // 1. Create new user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: `${values.username}@tashil.com`,
         password: values.password,
@@ -51,7 +52,7 @@ const CompanyRegistration = () => {
 
       if (authError) throw authError;
 
-      // 2. تحميل المستندات إلى التخزين
+      // 2. Upload documents to storage
       let commercialRegisterUrl = null;
       let taxCardUrl = null;
 
@@ -79,7 +80,7 @@ const CompanyRegistration = () => {
         taxCardUrl = taxCardData.path;
       }
 
-      // 3. إنشاء سجل الشركة
+      // 3. Create company record
       const { error: companyError } = await supabase
         .from('companies')
         .insert({
@@ -98,16 +99,16 @@ const CompanyRegistration = () => {
 
       setIsCompleted(true);
       toast({
-        title: "تم التسجيل بنجاح",
-        description: "تم إنشاء حساب شركتك بنجاح",
+        title: "Registration Successful",
+        description: "Your company account has been created successfully",
       });
 
     } catch (error) {
       console.error('Error during registration:', error);
       toast({
         variant: "destructive",
-        title: "خطأ في التسجيل",
-        description: "حدث خطأ أثناء تسجيل الشركة. الرجاء المحاولة مرة أخرى.",
+        title: "Registration Error",
+        description: "An error occurred while registering the company. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -131,17 +132,17 @@ const CompanyRegistration = () => {
             </div>
             <CardTitle className="text-2xl">Registration Successful!</CardTitle>
             <CardDescription className="text-lg">
-              تم تسجيل شركتك بنجاح في منصة تشيل
+              Your company has been successfully registered on the Tashil platform
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-gray-600 mb-4">
-              لقد اكتملت عملية التسجيل. يمكنك الآن الوصول إلى جميع خدمات المنصة
+              Registration process is complete. You can now access all platform services
             </p>
           </CardContent>
           <CardFooter className="flex justify-center gap-4">
             <Button asChild className="bg-primary hover:bg-primary-700">
-              <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
+              <Link to="/dashboard">Go to Dashboard</Link>
             </Button>
           </CardFooter>
         </Card>
