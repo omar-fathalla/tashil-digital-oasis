@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -15,8 +14,12 @@ import { ExportOptions } from "@/components/reports/ExportOptions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileBarChart2, FileText, Users, Calendar, Clock } from "lucide-react";
+import { 
+  FileBarChart2, FileText, Users, Calendar, Clock, 
+  BarChart, PieChart, AlertCircle 
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Report = () => {
   const navigate = useNavigate();
@@ -26,7 +29,6 @@ const Report = () => {
   const { data, isLoading, error } = useReportData();
 
   const handleFilterChange = (filters: any) => {
-    // TODO: Implement filtering logic
     console.log("Filters changed:", filters);
     toast({
       title: "Filters Applied",
@@ -35,7 +37,6 @@ const Report = () => {
   };
 
   const handleExport = (format: "csv" | "excel") => {
-    // TODO: Implement export logic
     toast({
       title: `Exporting as ${format.toUpperCase()}`,
       description: "Your report is being prepared for download.",
@@ -46,24 +47,23 @@ const Report = () => {
     window.print();
   };
   
-  // Redirect if not authenticated
   if (!user) {
     navigate("/auth");
     return null;
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-700">Loading report data...</p>
+  if (isLoading || error) {
+    if (isLoading) {
+      return (
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg text-gray-700">Loading report data...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Card className="max-w-md w-full">
@@ -106,6 +106,17 @@ const Report = () => {
           <ReportFilters onFilterChange={handleFilterChange} />
           <ExportOptions onExport={handleExport} onPrint={handlePrint} />
           
+          {data?.analyticInsights && (
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>AI Insights</AlertTitle>
+              <AlertDescription>
+                Incomplete Submission Risk: {(data.analyticInsights.incompleteSubmissionRisk * 100).toFixed(2)}%
+                | Average Review Time: {data.analyticInsights.averageReviewTime.toFixed(2)} hours
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <div className="flex justify-center">
               <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full max-w-2xl">
@@ -136,12 +147,60 @@ const Report = () => {
                   pendingEmployees={data?.pendingEmployees || 0}
                   rejectedEmployees={data?.rejectedEmployees || 0}
                 />
-                <DocumentStatusCard />
+                <DocumentStatusCard 
+                  documentAnalytics={data?.documentAnalytics} 
+                />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <EmployeesByRegionChart data={data?.employeesByRegion || []} />
                 <RegistrationsByDateChart data={data?.registrationsByDate || {}} />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <BarChart className="h-6 w-6 text-primary" />
+                      <h3 className="text-xl font-semibold">Reviewer Performance</h3>
+                    </div>
+                    {data?.analyticInsights?.reviewerPerformance && (
+                      <ul>
+                        {Object.entries(data.analyticInsights.reviewerPerformance).map(([reviewer, performance]) => (
+                          <li key={reviewer} className="mb-2">
+                            <div className="flex justify-between">
+                              <span>{reviewer}</span>
+                              <span>
+                                Approval Rate: {(performance.approvalRate * 100).toFixed(2)}%
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <PieChart className="h-6 w-6 text-primary" />
+                      <h3 className="text-xl font-semibold">Document Completion</h3>
+                    </div>
+                    {data?.documentAnalytics?.missingDocumentTypes && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">Missing Documents:</h4>
+                        <ul className="list-disc pl-5">
+                          {data.documentAnalytics.missingDocumentTypes.map(docType => (
+                            <li key={docType}>{docType}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
             
