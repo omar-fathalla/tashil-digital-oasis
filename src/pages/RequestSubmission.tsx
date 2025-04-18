@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -84,9 +85,9 @@ const RequestSubmission = () => {
           user_id: user.id,
           employee_name: values.employeeName,
           employee_id: values.employeeId,
-          nationality: values.nationality,
-          position: values.position,
-          request_type: values.requestType,
+          status: "under-review",
+          type: values.requestType,
+          notes: `Position: ${values.position}, Nationality: ${values.nationality}`,
           id_document_url: idDocPath,
           authorization_letter_url: authLetterPath,
           payment_receipt_url: receiptPath,
