@@ -1,107 +1,86 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
-export const useAuthForm = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("fathalla80800@gmail.com");
-  const [password, setPassword] = useState("Omar3005");
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+const authSchema = z.object({
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z
+    .string()
+    .min(8, {
+      message: "Password must be at least 8 characters long.",
+    })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter.",
+    })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .regex(/[0-9]/, {
+      message: "Password must contain at least one number.",
+    }),
+});
+
+export const useAuthForm = (mode: "signin" | "signup") => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const form = useForm({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: z.infer<typeof authSchema>) => {
     setIsLoading(true);
-    setError(null);
-
+    
     try {
-      if (isSignUp) {
+      if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: data.email,
+          password: data.password,
         });
-
+        
         if (error) throw error;
         
         toast({
-          title: "Account Created Successfully",
-          description: "Please check your email for activation",
+          title: "Account created successfully!",
+          description: "Please check your email to verify your account.",
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: data.email,
+          password: data.password,
         });
-
+        
         if (error) throw error;
         
         toast({
-          title: "Login Successful",
-          description: "Welcome to Tashil Platform",
+          title: "Welcome back!",
+          description: "You have been successfully logged in.",
         });
-        navigate("/");
       }
     } catch (error: any) {
-      console.error("Authentication error:", error);
-      setError(error.message);
       toast({
-        title: "Error",
-        description: error.message,
         variant: "destructive",
+        title: "Authentication failed",
+        description: error.message || "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        toast({
-          title: "Logout Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Logout Successful",
-        description: "You have been logged out of your account",
-      });
-
-      setEmail("");
-      setPassword("");
-      setError(null);
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Error",
-        description: "An error occurred during logout",
-        variant: "destructive",
-      });
-    }
-  };
-
   return {
+    form,
     isLoading,
-    isSignUp,
-    email,
-    password,
-    error,
-    setIsSignUp,
-    setEmail,
-    setPassword,
-    handleSubmit,
-    handleSignOut,
-    user
+    onSubmit,
   };
 };

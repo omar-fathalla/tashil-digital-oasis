@@ -41,8 +41,8 @@ const Dashboard = () => {
   const dateRangeForPicker = useMemo(() => {
     if (dateRange.from || dateRange.to) {
       return {
-        from: dateRange.from as Date,
-        to: dateRange.to as Date
+        from: dateRange.from,
+        to: dateRange.to
       };
     }
     return undefined;

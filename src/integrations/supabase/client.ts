@@ -26,8 +26,8 @@ class MockSupabaseClient {
     onAuthStateChange: () => ({
       data: { subscription: { unsubscribe: () => {} } },
     }),
-    signUp: () => Promise.resolve({ data: { user: null }, error: null }),
-    signInWithPassword: () => Promise.resolve({ data: { user: null }, error: null }),
+    signUp: (options) => Promise.resolve({ data: { user: null }, error: null }),
+    signInWithPassword: (options) => Promise.resolve({ data: { user: null }, error: null }),
     signOut: () => Promise.resolve({ error: null }),
   };
 
