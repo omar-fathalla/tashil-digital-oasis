@@ -1,5 +1,5 @@
 
-import { Users, FileText, Database, Clock, AlertTriangle } from "lucide-react";
+import { Users, FileText, Database } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const StatsCards = () => {
@@ -19,7 +19,7 @@ export const StatsCards = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
+          <FileText className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">87</div>
@@ -29,12 +29,12 @@ export const StatsCards = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Flagged Documents</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Companies Registered</CardTitle>
+          <Database className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">12</div>
-          <p className="text-xs text-muted-foreground">Requires attention</p>
+          <div className="text-2xl font-bold">42</div>
+          <p className="text-xs text-muted-foreground">+3 this week</p>
         </CardContent>
       </Card>
     </>

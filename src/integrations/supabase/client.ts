@@ -3,38 +3,35 @@
 // This file replaces the real Supabase client with a mock version
 
 class MockSupabaseClient {
-  from(table) {
+  from() {
     return {
       select: () => ({
-        eq: (field, value) => ({
-          order: (column) => ({
-            then: (callback) => Promise.resolve({ data: [], error: null }),
+        eq: () => ({
+          order: () => ({
+            then: () => Promise.resolve({ data: [], error: null }),
           }),
         }),
-        order: (column) => ({
-          then: (callback) => Promise.resolve({ data: [], error: null }),
+        order: () => ({
+          then: () => Promise.resolve({ data: [], error: null }),
         }),
       }),
-      insert: (data) => Promise.resolve({ data: null, error: null }),
-      update: (data) => Promise.resolve({ data: null, error: null }),
+      insert: () => Promise.resolve({ data: null, error: null }),
+      update: () => Promise.resolve({ data: null, error: null }),
       delete: () => Promise.resolve({ data: null, error: null }),
     };
   }
 
   auth = {
     getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-    onAuthStateChange: (callback) => ({
+    onAuthStateChange: () => ({
       data: { subscription: { unsubscribe: () => {} } },
     }),
-    signUp: (options) => Promise.resolve({ data: { user: null }, error: null }),
-    signInWithPassword: (options) => Promise.resolve({ data: { user: null }, error: null }),
-    signOut: () => Promise.resolve({ error: null }),
   };
 
   storage = {
-    from: (bucket) => ({
-      upload: (path, file) => Promise.resolve({ data: { path }, error: null }),
-      getPublicUrl: (path) => ({ data: { publicUrl: '' } }),
+    from: () => ({
+      upload: () => Promise.resolve({ data: null, error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: '' } }),
     }),
   };
 }

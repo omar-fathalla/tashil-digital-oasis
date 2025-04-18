@@ -8,11 +8,6 @@ interface ReviewStepProps {
 }
 
 export const ReviewStep = ({ formData, uploadedFiles }: ReviewStepProps) => {
-  // Create a display name from the form data fields
-  const fullName = [formData.firstName, formData.midName, formData.lastName]
-    .filter(Boolean)
-    .join(" ");
-    
   return (
     <div className="space-y-6">
       <div className="bg-gray-50 rounded-lg p-4">
@@ -20,15 +15,15 @@ export const ReviewStep = ({ formData, uploadedFiles }: ReviewStepProps) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-gray-500">Employee Name</p>
-            <p className="font-medium">{fullName || "Not provided"}</p>
+            <p className="font-medium">{formData.employeeName || "Not provided"}</p>
           </div>
           <div>
             <p className="text-gray-500">Employee ID</p>
             <p className="font-medium">{formData.employeeId || "Not provided"}</p>
           </div>
           <div>
-            <p className="text-gray-500">Sex</p>
-            <p className="font-medium">{formData.sex || "Not provided"}</p>
+            <p className="text-gray-500">Nationality</p>
+            <p className="font-medium">{formData.nationality || "Not provided"}</p>
           </div>
           <div>
             <p className="text-gray-500">Position</p>
@@ -37,10 +32,6 @@ export const ReviewStep = ({ formData, uploadedFiles }: ReviewStepProps) => {
           <div>
             <p className="text-gray-500">Request Type</p>
             <p className="font-medium">{formData.requestType || "Not provided"}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Area</p>
-            <p className="font-medium">{formData.area || "Not provided"}</p>
           </div>
         </div>
       </div>

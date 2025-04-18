@@ -1,164 +1,245 @@
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { companyRegistrationSchema } from '@/schemas/companyRegistration';
-import { useToast } from '@/hooks/use-toast';
-
-import { RegistrationSteps } from '@/components/company-registration/RegistrationSteps';
-import { CompanyInformationForm } from '@/components/company-registration/CompanyInformationForm';
-import { DocumentUploadsForm } from '@/components/company-registration/DocumentUploadsForm';
-import { AccountAccessForm } from '@/components/company-registration/AccountAccessForm';
-
-// Mock function to simulate form submission
-const submitRegistration = async (data: any) => {
-  // In a real app, this would submit to an API
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log('Registration data:', data);
-      resolve({ success: true });
-    }, 1500);
-  });
-};
-
-// Define explicit types to match component expectations
-type RegistrationStep = {
-  title: string;
-  description: string;
-};
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { BadgeCheck } from "lucide-react";
+import { companyRegistrationSchema, type CompanyRegistrationFormData } from "@/schemas/companyRegistration";
+import { CompanyInformationForm } from "@/components/company-registration/CompanyInformationForm";
+import { AccountAccessForm } from "@/components/company-registration/AccountAccessForm";
+import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
+import { RegistrationSteps } from "@/components/company-registration/RegistrationSteps";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const CompanyRegistration = () => {
-  const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [formStep, setFormStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState({
+    commercialRegister: null as File | null,
+    taxCard: null as File | null,
+  });
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
-  const form = useForm({
+  const form = useForm<CompanyRegistrationFormData>({
     resolver: zodResolver(companyRegistrationSchema),
     defaultValues: {
-      companyName: '',
-      tradeLicense: '',
-      companyType: '',
-      businessActivity: '',
-      address: '',
-      phone: '',
-      email: '',
-      taxId: '',
-      tradeLicenseFile: undefined,
-      companyLogoFile: undefined,
-      directorIdFile: undefined,
-      taxDocumentFile: undefined,
-      adminName: '',
-      adminEmail: '',
-      adminPhone: '',
-      adminTitle: '',
-      password: '',
-      confirmPassword: '',
-      terms: false,
+      companyName: "",
+      address: "",
+      taxCardNumber: "",
+      commercialRegisterNumber: "",
+      companyNumber: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
     },
   });
-  
-  const registrationSteps: RegistrationStep[] = [
-    { title: 'Company Information', description: 'Basic company details' },
-    { title: 'Documents Upload', description: 'Required legal documents' },
-    { title: 'Account Access', description: 'Create admin credentials' }
-  ];
-  
-  const handleNext = async () => {
-    const fieldsToValidate = [];
-    
-    // Determine which fields to validate based on current step
-    if (currentStep === 0) {
-      fieldsToValidate.push(
-        'companyName', 'tradeLicense', 'companyType', 
-        'businessActivity', 'address', 'phone', 'email', 'taxId'
-      );
-    } else if (currentStep === 1) {
-      fieldsToValidate.push(
-        'tradeLicenseFile', 'companyLogoFile', 
-        'directorIdFile', 'taxDocumentFile'
-      );
-    } else if (currentStep === 2) {
-      fieldsToValidate.push(
-        'adminName', 'adminEmail', 'adminPhone', 'adminTitle', 
-        'password', 'confirmPassword', 'terms'
-      );
-    }
-    
-    const isValid = await form.trigger(fieldsToValidate as any);
-    
-    if (isValid) {
-      if (currentStep < registrationSteps.length - 1) {
-        setCurrentStep(currentStep + 1);
-      } else {
-        // Submit the form
-        setIsSubmitting(true);
-        try {
-          const data = form.getValues();
-          await submitRegistration(data);
-          toast({
-            title: "Registration Successful",
-            description: "Your company registration has been submitted for review.",
-          });
-          form.reset();
-          setCurrentStep(0);
-        } catch (error: any) {
-          toast({
-            variant: "destructive",
-            title: "Registration Failed",
-            description: error.message || "There was an error submitting your registration.",
-          });
-        } finally {
-          setIsSubmitting(false);
-        }
+
+  const onSubmit = async (values: CompanyRegistrationFormData) => {
+    try {
+      setIsSubmitting(true);
+
+      // 1. إنشاء حساب مستخدم جديد
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: `${values.username}@tashil.com`,
+        password: values.password,
+      });
+
+      if (authError) throw authError;
+
+      // 2. تحميل المستندات إلى التخزين
+      let commercialRegisterUrl = null;
+      let taxCardUrl = null;
+
+      if (uploadedFiles.commercialRegister) {
+        const { data: commercialRegisterData, error: commercialRegisterError } = await supabase.storage
+          .from('documents')
+          .upload(
+            `commercial-registers/${values.companyName}-${Date.now()}`,
+            uploadedFiles.commercialRegister
+          );
+
+        if (commercialRegisterError) throw commercialRegisterError;
+        commercialRegisterUrl = commercialRegisterData.path;
       }
+
+      if (uploadedFiles.taxCard) {
+        const { data: taxCardData, error: taxCardError } = await supabase.storage
+          .from('documents')
+          .upload(
+            `tax-cards/${values.companyName}-${Date.now()}`,
+            uploadedFiles.taxCard
+          );
+
+        if (taxCardError) throw taxCardError;
+        taxCardUrl = taxCardData.path;
+      }
+
+      // 3. إنشاء سجل الشركة
+      const { error: companyError } = await supabase
+        .from('companies')
+        .insert({
+          company_name: values.companyName,
+          address: values.address,
+          tax_card_number: values.taxCardNumber,
+          commercial_register_number: values.commercialRegisterNumber,
+          company_number: values.companyNumber,
+          username: values.username,
+          user_id: authData.user?.id,
+          commercial_register_url: commercialRegisterUrl,
+          tax_card_url: taxCardUrl,
+        });
+
+      if (companyError) throw companyError;
+
+      setIsCompleted(true);
+      toast({
+        title: "تم التسجيل بنجاح",
+        description: "تم إنشاء حساب شركتك بنجاح",
+      });
+
+    } catch (error) {
+      console.error('Error during registration:', error);
+      toast({
+        variant: "destructive",
+        title: "خطأ في التسجيل",
+        description: "حدث خطأ أثناء تسجيل الشركة. الرجاء المحاولة مرة أخرى.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+
+  const handleFileUpload = (type: 'commercialRegister' | 'taxCard', file: File) => {
+    setUploadedFiles(prev => ({
+      ...prev,
+      [type]: file
+    }));
   };
-  
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Company Registration</h1>
-        
-        {/* @ts-ignore - ignoring type issues for now as the component may have different prop expectations */}
-        <RegistrationSteps 
-          steps={registrationSteps} 
-          currentStep={currentStep} 
-        />
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6 mt-8">
-          {currentStep === 0 && (
-            <CompanyInformationForm 
-              form={form} 
-              onNext={handleNext}
-            />
-          )}
-          
-          {currentStep === 1 && (
-            /* @ts-ignore - ignoring type issues for now as the component may have different prop expectations */
-            <DocumentUploadsForm 
-              form={form} 
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-            />
-          )}
-          
-          {currentStep === 2 && (
-            /* @ts-ignore - ignoring type issues for now as the component may have different prop expectations */
-            <AccountAccessForm 
-              form={form} 
-              onSubmit={handleNext}
-              onPrevious={handlePrevious}
-              isSubmitting={isSubmitting}
-            />
-          )}
-        </div>
+
+  if (isCompleted) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 py-12">
+        <Card className="w-full max-w-lg border-none shadow-lg">
+          <CardHeader className="text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100 mb-4">
+              <BadgeCheck className="h-12 w-12 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl">Registration Successful!</CardTitle>
+            <CardDescription className="text-lg">
+              تم تسجيل شركتك بنجاح في منصة تشيل
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 mb-4">
+              لقد اكتملت عملية التسجيل. يمكنك الآن الوصول إلى جميع خدمات المنصة
+            </p>
+          </CardContent>
+          <CardFooter className="flex justify-center gap-4">
+            <Button asChild className="bg-primary hover:bg-primary-700">
+              <Link to="/dashboard">الذهاب إلى لوحة التحكم</Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+      <section className="bg-primary-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Company Registration</h1>
+            <p className="text-lg text-gray-600">
+              Register your company to access Tashil Platform's digital administrative services.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-12 bg-white flex-1">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <RegistrationSteps currentStep={formStep} />
+
+            <Card className="border-none shadow-lg">
+              <CardHeader>
+                <CardTitle>
+                  {formStep === 0 && "Company Information"}
+                  {formStep === 1 && "Account Access"}
+                  {formStep === 2 && "Required Documents"}
+                </CardTitle>
+                <CardDescription>
+                  {formStep === 0 && "Enter your company's basic information"}
+                  {formStep === 1 && "Set up your company's account credentials"}
+                  {formStep === 2 && "Upload the required documents"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {formStep === 0 && <CompanyInformationForm form={form} />}
+                    {formStep === 1 && <AccountAccessForm form={form} />}
+                    {formStep === 2 && (
+                      <DocumentUploadsForm
+                        uploadedFiles={uploadedFiles}
+                        onFileUpload={handleFileUpload}
+                      />
+                    )}
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                {formStep > 0 ? (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setFormStep(formStep - 1)}
+                  >
+                    Previous
+                  </Button>
+                ) : (
+                  <div></div>
+                )}
+                {formStep < 2 ? (
+                  <Button 
+                    onClick={() => {
+                      if (formStep === 0) {
+                        form.trigger(['companyName', 'address', 'taxCardNumber', 'commercialRegisterNumber', 'companyNumber']);
+                        const isValid = !form.formState.errors.companyName && 
+                                     !form.formState.errors.address && 
+                                     !form.formState.errors.taxCardNumber && 
+                                     !form.formState.errors.commercialRegisterNumber && 
+                                     !form.formState.errors.companyNumber;
+                        if (isValid) setFormStep(1);
+                      } else if (formStep === 1) {
+                        form.trigger(['username', 'password', 'confirmPassword']);
+                        const isValid = !form.formState.errors.username && 
+                                     !form.formState.errors.password && 
+                                     !form.formState.errors.confirmPassword;
+                        if (isValid) setFormStep(2);
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={isSubmitting || !uploadedFiles.commercialRegister || !uploadedFiles.taxCard}
+                  >
+                    {isSubmitting ? "Submitting..." : "Complete Registration"}
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
