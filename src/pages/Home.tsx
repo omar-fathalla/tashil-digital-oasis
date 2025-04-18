@@ -2,7 +2,8 @@
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
-import { SettingsCard } from "@/components/dashboard/SettingsCard";
+import { RegistrationRequestsTable } from "@/components/registration-requests/RegistrationRequestsTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Dashboard = () => {
   return (
@@ -11,8 +12,16 @@ const Dashboard = () => {
         <StatsCards />
         <QuickActions />
         <AlertsCard />
-        <SettingsCard />
       </div>
+      
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Registration Requests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RegistrationRequestsTable />
+        </CardContent>
+      </Card>
     </div>
   );
 };
