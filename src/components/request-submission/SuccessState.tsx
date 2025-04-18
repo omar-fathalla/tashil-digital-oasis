@@ -10,7 +10,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export const SuccessState = () => {
+interface SuccessStateProps {
+  requestId: string;
+}
+
+export const SuccessState = ({ requestId }: SuccessStateProps) => {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 py-12">
       <Card className="w-full max-w-lg border-none shadow-lg">
@@ -25,7 +29,7 @@ export const SuccessState = () => {
         </CardHeader>
         <CardContent className="text-center">
           <p className="mb-2 text-gray-600">Request Reference Number:</p>
-          <p className="mb-6 font-mono font-medium text-lg">REQ-2025-04873</p>
+          <p className="mb-6 font-mono font-medium text-lg">{requestId}</p>
           <p className="mb-6 text-gray-600">
             You can track the status of your request in the Application Status page.
           </p>

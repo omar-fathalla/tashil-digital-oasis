@@ -1,17 +1,9 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { ProgressSteps } from "@/components/request-submission/ProgressSteps";
 import { EmployeeForm } from "@/components/request-submission/EmployeeForm";
@@ -19,19 +11,26 @@ import { DocumentUpload } from "@/components/request-submission/DocumentUpload";
 import { ReviewStep } from "@/components/request-submission/ReviewStep";
 import { SuccessState } from "@/components/request-submission/SuccessState";
 import { formSchema, type FormData, type UploadedFiles } from "@/components/request-submission/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
 
 const RequestSubmission = () => {
   const [formStep, setFormStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [requestId, setRequestId] = useState<string>("");
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFiles>({
     idDocument: null,
     authorizationLetter: null,
     paymentReceipt: null,
     employeePhoto: null,
   });
-  const { toast } = useToast();
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,6 +41,20 @@ const RequestSubmission = () => {
       requestType: "",
     },
   });
+
+  if (!user) {
+    navigate("/auth");
+    return null;
+  }
+
+  const uploadFile = async (file: File, path: string) => {
+    const { data, error } = await supabase.storage
+      .from('application_documents')
+      .upload(`${user.id}/${path}`, file);
+
+    if (error) throw error;
+    return data.path;
+  };
 
   const onSubmit = async (values: FormData) => {
     const allFilesUploaded = Object.values(uploadedFiles).every(file => file !== null);
@@ -56,15 +69,49 @@ const RequestSubmission = () => {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values);
-      setIsSubmitting(false);
+    
+    try {
+      const [idDocPath, authLetterPath, receiptPath, photoPath] = await Promise.all([
+        uploadFile(uploadedFiles.idDocument!, `${values.employeeId}/id-document`),
+        uploadFile(uploadedFiles.authorizationLetter!, `${values.employeeId}/auth-letter`),
+        uploadFile(uploadedFiles.paymentReceipt!, `${values.employeeId}/payment-receipt`),
+        uploadFile(uploadedFiles.employeePhoto!, `${values.employeeId}/photo`),
+      ]);
+
+      const { data, error } = await supabase
+        .from('applications')
+        .insert({
+          user_id: user.id,
+          employee_name: values.employeeName,
+          employee_id: values.employeeId,
+          nationality: values.nationality,
+          position: values.position,
+          request_type: values.requestType,
+          id_document_url: idDocPath,
+          authorization_letter_url: authLetterPath,
+          payment_receipt_url: receiptPath,
+          employee_photo_url: photoPath,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setRequestId(data.id);
       setIsCompleted(true);
-    }, 1500);
+      
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: "There was an error submitting your request. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Handle file uploads
   const handleFileUpload = (fileType: keyof UploadedFiles, file: File) => {
     setUploadedFiles(prev => ({
       ...prev,
@@ -73,7 +120,7 @@ const RequestSubmission = () => {
   };
 
   if (isCompleted) {
-    return <SuccessState />;
+    return <SuccessState requestId={requestId} />;
   }
 
   return (
