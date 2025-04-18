@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/card";
 import { 
   Search, 
-  Filter, 
   FileCheck, 
   FileMinus, 
   FileX, 
@@ -30,55 +28,9 @@ import {
   Upload, 
   Bell 
 } from "lucide-react";
-
-// Mock data for applications
-const MOCK_APPLICATIONS = [
-  {
-    id: "REQ-2025-04873",
-    employeeName: "Ahmed Al-Farsi",
-    employeeId: "SA12345678",
-    type: "New Employee Registration",
-    requestDate: "2025-04-15",
-    status: "approved",
-    notes: "Digital ID ready for download",
-  },
-  {
-    id: "REQ-2025-04872",
-    employeeName: "Mohammed Hassan",
-    employeeId: "SA98765432",
-    type: "ID Renewal",
-    requestDate: "2025-04-15",
-    status: "under-review",
-    notes: "Documents under verification",
-  },
-  {
-    id: "REQ-2025-04871",
-    employeeName: "Sara Al-Qahtani",
-    employeeId: "SA45678912",
-    type: "Information Update",
-    requestDate: "2025-04-14",
-    status: "rejected",
-    notes: "Authorization document unclear, please re-upload",
-  },
-  {
-    id: "REQ-2025-04870",
-    employeeName: "Fatima Abdullah",
-    employeeId: "SA78912345",
-    type: "New Employee Registration",
-    requestDate: "2025-04-14",
-    status: "approved",
-    notes: "Digital ID ready for download",
-  },
-  {
-    id: "REQ-2025-04869",
-    employeeName: "Khalid Al-Shehri",
-    employeeId: "SA65432198",
-    type: "Employment Termination",
-    requestDate: "2025-04-13",
-    status: "under-review",
-    notes: "Pending final approval",
-  },
-];
+import { useApplications, type Application } from "@/hooks/useApplications";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 // Status badge variants
 const getStatusBadge = (status: string) => {
@@ -109,60 +61,28 @@ const getStatusIcon = (status: string) => {
 };
 
 const ApplicationStatus = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredApplications, setFilteredApplications] = useState(MOCK_APPLICATIONS);
   const [activeFilter, setActiveFilter] = useState("all");
   
-  // Handle search
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    
-    if (!query) {
-      handleFilter(activeFilter);
-      return;
-    }
-    
-    const filtered = MOCK_APPLICATIONS.filter(app => 
-      app.id.toLowerCase().includes(query.toLowerCase()) ||
-      app.employeeName.toLowerCase().includes(query.toLowerCase()) ||
-      app.employeeId.toLowerCase().includes(query.toLowerCase()) ||
-      app.type.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setFilteredApplications(filtered);
-  };
+  const { data: applications = [], isLoading, error } = useApplications(activeFilter);
   
-  // Handle filter
-  const handleFilter = (filter: string) => {
-    setActiveFilter(filter);
-    
-    if (filter === "all") {
-      setFilteredApplications(
-        searchQuery ? 
-          MOCK_APPLICATIONS.filter(app => 
-            app.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.type.toLowerCase().includes(searchQuery.toLowerCase())
-          ) : 
-          MOCK_APPLICATIONS
-      );
-      return;
-    }
-    
-    const filtered = MOCK_APPLICATIONS.filter(app => app.status === filter);
-    
-    if (searchQuery) {
-      return setFilteredApplications(filtered.filter(app => 
-        app.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.type.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
-    }
-    
-    setFilteredApplications(filtered);
-  };
+  // Redirect if not authenticated
+  if (!user) {
+    navigate("/auth");
+    return null;
+  }
+
+  // Filter applications based on search query
+  const filteredApplications = applications.filter(app => 
+    searchQuery ? (
+      app.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.employee_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.type.toLowerCase().includes(searchQuery.toLowerCase())
+    ) : true
+  );
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
@@ -185,10 +105,10 @@ const ApplicationStatus = () => {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by request ID, name or employee ID"
+                placeholder="البحث عن طريق رقم الطلب، الاسم أو رقم الموظف"
                 className="pl-10"
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             
@@ -196,7 +116,7 @@ const ApplicationStatus = () => {
               <Button 
                 variant={activeFilter === "all" ? "default" : "outline"} 
                 size="sm"
-                onClick={() => handleFilter("all")}
+                onClick={() => setActiveFilter("all")}
                 className={activeFilter === "all" ? "" : "text-gray-500"}
               >
                 All
@@ -204,7 +124,7 @@ const ApplicationStatus = () => {
               <Button 
                 variant={activeFilter === "under-review" ? "default" : "outline"}
                 size="sm" 
-                onClick={() => handleFilter("under-review")}
+                onClick={() => setActiveFilter("under-review")}
                 className={activeFilter === "under-review" ? "" : "text-yellow-600"}
               >
                 <FileMinus className="h-4 w-4 mr-1" />
@@ -213,7 +133,7 @@ const ApplicationStatus = () => {
               <Button 
                 variant={activeFilter === "approved" ? "default" : "outline"} 
                 size="sm"
-                onClick={() => handleFilter("approved")}
+                onClick={() => setActiveFilter("approved")}
                 className={activeFilter === "approved" ? "" : "text-green-600"}
               >
                 <FileCheck className="h-4 w-4 mr-1" />
@@ -222,7 +142,7 @@ const ApplicationStatus = () => {
               <Button 
                 variant={activeFilter === "rejected" ? "default" : "outline"} 
                 size="sm"
-                onClick={() => handleFilter("rejected")}
+                onClick={() => setActiveFilter("rejected")}
                 className={activeFilter === "rejected" ? "" : "text-red-600"}
               >
                 <FileX className="h-4 w-4 mr-1" />
@@ -233,9 +153,10 @@ const ApplicationStatus = () => {
           
           <Card className="border-none shadow-lg">
             <CardHeader className="pb-0">
-              <CardTitle>Request Applications</CardTitle>
+              <CardTitle>طلبات التسجيل</CardTitle>
               <CardDescription>
-                Showing {filteredApplications.length} of {MOCK_APPLICATIONS.length} total requests
+                {isLoading ? "جاري التحميل..." : 
+                 `عرض ${filteredApplications.length} من ${applications.length} طلب`}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -254,17 +175,29 @@ const ApplicationStatus = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredApplications.length > 0 ? (
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          جاري تحميل الطلبات...
+                        </TableCell>
+                      </TableRow>
+                    ) : error ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-red-500">
+                          حدث خطأ أثناء تحميل الطلبات. الرجاء المحاولة مرة أخرى.
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredApplications.length > 0 ? (
                       filteredApplications.map((application) => (
                         <TableRow key={application.id}>
                           <TableCell>
                             {getStatusIcon(application.status)}
                           </TableCell>
                           <TableCell className="font-medium">{application.id}</TableCell>
-                          <TableCell>{application.employeeName}</TableCell>
-                          <TableCell>{application.employeeId}</TableCell>
+                          <TableCell>{application.employee_name}</TableCell>
+                          <TableCell>{application.employee_id}</TableCell>
                           <TableCell>{application.type}</TableCell>
-                          <TableCell>{application.requestDate}</TableCell>
+                          <TableCell>{new Date(application.request_date).toLocaleDateString('ar-SA')}</TableCell>
                           <TableCell>{application.notes}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -288,7 +221,7 @@ const ApplicationStatus = () => {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                          No applications found matching your search.
+                          لا توجد طلبات تطابق بحثك.
                         </TableCell>
                       </TableRow>
                     )}
