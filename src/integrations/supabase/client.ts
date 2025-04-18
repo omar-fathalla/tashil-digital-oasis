@@ -8,16 +8,22 @@ class MockSupabaseClient {
       select: () => ({
         eq: (column: string, value: any) => ({
           order: (column: string, options?: { ascending?: boolean }) => ({
-            then: (callback: any) => Promise.resolve({ data: [], error: null }),
+            data: [],
+            error: null
           }),
         }),
         order: (column: string, options?: { ascending?: boolean }) => ({
-          then: (callback: any) => Promise.resolve({ data: [], error: null }),
+          data: [],
+          error: null
         }),
       }),
       insert: (data: any) => Promise.resolve({ data: null, error: null }),
-      update: (data: any) => Promise.resolve({ data: null, error: null }),
-      delete: () => Promise.resolve({ data: null, error: null }),
+      update: (data: any) => ({
+        eq: (column: string, value: any) => Promise.resolve({ data: null, error: null })
+      }),
+      delete: () => ({
+        eq: (column: string, value: any) => Promise.resolve({ data: null, error: null })
+      }),
     };
   }
 

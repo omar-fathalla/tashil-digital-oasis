@@ -27,8 +27,8 @@ const ProjectOverview = () => {
       try {
         setIsLoading(true);
         
-        // Mock response with empty data since we're using a mock client
-        const response = await supabase
+        // Use the right approach to handle the Promise from Supabase
+        const { data, error } = await supabase
           .from('projects')
           .select()
           .eq('name', 'tashil')
