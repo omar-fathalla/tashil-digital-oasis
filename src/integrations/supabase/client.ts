@@ -23,7 +23,7 @@ class MockSupabaseClient {
 
   auth = {
     getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-    onAuthStateChange: () => ({
+    onAuthStateChange: (callback) => ({
       data: { subscription: { unsubscribe: () => {} } },
     }),
     signUp: (options) => Promise.resolve({ data: { user: null }, error: null }),
