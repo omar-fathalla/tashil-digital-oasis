@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,6 +30,54 @@ export const REJECTION_REASONS = [
 
 export type RejectionReason = typeof REJECTION_REASONS[number] | string;
 
+const FAKE_COMPANIES = [
+  {
+    id: "comp-001",
+    company_name: "Tech Solutions Ltd",
+    username: "John Smith",
+    company_number: "COMP001",
+    tax_card_number: "TAX20240001",
+    commercial_register_number: "CR20240001",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "comp-002",
+    company_name: "Green Energy Co",
+    username: "Sarah Johnson",
+    company_number: "COMP002",
+    tax_card_number: "TAX20240002",
+    commercial_register_number: "CR20240002",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "comp-003",
+    company_name: "Global Trade Inc",
+    username: "Michael Brown",
+    company_number: "COMP003",
+    tax_card_number: "TAX20240003",
+    commercial_register_number: "CR20240003",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "comp-004",
+    company_name: "Digital Services Co",
+    username: "Emily Davis",
+    company_number: "COMP004",
+    tax_card_number: "TAX20240004",
+    commercial_register_number: "CR20240004",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "comp-005",
+    company_name: "Innovation Labs",
+    username: "David Wilson",
+    company_number: "COMP005",
+    tax_card_number: "TAX20240005",
+    commercial_register_number: "CR20240005",
+    created_at: new Date().toISOString(),
+  },
+];
+
 export const useEmployeeRequests = () => {
   const queryClient = useQueryClient();
 
@@ -56,7 +103,7 @@ export const useEmployeeRequests = () => {
         type: "employee" as const
       }));
 
-      const companyRequests = companyResponse.data.map(company => ({
+      const companyRequests = FAKE_COMPANIES.map(company => ({
         id: company.id,
         employee_name: company.username,
         employee_id: company.company_number,
