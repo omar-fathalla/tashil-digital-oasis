@@ -52,7 +52,7 @@ export const DocumentSettings = () => {
 
       // If data.value is already an array, verify and use it
       if (Array.isArray(data.value)) {
-        return data.value.map(item => ({
+        return (data.value as any[]).map(item => ({
           id: typeof item.id === 'string' ? item.id : String(item.id),
           name: typeof item.name === 'string' ? item.name : String(item.name),
           required: Boolean(item.required),
