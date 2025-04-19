@@ -75,7 +75,7 @@ export const useEmployee = (employeeId?: string) => {
       // For now, we'll check if there's registration data with documents
       const { data, error } = await supabase
         .from("registration_requests")
-        .select("documents")
+        .select("documents, full_name, national_id")
         .eq("id", employeeId)
         .single();
 
@@ -213,26 +213,49 @@ export const useEmployee = (employeeId?: string) => {
         .from('employee-documents')
         .getPublicUrl(uploadData.path);
 
-      // Update the registration_requests table with the document
+      // First, get the existing registration request data or create minimal required data
       const { data: existingData, error: fetchError } = await supabase
         .from("registration_requests")
-        .select("documents")
+        .select("documents, full_name, national_id")
         .eq("id", employeeId)
         .single();
       
       if (fetchError && fetchError.code !== "PGRST116") throw fetchError;
       
+      // Prepare documents object
       const documents = existingData?.documents || {};
       documents[documentType] = publicUrl;
       
-      const { error: updateError } = await supabase
-        .from("registration_requests")
-        .upsert({
-          id: employeeId,
-          documents
-        });
+      if (existingData) {
+        // If record exists, update just the documents field
+        const { error: updateError } = await supabase
+          .from("registration_requests")
+          .update({ documents })
+          .eq("id", employeeId);
         
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
+      } else {
+        // If record doesn't exist, we need to get employee data to create a minimal record
+        const { data: employeeData, error: employeeError } = await supabase
+          .from("employee_registrations")
+          .select("full_name, national_id")
+          .eq("id", employeeId)
+          .single();
+        
+        if (employeeError) throw employeeError;
+        
+        // Insert new record with required fields
+        const { error: insertError } = await supabase
+          .from("registration_requests")
+          .insert({
+            id: employeeId,
+            documents,
+            full_name: employeeData.full_name || "Unknown",
+            national_id: employeeData.national_id || "Unknown",
+          });
+        
+        if (insertError) throw insertError;
+      }
 
       return publicUrl;
     },
