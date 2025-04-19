@@ -153,6 +153,7 @@ const Print = () => {
                 }
               }}
               onRefresh={refetch}
+              onPrintSelected={handleBulkPrint}
             />
           </div>
         </Card>
