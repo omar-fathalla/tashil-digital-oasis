@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentType {
   id: string;
@@ -17,16 +19,56 @@ interface DocumentType {
 
 export const DocumentSettings = () => {
   const { toast } = useToast();
-  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([
-    { id: "1", name: "National ID", required: true, instructions: "Must be valid and not expired" },
-    { id: "2", name: "Health Certificate", required: true, instructions: "Must be issued within the last 3 months" },
-    { id: "3", name: "Resume/CV", required: false, instructions: "PDF format preferred" },
-  ]);
-  
+  const queryClient = useQueryClient();
   const [newDocument, setNewDocument] = useState<Omit<DocumentType, "id">>({
     name: "",
     required: true,
     instructions: "",
+  });
+
+  // Fetch document types from system_settings
+  const { data: documentTypes = [], isLoading } = useQuery({
+    queryKey: ['system-settings', 'document-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('category', 'documents')
+        .eq('key', 'document_types')
+        .single();
+
+      if (error) throw error;
+      return data?.value as DocumentType[] || [];
+    }
+  });
+
+  // Update document types mutation
+  const updateDocumentTypes = useMutation({
+    mutationFn: async (newDocTypes: DocumentType[]) => {
+      const { data, error } = await supabase.rpc('update_setting', {
+        p_category: 'documents',
+        p_key: 'document_types',
+        p_value: JSON.stringify(newDocTypes)
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings', 'document-types'] });
+      toast({
+        title: "Success",
+        description: "Document types updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating document types:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update document types",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleAddDocument = () => {
@@ -38,42 +80,38 @@ export const DocumentSettings = () => {
       });
       return;
     }
-    
-    setDocumentTypes([
+
+    const newDocTypes = [
       ...documentTypes,
       {
         id: Date.now().toString(),
         ...newDocument,
       },
-    ]);
-    
+    ];
+
+    updateDocumentTypes.mutate(newDocTypes);
     setNewDocument({
       name: "",
       required: true,
       instructions: "",
     });
-    
-    toast({
-      title: "Success",
-      description: "Document type added successfully",
-    });
   };
 
   const handleRemoveDocument = (id: string) => {
-    setDocumentTypes(documentTypes.filter((doc) => doc.id !== id));
-    toast({
-      title: "Success",
-      description: "Document type removed successfully",
-    });
+    const newDocTypes = documentTypes.filter((doc) => doc.id !== id);
+    updateDocumentTypes.mutate(newDocTypes);
   };
 
   const handleUpdateDocument = (id: string, field: keyof Omit<DocumentType, "id">, value: string | boolean) => {
-    setDocumentTypes(
-      documentTypes.map((doc) =>
-        doc.id === id ? { ...doc, [field]: value } : doc
-      )
+    const newDocTypes = documentTypes.map((doc) =>
+      doc.id === id ? { ...doc, [field]: value } : doc
     );
+    updateDocumentTypes.mutate(newDocTypes);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">

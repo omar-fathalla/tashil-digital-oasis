@@ -326,6 +326,33 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -362,6 +389,10 @@ export type Database = {
           p_request_id?: string
         }
         Returns: string
+      }
+      update_setting: {
+        Args: { p_category: string; p_key: string; p_value: Json }
+        Returns: Json
       }
     }
     Enums: {

@@ -1,124 +1,154 @@
 
 import { useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Plus, Trash } from "lucide-react";
 
-interface FormField {
+interface PositionType {
   id: string;
   name: string;
-  enabled: boolean;
-  required: boolean;
-  visibility: "all" | "admin" | "company" | "employee";
 }
 
 export const FormFieldSettings = () => {
   const { toast } = useToast();
-  const [formFields, setFormFields] = useState<FormField[]>([
-    { id: "1", name: "Full Name", enabled: true, required: true, visibility: "all" },
-    { id: "2", name: "National ID", enabled: true, required: true, visibility: "all" },
-    { id: "3", name: "Insurance Number", enabled: true, required: false, visibility: "all" },
-    { id: "4", name: "Mother's Name", enabled: false, required: false, visibility: "admin" },
-    { id: "5", name: "Address", enabled: true, required: true, visibility: "all" },
-    { id: "6", name: "Phone Number", enabled: true, required: true, visibility: "all" },
-    { id: "7", name: "Email", enabled: true, required: false, visibility: "all" },
-    { id: "8", name: "Date of Birth", enabled: true, required: true, visibility: "all" },
-    { id: "9", name: "Position", enabled: true, required: true, visibility: "company" },
-    { id: "10", name: "Area", enabled: true, required: true, visibility: "company" },
-  ]);
+  const queryClient = useQueryClient();
+  const [newPosition, setNewPosition] = useState("");
 
-  const updateField = (id: string, field: keyof FormField, value: any) => {
-    setFormFields(
-      formFields.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
-    
-    toast({
-      title: "Settings updated",
-      description: "Form field settings have been updated successfully.",
-    });
+  // Fetch position types from system_settings
+  const { data: positions = [], isLoading } = useQuery({
+    queryKey: ['system-settings', 'position-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('category', 'form_fields')
+        .eq('key', 'position_types')
+        .single();
+
+      if (error) throw error;
+      return data?.value as PositionType[] || [];
+    }
+  });
+
+  // Update position types mutation
+  const updatePositionTypes = useMutation({
+    mutationFn: async (newPositions: PositionType[]) => {
+      const { data, error } = await supabase.rpc('update_setting', {
+        p_category: 'form_fields',
+        p_key: 'position_types',
+        p_value: JSON.stringify(newPositions)
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings', 'position-types'] });
+      toast({
+        title: "Success",
+        description: "Position types updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating position types:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update position types",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleAddPosition = () => {
+    if (!newPosition.trim()) {
+      toast({
+        title: "Error",
+        description: "Position name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPositions = [
+      ...positions,
+      {
+        id: Date.now().toString(),
+        name: newPosition.trim(),
+      },
+    ];
+
+    updatePositionTypes.mutate(newPositions);
+    setNewPosition("");
   };
 
-  const handleSaveChanges = () => {
-    toast({
-      title: "Success",
-      description: "All form field settings have been saved successfully.",
-    });
+  const handleRemovePosition = (id: string) => {
+    const newPositions = positions.filter((pos) => pos.id !== id);
+    updatePositionTypes.mutate(newPositions);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-4">Edit Registration Form Fields</h2>
+        <h2 className="text-xl font-semibold mb-4">Position Types</h2>
         <p className="text-muted-foreground">
-          Configure which fields are displayed on registration forms and their requirements.
+          Manage available position types for employee registration.
         </p>
       </div>
 
       <Card>
         <CardContent className="pt-6">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Field Name</TableHead>
-                  <TableHead>Enabled</TableHead>
-                  <TableHead>Required</TableHead>
-                  <TableHead>Visibility</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {formFields.map((field) => (
-                  <TableRow key={field.id}>
-                    <TableCell className="font-medium">{field.name}</TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={field.enabled}
-                        onCheckedChange={(checked) =>
-                          updateField(field.id, "enabled", checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={field.required}
-                        disabled={!field.enabled}
-                        onCheckedChange={(checked) =>
-                          updateField(field.id, "required", checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={field.visibility}
-                        onValueChange={(value) =>
-                          updateField(field.id, "visibility", value)
-                        }
-                        disabled={!field.enabled}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
-                          <SelectItem value="admin">Admin Only</SelectItem>
-                          <SelectItem value="company">Company</SelectItem>
-                          <SelectItem value="employee">Employee</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="space-y-4">
+            {positions.map((position) => (
+              <div key={position.id} className="flex items-center justify-between">
+                <div className="flex-1">
+                  <Input
+                    value={position.name}
+                    onChange={(e) => {
+                      const newPositions = positions.map((pos) =>
+                        pos.id === position.id ? { ...pos, name: e.target.value } : pos
+                      );
+                      updatePositionTypes.mutate(newPositions);
+                    }}
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemovePosition(position.id)}
+                  className="ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
           </div>
-          
-          <div className="mt-6 flex justify-end">
-            <Button onClick={handleSaveChanges}>Save Changes</Button>
+
+          <div className="mt-6 flex items-center gap-2">
+            <div className="flex-1">
+              <Input
+                placeholder="Enter new position type..."
+                value={newPosition}
+                onChange={(e) => setNewPosition(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddPosition();
+                  }
+                }}
+              />
+            </div>
+            <Button onClick={handleAddPosition}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Position
+            </Button>
           </div>
         </CardContent>
       </Card>
