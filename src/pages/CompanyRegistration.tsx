@@ -13,7 +13,7 @@ import { AccountAccessForm } from "@/components/company-registration/AccountAcce
 import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 import { RegistrationSteps } from "@/components/company-registration/RegistrationSteps";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const CompanyRegistration = () => {
@@ -24,7 +24,6 @@ const CompanyRegistration = () => {
     commercialRegister: null as File | null,
     taxCard: null as File | null,
   });
-  const { toast } = useToast();
   const navigate = useNavigate();
   
   const form = useForm<CompanyRegistrationFormData>({
@@ -45,22 +44,14 @@ const CompanyRegistration = () => {
     try {
       setIsSubmitting(true);
 
-      // 1. Create new user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: `${values.username}@tashil.com`,
-        password: values.password,
-      });
-
-      if (authError) throw authError;
-
-      // 2. Upload documents to storage
+      // 1. Upload documents to storage first
       let commercialRegisterUrl = null;
       let taxCardUrl = null;
 
       if (uploadedFiles.commercialRegister) {
         const timestamp = Date.now();
-        const filePath = `${authData.user?.id}/${timestamp}-${uploadedFiles.commercialRegister.name}`;
-        const { data: commercialRegisterData, error: commercialRegisterError } = await supabase.storage
+        const filePath = `company-documents/${timestamp}-${uploadedFiles.commercialRegister.name}`;
+        const { error: commercialRegisterError } = await supabase.storage
           .from('company-documents')
           .upload(filePath, uploadedFiles.commercialRegister);
 
@@ -74,8 +65,8 @@ const CompanyRegistration = () => {
 
       if (uploadedFiles.taxCard) {
         const timestamp = Date.now();
-        const filePath = `${authData.user?.id}/${timestamp}-${uploadedFiles.taxCard.name}`;
-        const { data: taxCardData, error: taxCardError } = await supabase.storage
+        const filePath = `company-documents/${timestamp}-${uploadedFiles.taxCard.name}`;
+        const { error: taxCardError } = await supabase.storage
           .from('company-documents')
           .upload(filePath, uploadedFiles.taxCard);
 
@@ -87,34 +78,48 @@ const CompanyRegistration = () => {
         taxCardUrl = publicUrl;
       }
 
-      // 3. Create company record
-      const { error: companyError } = await supabase
-        .from('companies')
-        .insert({
-          company_name: values.companyName,
-          address: values.address,
-          tax_card_number: values.taxCardNumber,
-          commercial_register_number: values.commercialRegisterNumber,
-          company_number: values.companyNumber,
-          username: values.username,
-          user_id: authData.user?.id,
-          commercial_register_url: commercialRegisterUrl,
-          tax_card_url: taxCardUrl,
-        });
+      // 2. Create user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: `${values.username}@tashil.com`,
+        password: values.password,
+      });
 
-      if (companyError) throw companyError;
+      if (authError) throw authError;
+
+      // 3. Create company record after successful signup
+      if (authData?.user) {
+        // Wait a moment for the auth session to be established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Create company record
+        const { error: companyError } = await supabase
+          .from('companies')
+          .insert({
+            company_name: values.companyName,
+            address: values.address,
+            tax_card_number: values.taxCardNumber,
+            commercial_register_number: values.commercialRegisterNumber,
+            company_number: values.companyNumber,
+            username: values.username,
+            user_id: authData.user.id,
+            commercial_register_url: commercialRegisterUrl,
+            tax_card_url: taxCardUrl,
+          });
+
+        if (companyError) {
+          console.error('Error inserting company record:', companyError);
+          throw companyError;
+        }
+      }
 
       setIsCompleted(true);
-      toast({
-        title: "Registration Successful",
-        description: "Your company account has been created successfully. Please wait for admin approval.",
+      toast.success("Registration Successful", {
+        description: "Your company account has been created successfully.",
       });
 
     } catch (error) {
       console.error('Error during registration:', error);
-      toast({
-        variant: "destructive",
-        title: "Registration Error",
+      toast.error("Registration Error", {
         description: "An error occurred while registering the company. Please try again.",
       });
     } finally {
