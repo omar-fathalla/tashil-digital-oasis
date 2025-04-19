@@ -142,6 +142,8 @@ export type Database = {
           national_id: string | null
           photo_url: string | null
           position: string | null
+          printed: boolean | null
+          printed_at: string | null
           request_type: string | null
           sex: string | null
           status: string | null
@@ -164,6 +166,8 @@ export type Database = {
           national_id?: string | null
           photo_url?: string | null
           position?: string | null
+          printed?: boolean | null
+          printed_at?: string | null
           request_type?: string | null
           sex?: string | null
           status?: string | null
@@ -186,6 +190,8 @@ export type Database = {
           national_id?: string | null
           photo_url?: string | null
           position?: string | null
+          printed?: boolean | null
+          printed_at?: string | null
           request_type?: string | null
           sex?: string | null
           status?: string | null

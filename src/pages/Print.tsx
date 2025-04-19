@@ -1,3 +1,5 @@
+
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import IDCardPreview from "@/components/print/IDCardPreview";
 import PrintControls from "@/components/print/PrintControls";
@@ -8,14 +10,11 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
-interface PrintProps {
-  request?: any;
-}
-
-const Print = ({ request: propRequest }: PrintProps) => {
+const Print = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isPrinted, setIsPrinted] = useState(false);
 
   // If no user is logged in, redirect to auth
   if (!user) {
@@ -23,27 +22,28 @@ const Print = ({ request: propRequest }: PrintProps) => {
     return null;
   }
 
-  const queryId = id || null;
-
-  const { data: fetchedRequest, isLoading } = useQuery({
-    queryKey: ['print-request', queryId],
+  const { data: request, isLoading, refetch } = useQuery({
+    queryKey: ['print-request', id],
     queryFn: async () => {
-      if (!queryId) return null;
+      if (!id) return null;
       
       const { data, error } = await supabase
         .from('employee_registrations')
         .select('*')
-        .eq('id', queryId)
+        .eq('id', id)
         .eq('user_id', user.id) // Ensure user can only access their own requests
         .single();
       
       if (error) throw error;
       return data;
     },
-    enabled: !!queryId && !!user
+    enabled: !!id && !!user
   });
 
-  const request = propRequest || fetchedRequest;
+  const handlePrintComplete = () => {
+    setIsPrinted(true);
+    refetch(); // Refresh the data to get updated print status
+  };
   
   if (isLoading) {
     return (
@@ -79,7 +79,10 @@ const Print = ({ request: propRequest }: PrintProps) => {
           
           <div>
             <Separator className="md:hidden mb-6" />
-            <PrintControls request={request} />
+            <PrintControls 
+              request={request} 
+              onPrintComplete={handlePrintComplete} 
+            />
           </div>
         </div>
       </Card>

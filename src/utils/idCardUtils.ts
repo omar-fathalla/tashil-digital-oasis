@@ -13,7 +13,7 @@ const formatDate = (dateString: string) => {
 };
 
 export const generateIdCardHTML = (request: any) => {
-  const company = request.employee_details?.company_name || 'Company Name';
+  const company = request.company_name || 'Company Name';
   const formattedDate = formatDate(request.submission_date);
   
   return `
@@ -141,7 +141,7 @@ export const generateIdCardHTML = (request: any) => {
               <div style="width:16px;height:16px;background:#f0f0f0;"></div>
               <span class="id-card-company">${company}</span>
             </div>
-            <div class="id-number">ID: ${request.national_id?.substring(0, 8) || 'N/A'}</div>
+            <div class="id-number">ID: ${request.employee_id?.substring(0, 8) || 'N/A'}</div>
           </div>
           
           <div class="id-card-body">
@@ -196,7 +196,7 @@ export const downloadIdCard = async (request: any) => {
     pdf.addImage(imgData, 'PNG', 1, 1, 5, 2.5); // 5cm x 2.5cm with 1cm margins
     
     // Save the PDF
-    pdf.save(`employee-id-${request.national_id || request.id}.pdf`);
+    pdf.save(`employee-id-${request.employee_id || request.id}.pdf`);
     toast.success("ID Card downloaded successfully");
   } catch (error) {
     console.error("Error downloading ID card:", error);
@@ -205,29 +205,45 @@ export const downloadIdCard = async (request: any) => {
 };
 
 export const printIdCard = (request: any) => {
-  try {
-    toast.info("Preparing to print...");
-    
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error("Unable to open print window. Please check your popup settings.");
-      return;
+  return new Promise<void>((resolve, reject) => {
+    try {
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error("Unable to open print window. Please check your popup settings.");
+        reject(new Error("Popup blocked"));
+        return;
+      }
+      
+      // Write the ID card HTML to the print window
+      printWindow.document.write(generateIdCardHTML(request));
+      printWindow.document.close();
+      
+      // Wait for content to load before printing
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          toast.success("Print job sent to printer");
+          resolve();
+        }, 500);
+      };
+
+      // Handle print completion or cancellation
+      printWindow.onafterprint = () => {
+        printWindow.close();
+        resolve();
+      };
+
+      // Handle print errors
+      printWindow.onerror = (error) => {
+        console.error("Print error:", error);
+        toast.error("Failed to print ID card");
+        reject(error);
+      };
+    } catch (error) {
+      console.error("Error printing ID card:", error);
+      toast.error("Failed to print ID card");
+      reject(error);
     }
-    
-    // Write the ID card HTML to the print window
-    printWindow.document.write(generateIdCardHTML(request));
-    printWindow.document.close();
-    
-    // Wait for content to load before printing
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.print();
-        toast.success("Print job sent to printer");
-      }, 500);
-    };
-  } catch (error) {
-    console.error("Error printing ID card:", error);
-    toast.error("Failed to print ID card");
-  }
+  });
 };
