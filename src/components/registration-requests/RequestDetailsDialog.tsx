@@ -31,6 +31,11 @@ type RegistrationRequest = {
   employee_details: any;
   documents: any;
   submission_history: any[];
+  id_card?: {
+    id: string;
+    issue_date: string;
+    expiry_date: string;
+  };
 };
 
 type RequestDetailsDialogProps = {
@@ -75,7 +80,11 @@ export function RequestDetailsDialog({
         };
       }
       
-      const statusUpdate = {
+      const statusUpdate: {
+        status: "approved" | "rejected";
+        submission_history: any[];
+        id_card?: typeof idCard;
+      } = {
         status: newStatus,
         submission_history: [
           ...(request.submission_history || []),
