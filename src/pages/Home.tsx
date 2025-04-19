@@ -2,6 +2,7 @@
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
+import { DigitalIDCard } from "@/components/dashboard/DigitalIDCard";
 import { RegistrationRequestsTable } from "@/components/registration-requests/RegistrationRequestsTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -12,6 +13,10 @@ const Dashboard = () => {
         <StatsCards />
         <QuickActions />
         <AlertsCard />
+      </div>
+      
+      <div className="mt-8">
+        <DigitalIDCard />
       </div>
       
       <Card className="mt-8">
