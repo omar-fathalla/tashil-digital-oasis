@@ -38,15 +38,40 @@ export const FormFieldSettings = () => {
         
         // If it's already an array, validate and return it
         if (Array.isArray(positionsData)) {
-          return positionsData as PositionType[];
+          // Cast to PositionType[] after validating structure
+          const validPositions: PositionType[] = [];
+          for (const item of positionsData) {
+            if (typeof item === 'object' && item !== null && 
+                'id' in item && 'name' in item) {
+              validPositions.push({
+                id: String(item.id),
+                name: String(item.name)
+              });
+            }
+          }
+          return validPositions;
         }
         
         // Try to parse JSON string if needed
         if (typeof positionsData === 'string') {
           try {
             const parsed = JSON.parse(positionsData);
-            return Array.isArray(parsed) ? parsed as PositionType[] : [] as PositionType[];
+            if (Array.isArray(parsed)) {
+              // Same validation as above
+              const validPositions: PositionType[] = [];
+              for (const item of parsed) {
+                if (typeof item === 'object' && item !== null && 
+                    'id' in item && 'name' in item) {
+                  validPositions.push({
+                    id: String(item.id),
+                    name: String(item.name)
+                  });
+                }
+              }
+              return validPositions;
+            }
           } catch {
+            console.error('Failed to parse position data string');
             return [] as PositionType[];
           }
         }

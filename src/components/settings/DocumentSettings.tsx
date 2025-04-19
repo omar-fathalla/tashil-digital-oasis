@@ -46,15 +46,44 @@ export const DocumentSettings = () => {
         
         // If it's already an array, validate and return it
         if (Array.isArray(typesData)) {
-          return typesData as DocumentType[];
+          // Cast to DocumentType[] after validating structure
+          const validDocuments: DocumentType[] = [];
+          for (const item of typesData) {
+            if (typeof item === 'object' && item !== null && 
+                'id' in item && 'name' in item && 'required' in item) {
+              validDocuments.push({
+                id: String(item.id),
+                name: String(item.name),
+                required: Boolean(item.required),
+                instructions: 'instructions' in item ? String(item.instructions) : ''
+              });
+            }
+          }
+          return validDocuments;
         }
         
         // Try to parse JSON string if needed
         if (typeof typesData === 'string') {
           try {
             const parsed = JSON.parse(typesData);
-            return Array.isArray(parsed) ? parsed as DocumentType[] : [] as DocumentType[];
+            if (Array.isArray(parsed)) {
+              // Same validation as above
+              const validDocuments: DocumentType[] = [];
+              for (const item of parsed) {
+                if (typeof item === 'object' && item !== null && 
+                    'id' in item && 'name' in item && 'required' in item) {
+                  validDocuments.push({
+                    id: String(item.id),
+                    name: String(item.name),
+                    required: Boolean(item.required),
+                    instructions: 'instructions' in item ? String(item.instructions) : ''
+                  });
+                }
+              }
+              return validDocuments;
+            }
           } catch {
+            console.error('Failed to parse document data string');
             return [] as DocumentType[];
           }
         }
