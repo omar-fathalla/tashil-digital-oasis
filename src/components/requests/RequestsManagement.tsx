@@ -7,13 +7,19 @@ import { RequestsTable } from "./RequestsTable";
 import { RequestDetailsSheet } from "./RequestDetailsSheet";
 import { RejectRequestDialog } from "./RejectRequestDialog";
 
-export function RequestsManagement() {
+interface RequestsManagementProps {
+  type?: "employee" | "company";
+}
+
+export function RequestsManagement({ type = "employee" }: RequestsManagementProps) {
   const { requests, isLoading, updateRequestStatus } = useEmployeeRequests();
   const [selectedRequest, setSelectedRequest] = useState<EmployeeRequest | null>(null);
   const [isViewingDetails, setIsViewingDetails] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState<string>("");
   const [customNote, setCustomNote] = useState("");
+
+  const filteredRequests = requests.filter(request => request.type === type);
 
   const handleApprove = async (request: EmployeeRequest) => {
     await updateRequestStatus.mutate({
@@ -50,10 +56,10 @@ export function RequestsManagement() {
 
   return (
     <div className="space-y-6">
-      <RequestsHeader />
+      <RequestsHeader type={type} />
       
       <RequestsTable
-        requests={requests}
+        requests={filteredRequests}
         onApprove={handleApprove}
         onReject={(request) => {
           setSelectedRequest(request);

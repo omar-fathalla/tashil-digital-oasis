@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
   const location = useLocation();
@@ -53,7 +54,18 @@ const Dashboard = () => {
           <CardTitle>Request Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <RequestsManagement />
+          <Tabs defaultValue="employee" className="w-full">
+            <TabsList>
+              <TabsTrigger value="employee">Employee Requests</TabsTrigger>
+              <TabsTrigger value="company">Company Requests</TabsTrigger>
+            </TabsList>
+            <TabsContent value="employee">
+              <RequestsManagement />
+            </TabsContent>
+            <TabsContent value="company">
+              <RequestsManagement type="company" />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
