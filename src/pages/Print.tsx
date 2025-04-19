@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import IDCardPreview from "@/components/print/IDCardPreview";
 import PrintControls from "@/components/print/PrintControls";

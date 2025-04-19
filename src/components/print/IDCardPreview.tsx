@@ -19,17 +19,7 @@ const IDCardPreview = ({ request }: IDCardPreviewProps) => {
       day: 'numeric'
     });
   };
-  
-  // Extract employee data
-  const {
-    full_name,
-    national_id,
-    submission_date,
-    employee_details
-  } = request;
-  
-  const company_name = employee_details?.company_name || 'Company Name';
-  
+
   return (
     <div className="id-card relative">
       <Card 
@@ -48,10 +38,10 @@ const IDCardPreview = ({ request }: IDCardPreviewProps) => {
                 alt="Company Logo"
                 className="h-6 w-6 mr-1"
               />
-              <span className="font-bold text-xs">{company_name}</span>
+              <span className="font-bold text-xs">{request.company_name || 'Company Name'}</span>
             </div>
             <div className="text-right">
-              <p className="text-[8px] text-muted-foreground">ID: {national_id?.substring(0, 8) || 'N/A'}</p>
+              <p className="text-[8px] text-muted-foreground">ID: {request.employee_id?.substring(0, 8) || 'N/A'}</p>
             </div>
           </div>
           
@@ -60,10 +50,10 @@ const IDCardPreview = ({ request }: IDCardPreviewProps) => {
               <User className="h-3 w-3" />
             </div>
             <div>
-              <h3 className="font-semibold text-xs line-clamp-1">{full_name}</h3>
+              <h3 className="font-semibold text-xs line-clamp-1">{request.full_name}</h3>
               <p className="text-[8px] text-muted-foreground">
                 <Calendar className="h-2 w-2 inline mr-1" />
-                {formatDate(submission_date)}
+                {formatDate(request.submission_date || new Date().toISOString())}
               </p>
             </div>
           </div>
@@ -71,7 +61,7 @@ const IDCardPreview = ({ request }: IDCardPreviewProps) => {
           <div className="w-full flex items-end justify-between">
             <div className="text-[8px] text-muted-foreground">
               <Building className="h-2 w-2 inline mr-1" />
-              {company_name}
+              {request.company_name || 'Company Name'}
             </div>
             <div>
               <QrCode className="h-5 w-5 text-primary" />
@@ -82,10 +72,10 @@ const IDCardPreview = ({ request }: IDCardPreviewProps) => {
       
       <div className="print-only-details hidden print:block mt-4">
         <h3 className="text-sm font-medium">Employee Details</h3>
-        <p className="text-xs">Name: {full_name}</p>
-        <p className="text-xs">ID: {national_id || 'N/A'}</p>
-        <p className="text-xs">Issue Date: {formatDate(submission_date)}</p>
-        <p className="text-xs">Company: {company_name}</p>
+        <p className="text-xs">Name: {request.full_name}</p>
+        <p className="text-xs">ID: {request.employee_id || 'N/A'}</p>
+        <p className="text-xs">Issue Date: {formatDate(request.submission_date || new Date().toISOString())}</p>
+        <p className="text-xs">Company: {request.company_name || 'Company Name'}</p>
       </div>
     </div>
   );
