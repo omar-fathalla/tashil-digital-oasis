@@ -14,7 +14,7 @@ import {
   LogOut,
   BarChart2,
   Home,
-  PanelLeft
+  Printer
 } from "lucide-react";
 
 const Navbar = () => {
@@ -63,6 +63,12 @@ const Navbar = () => {
             <Link to="/application-status">
               <BarChart2 className="h-4 w-4 mr-1" />
               Status
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/print">
+              <Printer className="h-4 w-4 mr-1" />
+              Print
             </Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
@@ -143,6 +149,12 @@ const Navbar = () => {
             <Link to="/application-status">
               <BarChart2 className="h-4 w-4 mr-2" />
               Status
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+            <Link to="/print">
+              <Printer className="h-4 w-4 mr-2" />
+              Print
             </Link>
           </Button>
           <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
