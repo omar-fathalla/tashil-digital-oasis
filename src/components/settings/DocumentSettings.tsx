@@ -27,7 +27,7 @@ export const DocumentSettings = () => {
   });
 
   // Fetch document types from system_settings
-  const { data: documentTypes = [], isLoading } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ['system-settings', 'document-types'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,7 +37,10 @@ export const DocumentSettings = () => {
         .eq('key', 'document_types')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching document types:', error);
+        return [] as DocumentType[];
+      }
       
       // Parse value and ensure it's an array of DocumentType
       try {
@@ -82,13 +85,14 @@ export const DocumentSettings = () => {
               }
               return validDocuments;
             }
-          } catch {
-            console.error('Failed to parse document data string');
+          } catch (e) {
+            console.error('Failed to parse document data string:', e);
             return [] as DocumentType[];
           }
         }
         
         // Default fallback
+        console.warn('Document data is neither an array nor a parsable string:', typesData);
         return [] as DocumentType[];
       } catch (e) {
         console.error('Error parsing document types:', e);
@@ -97,9 +101,18 @@ export const DocumentSettings = () => {
     }
   });
 
+  // Make sure documentTypes is always an array
+  const documentTypes = Array.isArray(data) ? data : [];
+
   // Update document types mutation
   const updateDocumentTypes = useMutation({
     mutationFn: async (newDocTypes: DocumentType[]) => {
+      // Check that newDocTypes is an array
+      if (!Array.isArray(newDocTypes)) {
+        console.error("Expected array for document types update, got:", newDocTypes);
+        throw new Error("Invalid document types data format");
+      }
+      
       const { data, error } = await supabase.rpc('update_setting', {
         p_category: 'documents',
         p_key: 'document_types',
@@ -172,9 +185,6 @@ export const DocumentSettings = () => {
     return <div>Loading...</div>;
   }
 
-  // Ensure we're working with an array for rendering
-  const safeDocumentTypes = Array.isArray(documentTypes) ? documentTypes : [];
-
   return (
     <div className="space-y-6">
       <div>
@@ -185,7 +195,7 @@ export const DocumentSettings = () => {
       </div>
 
       <div className="space-y-4">
-        {safeDocumentTypes.map((doc) => (
+        {documentTypes.map((doc) => (
           <Card key={doc.id} className="relative">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

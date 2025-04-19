@@ -19,7 +19,7 @@ export const FormFieldSettings = () => {
   const [newPosition, setNewPosition] = useState("");
 
   // Fetch position types from system_settings
-  const { data: positions = [], isLoading } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ['system-settings', 'position-types'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -29,7 +29,10 @@ export const FormFieldSettings = () => {
         .eq('key', 'position_types')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching position types:', error);
+        return [] as PositionType[];
+      }
       
       // Parse value and ensure it's an array of PositionType
       try {
@@ -70,13 +73,14 @@ export const FormFieldSettings = () => {
               }
               return validPositions;
             }
-          } catch {
-            console.error('Failed to parse position data string');
+          } catch (e) {
+            console.error('Failed to parse position data string:', e);
             return [] as PositionType[];
           }
         }
         
         // Default fallback
+        console.warn('Position data is neither an array nor a parsable string:', positionsData);
         return [] as PositionType[];
       } catch (e) {
         console.error('Error parsing position types:', e);
@@ -85,9 +89,18 @@ export const FormFieldSettings = () => {
     }
   });
 
+  // Make sure positions is always an array
+  const positions = Array.isArray(data) ? data : [];
+
   // Update position types mutation
   const updatePositionTypes = useMutation({
     mutationFn: async (newPositions: PositionType[]) => {
+      // Check that newPositions is an array
+      if (!Array.isArray(newPositions)) {
+        console.error("Expected array for positions update, got:", newPositions);
+        throw new Error("Invalid positions data format");
+      }
+      
       const { data, error } = await supabase.rpc('update_setting', {
         p_category: 'form_fields',
         p_key: 'position_types',
@@ -148,9 +161,6 @@ export const FormFieldSettings = () => {
     return <div>Loading...</div>;
   }
 
-  // Ensure we're working with an array for rendering
-  const safePositions = Array.isArray(positions) ? positions : [];
-
   return (
     <div className="space-y-6">
       <div>
@@ -163,7 +173,7 @@ export const FormFieldSettings = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {safePositions.map((position) => (
+            {positions.map((position) => (
               <div key={position.id} className="flex items-center justify-between">
                 <div className="flex-1">
                   <Input
