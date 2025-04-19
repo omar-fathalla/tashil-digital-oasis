@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import { downloadIdCard, printIdCard } from "@/utils/idCardUtils";
+import { Link } from "react-router-dom";
 
 interface DigitalIDEntryProps {
   request: any;
@@ -26,7 +27,8 @@ const DigitalIDEntry = ({ request }: DigitalIDEntryProps) => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => printIdCard(request)}
+          as={Link}
+          to={`/print/${request.id}`}
         >
           <Printer className="h-4 w-4" />
           Print
