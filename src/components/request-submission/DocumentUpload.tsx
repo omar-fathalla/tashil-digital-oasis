@@ -1,16 +1,21 @@
-
 import { Upload, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ImagePreview } from "./ImagePreview";
+import { PhotoUpload } from "./PhotoUpload";
 import { UploadedFiles } from "./types";
 
 interface DocumentUploadProps {
   uploadedFiles: UploadedFiles;
   onFileUpload: (fileType: keyof UploadedFiles, file: File) => void;
+  onPhotoUpload?: (url: string) => void;
 }
 
-export const DocumentUpload = ({ uploadedFiles, onFileUpload }: DocumentUploadProps) => {
+export const DocumentUpload = ({ 
+  uploadedFiles, 
+  onFileUpload,
+  onPhotoUpload 
+}: DocumentUploadProps) => {
   const renderUploadSection = (
     title: string,
     description: string,
@@ -50,6 +55,10 @@ export const DocumentUpload = ({ uploadedFiles, onFileUpload }: DocumentUploadPr
 
   return (
     <div className="space-y-6">
+      {onPhotoUpload && (
+        <PhotoUpload onPhotoUpload={onPhotoUpload} />
+      )}
+      
       {renderUploadSection(
         "ID / Passport Copy",
         "Upload a copy of the employee's ID or passport",

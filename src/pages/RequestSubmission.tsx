@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { ProgressSteps } from "@/components/request-submission/ProgressSteps";
 import { EmployeeForm } from "@/components/request-submission/EmployeeForm";
@@ -62,6 +61,10 @@ const RequestSubmission = () => {
     }
   };
 
+  const handlePhotoUpload = (url: string) => {
+    form.setValue('photoUrl', url);
+  };
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <RequestHeader />
@@ -91,6 +94,7 @@ const RequestSubmission = () => {
                     <DocumentUpload
                       uploadedFiles={uploadedFiles}
                       onFileUpload={handleFileUpload}
+                      onPhotoUpload={handlePhotoUpload}
                     />
                   )}
                   {formStep === 2 && (
