@@ -6,24 +6,33 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const Print = () => {
-  const { id } = useParams();
+interface PrintProps {
+  request?: any;
+}
 
-  const { data: request, isLoading } = useQuery({
-    queryKey: ['print-request', id],
+const Print = ({ request: propRequest }: PrintProps) => {
+  const { id } = useParams();
+  const queryId = id || null;
+
+  const { data: fetchedRequest, isLoading } = useQuery({
+    queryKey: ['print-request', queryId],
     queryFn: async () => {
+      if (!queryId) return null;
+      
       const { data, error } = await supabase
         .from('registration_requests')
         .select('*')
-        .eq('id', id)
+        .eq('id', queryId)
         .single();
       
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!queryId && !propRequest
   });
 
+  const request = propRequest || fetchedRequest;
+  
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -33,16 +42,14 @@ const Print = () => {
   }
 
   return (
-    <Card className="p-6 max-w-4xl mx-auto">
-      <div className="grid gap-8 md:grid-cols-2">
-        <div>
-          <IDCardPreview request={request} />
-        </div>
-        <div>
-          <PrintControls request={request} />
-        </div>
+    <>
+      <div>
+        <IDCardPreview request={request} />
       </div>
-    </Card>
+      <div>
+        <PrintControls request={request} />
+      </div>
+    </>
   );
 };
 
