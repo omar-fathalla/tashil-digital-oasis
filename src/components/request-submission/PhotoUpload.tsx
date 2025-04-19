@@ -49,7 +49,7 @@ export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
 
       if (!results.hasFace) {
         toast({
-          variant: "warning",
+          variant: "default",
           title: "No face detected",
           description: "Please upload a clear photo with a visible face"
         });
@@ -58,7 +58,7 @@ export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
 
       if (!results.quality?.hasWhiteBackground) {
         toast({
-          variant: "warning",
+          variant: "default",
           title: "Background check",
           description: "Please use a photo with a white background"
         });
@@ -66,7 +66,7 @@ export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
 
       if (!results.quality?.isHighQuality) {
         toast({
-          variant: "warning",
+          variant: "default",
           title: "Image quality",
           description: "The image quality seems low. Consider uploading a higher quality photo"
         });

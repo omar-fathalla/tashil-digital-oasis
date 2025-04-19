@@ -32,6 +32,7 @@ export const formSchema = z.object({
   area: z.enum(["alexandria", "cairo"], {
     required_error: "Please select an area.",
   }),
+  photoUrl: z.string().optional(),
 });
 
 export type FormData = z.infer<typeof formSchema>;

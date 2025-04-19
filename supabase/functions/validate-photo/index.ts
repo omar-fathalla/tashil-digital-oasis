@@ -21,11 +21,19 @@ serve(async (req) => {
     const hf = new HfInference(HUGGING_FACE_TOKEN)
     const { image } = await req.json()
 
+    if (!image) {
+      throw new Error('No image provided')
+    }
+
+    console.log('Processing image for face detection...')
+    
     // Face detection
     const result = await hf.objectDetection({
       model: 'facebook/detr-resnet-50',
       inputs: image,
     })
+
+    console.log('Detection results:', JSON.stringify(result))
 
     // Check for faces in the image
     const faces = result.filter((obj: any) => obj.label === 'person')
@@ -44,6 +52,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    console.error('Validation error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
