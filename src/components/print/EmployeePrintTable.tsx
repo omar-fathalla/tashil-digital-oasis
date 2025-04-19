@@ -18,30 +18,39 @@ interface EmployeePrintTableProps {
   selectedEmployees: any[];
   onSelectEmployee: (employee: any, selected: boolean) => void;
   onRefresh: () => void;
+  onPrintSelected: () => void;
 }
 
 const EmployeePrintTable = ({ 
   employees, 
   selectedEmployees, 
   onSelectEmployee,
-  onRefresh 
+  onRefresh,
+  onPrintSelected
 }: EmployeePrintTableProps) => {
+  const handleSelectAll = (checked: boolean) => {
+    employees.forEach(emp => onSelectEmployee(emp, checked));
+  };
+
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Employee Records</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Employee Records</h2>
+        {selectedEmployees.length > 0 && (
+          <Button onClick={onPrintSelected}>
+            <Printer className="w-4 h-4 mr-2" />
+            Print {selectedEmployees.length} Selected
+          </Button>
+        )}
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px]">
               <Checkbox 
                 checked={employees.length > 0 && selectedEmployees.length === employees.length}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    employees.forEach(emp => onSelectEmployee(emp, true));
-                  } else {
-                    employees.forEach(emp => onSelectEmployee(emp, false));
-                  }
-                }}
+                onCheckedChange={(checked) => handleSelectAll(!!checked)}
               />
             </TableHead>
             <TableHead>Full Name</TableHead>
@@ -64,7 +73,7 @@ const EmployeePrintTable = ({
                   onCheckedChange={(checked) => onSelectEmployee(employee, !!checked)}
                 />
               </TableCell>
-              <TableCell>{employee.full_name}</TableCell>
+              <TableCell className="font-medium">{employee.full_name}</TableCell>
               <TableCell>{employee.employee_id}</TableCell>
               <TableCell>{employee.company_name}</TableCell>
               <TableCell>{formatDate(employee.submission_date)}</TableCell>

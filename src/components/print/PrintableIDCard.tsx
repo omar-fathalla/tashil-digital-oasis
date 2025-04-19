@@ -1,5 +1,5 @@
 
-import { User, Building, Calendar } from "lucide-react";
+import { Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { downloadIdCard, printIdCard } from "@/utils/idCardUtils";
@@ -54,49 +54,48 @@ const PrintableIDCard = ({ employee, onPrintComplete }: PrintableIDCardProps) =>
       </div>
 
       <div className="flex justify-center">
-        <Card className="relative bg-white overflow-hidden shadow-xl print:shadow-none p-4"
+        <Card 
+          className="id-card relative bg-white overflow-hidden shadow-xl print:shadow-none p-6"
           style={{
-            width: "5cm",
-            height: "2.5cm",
+            width: "2.5cm",
+            height: "5cm",
             maxWidth: "100%"
           }}
         >
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between border-b pb-1 mb-1">
-              <div className="flex items-center">
-                <img
-                  src="/placeholder.svg"
-                  alt="Company Logo"
-                  className="h-6 w-6 mr-1"
-                />
-                <span className="font-bold text-xs">{employee.company_name}</span>
+          <div className="flex flex-col items-center justify-between h-full text-center">
+            <div className="w-full space-y-4">
+              <div className="w-12 h-12 mx-auto bg-primary rounded-lg grid place-items-center">
+                <span className="text-2xl font-bold text-white">T</span>
               </div>
-              <div className="text-right">
-                <p className="text-[8px] text-muted-foreground">ID: {employee.employee_id}</p>
+              
+              <div className="space-y-1">
+                <h3 className="font-bold text-lg">{employee.full_name}</h3>
+                <p className="font-mono text-sm">{employee.employee_id}</p>
               </div>
-            </div>
-            
-            <div className="flex items-center mb-1">
-              <div className="bg-muted rounded-full p-1 mr-2">
-                <User className="h-3 w-3" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-xs line-clamp-1">{employee.full_name}</h3>
-                <p className="text-[8px] text-muted-foreground">
-                  <Calendar className="h-2 w-2 inline mr-1" />
-                  {formatDate(employee.submission_date)}
+              
+              <div className="space-y-1">
+                <h4 className="text-xl font-bold">Tashil</h4>
+                <p className="text-sm text-muted-foreground">
+                  Registered: {formatDate(employee.submission_date)}
                 </p>
               </div>
             </div>
-            
-            <div className="mt-auto flex items-center justify-between text-[8px] text-muted-foreground">
-              <div>
-                <Building className="h-2 w-2 inline mr-1" />
-                {employee.company_name}
+
+            <div className="space-y-2">
+              <div className="w-24 h-24 mx-auto">
+                <img 
+                  src="/lovable-uploads/40399485-5ff4-4aa6-b30f-c6eb664a8a39.png" 
+                  alt="QR Code"
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <div className="grid place-items-center w-5 h-5 bg-muted rounded">
-                QR
-              </div>
+              
+              {employee.printed && (
+                <div className="flex items-center justify-center text-green-500 text-sm">
+                  <Check className="w-4 h-4 mr-1" />
+                  <span>Printed</span>
+                </div>
+              )}
             </div>
           </div>
         </Card>
