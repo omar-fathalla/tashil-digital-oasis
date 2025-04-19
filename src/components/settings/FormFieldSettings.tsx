@@ -31,12 +31,32 @@ export const FormFieldSettings = () => {
 
       if (error) throw error;
       
-      // Ensure we always return an array
-      const positionsData = data?.value;
-      if (!positionsData) return [];
-      
-      // Make sure we're dealing with an array
-      return Array.isArray(positionsData) ? positionsData : [];
+      // Parse value and ensure it's an array of PositionType
+      try {
+        const positionsData = data?.value;
+        if (!positionsData) return [] as PositionType[];
+        
+        // If it's already an array, validate and return it
+        if (Array.isArray(positionsData)) {
+          return positionsData as PositionType[];
+        }
+        
+        // Try to parse JSON string if needed
+        if (typeof positionsData === 'string') {
+          try {
+            const parsed = JSON.parse(positionsData);
+            return Array.isArray(parsed) ? parsed as PositionType[] : [] as PositionType[];
+          } catch {
+            return [] as PositionType[];
+          }
+        }
+        
+        // Default fallback
+        return [] as PositionType[];
+      } catch (e) {
+        console.error('Error parsing position types:', e);
+        return [] as PositionType[];
+      }
     }
   });
 
@@ -79,11 +99,10 @@ export const FormFieldSettings = () => {
       return;
     }
 
-    // Ensure we're working with an array when adding new positions
-    const positionsArray = Array.isArray(positions) ? positions : [];
-    
+    // Create a new array with the existing positions and the new one
+    const currentPositions = Array.isArray(positions) ? positions : [];
     const newPositions = [
-      ...positionsArray,
+      ...currentPositions,
       {
         id: Date.now().toString(),
         name: newPosition.trim(),
@@ -95,10 +114,8 @@ export const FormFieldSettings = () => {
   };
 
   const handleRemovePosition = (id: string) => {
-    // Ensure we're working with an array when removing positions
-    const positionsArray = Array.isArray(positions) ? positions : [];
-    
-    const newPositions = positionsArray.filter((pos) => pos.id !== id);
+    const currentPositions = Array.isArray(positions) ? positions : [];
+    const newPositions = currentPositions.filter((pos) => pos.id !== id);
     updatePositionTypes.mutate(newPositions);
   };
 
@@ -106,7 +123,7 @@ export const FormFieldSettings = () => {
     return <div>Loading...</div>;
   }
 
-  // Ensure we always have an array for rendering
+  // Ensure we're working with an array for rendering
   const safePositions = Array.isArray(positions) ? positions : [];
 
   return (
@@ -127,10 +144,8 @@ export const FormFieldSettings = () => {
                   <Input
                     value={position.name}
                     onChange={(e) => {
-                      // Ensure we're working with an array when updating positions
-                      const positionsArray = Array.isArray(positions) ? positions : [];
-                      
-                      const newPositions = positionsArray.map((pos) =>
+                      const currentPositions = Array.isArray(positions) ? positions : [];
+                      const newPositions = currentPositions.map((pos) =>
                         pos.id === position.id ? { ...pos, name: e.target.value } : pos
                       );
                       updatePositionTypes.mutate(newPositions);

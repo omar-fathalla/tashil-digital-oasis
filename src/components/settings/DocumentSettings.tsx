@@ -39,12 +39,32 @@ export const DocumentSettings = () => {
 
       if (error) throw error;
       
-      // Ensure we always return an array
-      const typesData = data?.value;
-      if (!typesData) return [];
-      
-      // Make sure we're dealing with an array
-      return Array.isArray(typesData) ? typesData : [];
+      // Parse value and ensure it's an array of DocumentType
+      try {
+        const typesData = data?.value;
+        if (!typesData) return [] as DocumentType[];
+        
+        // If it's already an array, validate and return it
+        if (Array.isArray(typesData)) {
+          return typesData as DocumentType[];
+        }
+        
+        // Try to parse JSON string if needed
+        if (typeof typesData === 'string') {
+          try {
+            const parsed = JSON.parse(typesData);
+            return Array.isArray(parsed) ? parsed as DocumentType[] : [] as DocumentType[];
+          } catch {
+            return [] as DocumentType[];
+          }
+        }
+        
+        // Default fallback
+        return [] as DocumentType[];
+      } catch (e) {
+        console.error('Error parsing document types:', e);
+        return [] as DocumentType[];
+      }
     }
   });
 
@@ -87,11 +107,10 @@ export const DocumentSettings = () => {
       return;
     }
 
-    // Ensure we're working with an array when adding new documents
-    const docTypesArray = Array.isArray(documentTypes) ? documentTypes : [];
-
+    // Create a new array with the existing documents and the new one
+    const currentDocTypes = Array.isArray(documentTypes) ? documentTypes : [];
     const newDocTypes = [
-      ...docTypesArray,
+      ...currentDocTypes,
       {
         id: Date.now().toString(),
         ...newDocument,
@@ -107,18 +126,14 @@ export const DocumentSettings = () => {
   };
 
   const handleRemoveDocument = (id: string) => {
-    // Ensure we're working with an array when removing documents
-    const docTypesArray = Array.isArray(documentTypes) ? documentTypes : [];
-    
-    const newDocTypes = docTypesArray.filter((doc) => doc.id !== id);
+    const currentDocTypes = Array.isArray(documentTypes) ? documentTypes : [];
+    const newDocTypes = currentDocTypes.filter((doc) => doc.id !== id);
     updateDocumentTypes.mutate(newDocTypes);
   };
 
   const handleUpdateDocument = (id: string, field: keyof Omit<DocumentType, "id">, value: string | boolean) => {
-    // Ensure we're working with an array when updating documents
-    const docTypesArray = Array.isArray(documentTypes) ? documentTypes : [];
-    
-    const newDocTypes = docTypesArray.map((doc) =>
+    const currentDocTypes = Array.isArray(documentTypes) ? documentTypes : [];
+    const newDocTypes = currentDocTypes.map((doc) =>
       doc.id === id ? { ...doc, [field]: value } : doc
     );
     updateDocumentTypes.mutate(newDocTypes);
@@ -128,7 +143,7 @@ export const DocumentSettings = () => {
     return <div>Loading...</div>;
   }
 
-  // Ensure we always have an array for rendering
+  // Ensure we're working with an array for rendering
   const safeDocumentTypes = Array.isArray(documentTypes) ? documentTypes : [];
 
   return (
