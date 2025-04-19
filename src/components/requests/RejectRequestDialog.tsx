@@ -1,99 +1,61 @@
 
+import { useState } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { EmployeeRequest, RejectionReason } from "@/hooks/useEmployeeRequests";
-import { REJECTION_REASONS } from "@/hooks/useEmployeeRequests";
 
 interface RejectRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedRequest: EmployeeRequest | null;
-  rejectionReason: string;
-  setRejectionReason: (reason: string) => void;
-  customNote: string;
-  setCustomNote: (note: string) => void;
-  onConfirm: () => void;
+  onSubmit: (notes: string) => void;
 }
 
-export function RejectRequestDialog({
-  open,
-  onOpenChange,
-  selectedRequest,
-  rejectionReason,
-  setRejectionReason,
-  customNote,
-  setCustomNote,
-  onConfirm,
-}: RejectRequestDialogProps) {
+export function RejectRequestDialog({ open, onOpenChange, onSubmit }: RejectRequestDialogProps) {
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = () => {
+    onSubmit(notes);
+    setNotes("");
+    onOpenChange(false);
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Reject Request</AlertDialogTitle>
-          <AlertDialogDescription>
-            Please select or provide a reason for rejecting this request.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-
-        <div className="space-y-4 py-4">
-          <Select
-            value={rejectionReason}
-            onValueChange={setRejectionReason}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select rejection reason" />
-            </SelectTrigger>
-            <SelectContent>
-              {REJECTION_REASONS.map((reason) => (
-                <SelectItem key={reason} value={reason}>
-                  {reason}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {rejectionReason === "Other" && (
-            <Textarea
-              placeholder="Enter custom rejection reason..."
-              value={customNote}
-              onChange={(e) => setCustomNote(e.target.value)}
-              className="mt-2"
-            />
-          )}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reject Request</DialogTitle>
+          <DialogDescription>
+            Please provide a reason for rejecting this request.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <Textarea
+            placeholder="Enter rejection reason..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+          />
         </div>
-
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => {
-            onOpenChange(false);
-            setRejectionReason("");
-            setCustomNote("");
-          }}>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            disabled={!rejectionReason || (rejectionReason === "Other" && !customNote)}
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={handleSubmit}
+            disabled={!notes.trim()}
           >
-            Confirm Rejection
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            Reject
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

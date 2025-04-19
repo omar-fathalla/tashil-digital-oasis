@@ -72,13 +72,34 @@ export const useEmployee = (employeeId?: string) => {
     queryFn: async () => {
       if (!employeeId) return [];
 
+      // For now, we'll check if there's registration data with documents
       const { data, error } = await supabase
-        .from("employee_documents")
-        .select("*")
-        .eq("employee_id", employeeId);
+        .from("registration_requests")
+        .select("documents")
+        .eq("id", employeeId)
+        .single();
 
-      if (error) throw error;
-      return data as EmployeeDocument[];
+      if (error && error.code !== "PGRST116") throw error; // Ignore "No rows found" error
+      
+      // Convert the documents object to an array of EmployeeDocument objects
+      if (data?.documents) {
+        const docs: EmployeeDocument[] = [];
+        Object.entries(data.documents).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            docs.push({
+              id: `${employeeId}-${key}`,
+              employee_id: employeeId,
+              document_type: key,
+              file_url: value,
+              uploaded_at: new Date().toISOString(),
+              verified: false
+            });
+          }
+        });
+        return docs;
+      }
+      
+      return [];
     },
     enabled: !!employeeId,
   });
@@ -93,16 +114,22 @@ export const useEmployee = (employeeId?: string) => {
     queryFn: async () => {
       if (!employeeId) return null;
 
-      const { data, error } = await supabase
-        .from("digital_ids")
-        .select("*")
-        .eq("employee_id", employeeId)
-        .single();
-
-      if (error && error.code !== "PGRST116") throw error; // Ignore "No rows found" error
-      return data;
+      // For now, we'll just return placeholder data
+      // In a real implementation, you'd query your digital_ids table
+      if (employee?.status === 'approved') {
+        return {
+          id: employeeId,
+          employee_id: employeeId,
+          id_number: `ID-${employeeId.substring(0, 8)}`,
+          issue_date: new Date().toISOString(),
+          expiry_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+          status: 'active'
+        };
+      }
+      
+      return null;
     },
-    enabled: !!employeeId,
+    enabled: !!employeeId && !!employee,
   });
 
   // Subscribe to real-time updates for employee data
@@ -126,22 +153,11 @@ export const useEmployee = (employeeId?: string) => {
         {
           event: '*', 
           schema: 'public',
-          table: 'employee_documents',
-          filter: `employee_id=eq.${employeeId}`,
+          table: 'registration_requests',
+          filter: `id=eq.${employeeId}`,
         }, 
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ["employee-documents", employeeId] });
-        }
-      )
-      .on('postgres_changes', 
-        {
-          event: '*', 
-          schema: 'public',
-          table: 'digital_ids',
-          filter: `employee_id=eq.${employeeId}`,
-        }, 
-        (payload) => {
-          queryClient.invalidateQueries({ queryKey: ["digital-id", employeeId] });
         }
       )
       .subscribe();
@@ -197,16 +213,26 @@ export const useEmployee = (employeeId?: string) => {
         .from('employee-documents')
         .getPublicUrl(uploadData.path);
 
-      // Create an entry in the employee_documents table
-      const { error: dbError } = await supabase
-        .from("employee_documents")
-        .insert({
-          employee_id: employeeId,
-          document_type: documentType,
-          file_url: publicUrl,
+      // Update the registration_requests table with the document
+      const { data: existingData, error: fetchError } = await supabase
+        .from("registration_requests")
+        .select("documents")
+        .eq("id", employeeId)
+        .single();
+      
+      if (fetchError && fetchError.code !== "PGRST116") throw fetchError;
+      
+      const documents = existingData?.documents || {};
+      documents[documentType] = publicUrl;
+      
+      const { error: updateError } = await supabase
+        .from("registration_requests")
+        .upsert({
+          id: employeeId,
+          documents
         });
-
-      if (dbError) throw dbError;
+        
+      if (updateError) throw updateError;
 
       return publicUrl;
     },

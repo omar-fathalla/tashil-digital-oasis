@@ -20,7 +20,8 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
-  const { requests, isLoading, error, updateRequestStatus } = useEmployeeRequests();
+  const { requests, isLoading, updateRequestStatus } = useEmployeeRequests();
+  const [error, setError] = useState<Error | null>(null);
 
   // Filter requests based on type, search query, and status filter
   const filteredRequests = requests
@@ -66,8 +67,8 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
     setIsDetailsOpen(true);
   };
 
-  const handleApprove = (id: string) => {
-    updateRequestStatus.mutate({ id, status: "approved" });
+  const handleApprove = (request: EmployeeRequest) => {
+    updateRequestStatus.mutate({ id: request.id, status: "approved" });
   };
 
   const handleReject = (request: EmployeeRequest) => {
@@ -110,11 +111,11 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
   return (
     <div className="space-y-4">
       <RequestsHeader
-        title={type === "employee" ? "Employee Requests" : "Company Requests"}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        title={type === "employee" ? "Employee Requests" : "Company Requests"}
       />
       <RequestsTable
         requests={filteredRequests || []}

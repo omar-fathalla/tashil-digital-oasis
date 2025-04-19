@@ -37,48 +37,22 @@ export const DocumentUpload = ({
       const fetchDocuments = async () => {
         setIsLoading(true);
         try {
-          // Check both employee_documents table and registration_requests documents field
-          const [docsResult, requestResult] = await Promise.all([
-            // Check employee_documents table
-            supabase
-              .from('employee_documents')
-              .select('*')
-              .eq('employee_id', id),
-            
-            // Check registration_requests documents field
-            supabase
-              .from('registration_requests')
-              .select('documents')
-              .eq('id', id)
-              .single()
-          ]);
+          // Check registration_requests documents field
+          const { data: requestData, error: requestError } = await supabase
+            .from('registration_requests')
+            .select('documents')
+            .eq('id', id)
+            .single();
 
-          if (docsResult.error && !docsResult.error.message.includes('not found')) {
-            throw docsResult.error;
+          if (requestError && !requestError.message.includes('not found')) {
+            throw requestError;
           }
 
           const documents: Record<string, { url: string, verified: boolean }> = {};
 
-          // Process documents from employee_documents table
-          if (docsResult.data && docsResult.data.length > 0) {
-            docsResult.data.forEach(doc => {
-              // Convert document_type to a key compatible with uploadedFiles
-              let fileType: string = doc.document_type;
-              if (fileType === "national_id_card") fileType = "idDocument";
-              else if (fileType === "photo") fileType = "employeePhoto";
-              else if (fileType === "work_permit") fileType = "authorizationLetter";
-              else if (fileType === "insurance_card") fileType = "paymentReceipt";
-              
-              documents[fileType] = {
-                url: doc.file_url,
-                verified: doc.verified
-              };
-            });
-          }
-
           // Process documents from registration_requests
-          if (requestResult.data?.documents) {
-            const requestDocs = requestResult.data.documents;
+          if (requestData?.documents) {
+            const requestDocs = requestData.documents;
             
             // Map registration_requests document fields to uploadedFiles keys
             const mappings: Record<string, keyof UploadedFiles> = {
@@ -90,10 +64,10 @@ export const DocumentUpload = ({
 
             // Add each document to our documents object
             Object.entries(mappings).forEach(([reqKey, uploadKey]) => {
-              if (requestDocs[reqKey] && !documents[uploadKey as string]) {
+              if (requestDocs[reqKey]) {
                 documents[uploadKey as string] = {
                   url: requestDocs[reqKey],
-                  verified: false // We don't have verification status in this table
+                  verified: false // We don't have verification status for these
                 };
               }
             });

@@ -1,48 +1,53 @@
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
-import { RequestForm } from "./RequestForm";
-import { useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search } from "lucide-react";
 
 interface RequestsHeaderProps {
-  type?: "employee" | "company";
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
+  title: string;
 }
 
-export function RequestsHeader({ type = "employee" }: RequestsHeaderProps) {
-  const queryClient = useQueryClient();
-  
+export function RequestsHeader({
+  searchQuery,
+  onSearchChange,
+  statusFilter,
+  onStatusFilterChange,
+  title
+}: RequestsHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-6">
-      <div>
-        <h2 className="text-2xl font-bold">
-          {type === "employee" ? "Employee Requests" : "Company Requests"}
-        </h2>
-        <p className="text-muted-foreground mt-1">
-          {type === "employee" 
-            ? "Manage and track employee requests" 
-            : "Manage and track company registration requests"}
-        </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-medium">{title}</h2>
       </div>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New {type === "employee" ? "Employee" : "Company"} Request
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Submit New {type === "employee" ? "Employee" : "Company"} Request</DialogTitle>
-            <DialogDescription>
-              Fill out the form below to submit a new {type.toLowerCase()} request.
-            </DialogDescription>
-          </DialogHeader>
-          <RequestForm onRequestSubmitted={() => {
-            queryClient.invalidateQueries({ queryKey: ["employee-requests"] });
-          }} />
-        </DialogContent>
-      </Dialog>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or employee ID..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+        <Select
+          value={statusFilter}
+          onValueChange={onStatusFilterChange}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }

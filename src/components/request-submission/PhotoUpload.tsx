@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface PhotoUploadProps {
   onPhotoUpload: (url: string) => void;
+  existingPhotoUrl?: string;
 }
 
-export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
+export const PhotoUpload = ({ onPhotoUpload, existingPhotoUrl }: PhotoUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(existingPhotoUrl || null);
   const [isValidating, setIsValidating] = useState(false);
   const [validationResults, setValidationResults] = useState<{
     hasFace?: boolean;
