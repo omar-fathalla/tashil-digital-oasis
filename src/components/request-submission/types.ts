@@ -17,7 +17,7 @@ export const formSchema = z.object({
   insuranceNumber: z.string().min(4, {
     message: "Insurance number must be at least 4 characters.",
   }),
-  position: z.enum(["promoter", "superuser"], {
+  position: z.string({
     required_error: "Please select a position.",
   }),
   requestType: z.string({
@@ -29,7 +29,7 @@ export const formSchema = z.object({
   sex: z.enum(["male", "female"], {
     required_error: "Please select a gender.",
   }),
-  area: z.enum(["alexandria", "cairo"], {
+  area: z.string({
     required_error: "Please select an area.",
   }),
   photoUrl: z.string().optional(),
