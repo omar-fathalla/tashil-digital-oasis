@@ -87,45 +87,6 @@ export type Database = {
         }
         Relationships: []
       }
-      draws: {
-        Row: {
-          draw_time: string | null
-          gift_id: string | null
-          id: string
-          site_id: string | null
-          user_email: string | null
-        }
-        Insert: {
-          draw_time?: string | null
-          gift_id?: string | null
-          id?: string
-          site_id?: string | null
-          user_email?: string | null
-        }
-        Update: {
-          draw_time?: string | null
-          gift_id?: string | null
-          id?: string
-          site_id?: string | null
-          user_email?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "draws_gift_id_fkey"
-            columns: ["gift_id"]
-            isOneToOne: false
-            referencedRelation: "gifts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "draws_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       employee_registrations: {
         Row: {
           area: string | null
@@ -200,38 +161,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
-      }
-      gifts: {
-        Row: {
-          created_at: string | null
-          gift_name: string
-          id: string
-          site_id: string | null
-          stock: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          gift_name: string
-          id?: string
-          site_id?: string | null
-          stock?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          gift_name?: string
-          id?: string
-          site_id?: string | null
-          stock?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "gifts_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       profiles: {
         Row: {
@@ -320,24 +249,6 @@ export type Database = {
           submission_date?: string | null
           submission_history?: Json[] | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      sites: {
-        Row: {
-          created_at: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          name?: string
         }
         Relationships: []
       }
