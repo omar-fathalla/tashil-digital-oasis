@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApplications } from "@/hooks/useApplications";
@@ -6,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import StatusHero from "@/components/application-status/StatusHero";
 import SearchAndFilter from "@/components/application-status/SearchAndFilter";
-import ApplicationsTable from "@/components/application-status/ApplicationsTable";
+import { RequestsManagement } from "@/components/requests/RequestsManagement";
 import NotificationsCard from "@/components/application-status/NotificationsCard";
 
 const ApplicationStatus = () => {
@@ -17,13 +16,11 @@ const ApplicationStatus = () => {
   
   const { data: applications = [], isLoading, error } = useApplications(activeFilter);
   
-  // Redirect if not authenticated
   if (!user) {
     navigate("/auth");
     return null;
   }
 
-  // Filter applications based on search query
   const filteredApplications = applications.filter(app => 
     searchQuery ? (
       app.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -55,13 +52,7 @@ const ApplicationStatus = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <ApplicationsTable 
-                  applications={filteredApplications}
-                  isLoading={isLoading}
-                  error={error}
-                />
-              </div>
+              <RequestsManagement />
             </CardContent>
           </Card>
           

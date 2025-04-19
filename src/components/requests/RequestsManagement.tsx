@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useEmployeeRequests, type EmployeeRequest, REJECTION_REASONS } from "@/hooks/useEmployeeRequests";
 import {
@@ -28,6 +27,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,9 +42,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Check, X } from "lucide-react";
+import { FileText, Check, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RequestForm } from "./RequestForm";
 
 export function RequestsManagement() {
   const { requests, isLoading, updateRequestStatus } = useEmployeeRequests();
@@ -85,6 +93,25 @@ export function RequestsManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Employee Requests</h2>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Request
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Submit New Request</DialogTitle>
+              <DialogDescription>
+                Fill out the form below to submit a new employee request.
+              </DialogDescription>
+            </DialogHeader>
+            <RequestForm onRequestSubmitted={() => {
+              queryClient.invalidateQueries({ queryKey: ["employee-requests"] });
+            }} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Table>
