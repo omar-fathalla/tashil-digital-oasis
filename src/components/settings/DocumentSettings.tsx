@@ -38,7 +38,8 @@ export const DocumentSettings = () => {
         .single();
 
       if (error) throw error;
-      return data?.value as DocumentType[] || [];
+      // Explicitly cast the JSON value to the expected DocumentType[] type
+      return (data?.value as unknown) as DocumentType[] || [];
     }
   });
 

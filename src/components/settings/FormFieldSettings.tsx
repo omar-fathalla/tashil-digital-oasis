@@ -30,7 +30,8 @@ export const FormFieldSettings = () => {
         .single();
 
       if (error) throw error;
-      return data?.value as PositionType[] || [];
+      // Explicitly cast the JSON value to the expected PositionType[] type
+      return (data?.value as unknown) as PositionType[] || [];
     }
   });
 
