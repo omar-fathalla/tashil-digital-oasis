@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileText, Image } from "lucide-react";
+import { useState } from "react";
 
 interface DocumentUploadsFormProps {
   uploadedFiles: {
@@ -12,6 +13,38 @@ interface DocumentUploadsFormProps {
 }
 
 export function DocumentUploadsForm({ uploadedFiles, onFileUpload }: DocumentUploadsFormProps) {
+  const [errors, setErrors] = useState<{
+    commercialRegister?: string;
+    taxCard?: string;
+  }>({});
+
+  const validateFile = (file: File) => {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    
+    if (file.size > maxSize) {
+      return 'File size must be less than 5MB';
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+      return 'File must be PDF, JPG, or PNG';
+    }
+    
+    return null;
+  };
+
+  const handleFileChange = (type: 'commercialRegister' | 'taxCard', file: File) => {
+    const error = validateFile(file);
+    setErrors(prev => ({
+      ...prev,
+      [type]: error
+    }));
+    
+    if (!error) {
+      onFileUpload(type, file);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -31,7 +64,7 @@ export function DocumentUploadsForm({ uploadedFiles, onFileUpload }: DocumentUpl
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) onFileUpload('commercialRegister', file);
+              if (file) handleFileChange('commercialRegister', file);
             }}
           />
           <Button 
@@ -40,7 +73,12 @@ export function DocumentUploadsForm({ uploadedFiles, onFileUpload }: DocumentUpl
           >
             Select File
           </Button>
-          {uploadedFiles.commercialRegister && (
+          {errors.commercialRegister && (
+            <p className="mt-2 text-sm text-destructive">
+              {errors.commercialRegister}
+            </p>
+          )}
+          {uploadedFiles.commercialRegister && !errors.commercialRegister && (
             <p className="mt-2 text-sm text-green-600">
               ✓ File uploaded: {uploadedFiles.commercialRegister.name}
             </p>
@@ -65,7 +103,7 @@ export function DocumentUploadsForm({ uploadedFiles, onFileUpload }: DocumentUpl
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) onFileUpload('taxCard', file);
+              if (file) handleFileChange('taxCard', file);
             }}
           />
           <Button 
@@ -74,7 +112,12 @@ export function DocumentUploadsForm({ uploadedFiles, onFileUpload }: DocumentUpl
           >
             Select File
           </Button>
-          {uploadedFiles.taxCard && (
+          {errors.taxCard && (
+            <p className="mt-2 text-sm text-destructive">
+              {errors.taxCard}
+            </p>
+          )}
+          {uploadedFiles.taxCard && !errors.taxCard && (
             <p className="mt-2 text-sm text-green-600">
               ✓ File uploaded: {uploadedFiles.taxCard.name}
             </p>

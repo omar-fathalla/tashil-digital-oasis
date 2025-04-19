@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -14,6 +14,7 @@ import { DocumentUploadsForm } from "@/components/company-registration/DocumentU
 import { RegistrationSteps } from "@/components/company-registration/RegistrationSteps";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
@@ -57,27 +58,33 @@ const CompanyRegistration = () => {
       let taxCardUrl = null;
 
       if (uploadedFiles.commercialRegister) {
+        const timestamp = Date.now();
+        const filePath = `${authData.user?.id}/${timestamp}-${uploadedFiles.commercialRegister.name}`;
         const { data: commercialRegisterData, error: commercialRegisterError } = await supabase.storage
-          .from('documents')
-          .upload(
-            `commercial-registers/${values.companyName}-${Date.now()}`,
-            uploadedFiles.commercialRegister
-          );
+          .from('company-documents')
+          .upload(filePath, uploadedFiles.commercialRegister);
 
         if (commercialRegisterError) throw commercialRegisterError;
-        commercialRegisterUrl = commercialRegisterData.path;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('company-documents')
+          .getPublicUrl(filePath);
+        commercialRegisterUrl = publicUrl;
       }
 
       if (uploadedFiles.taxCard) {
+        const timestamp = Date.now();
+        const filePath = `${authData.user?.id}/${timestamp}-${uploadedFiles.taxCard.name}`;
         const { data: taxCardData, error: taxCardError } = await supabase.storage
-          .from('documents')
-          .upload(
-            `tax-cards/${values.companyName}-${Date.now()}`,
-            uploadedFiles.taxCard
-          );
+          .from('company-documents')
+          .upload(filePath, uploadedFiles.taxCard);
 
         if (taxCardError) throw taxCardError;
-        taxCardUrl = taxCardData.path;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('company-documents')
+          .getPublicUrl(filePath);
+        taxCardUrl = publicUrl;
       }
 
       // 3. Create company record
@@ -100,7 +107,7 @@ const CompanyRegistration = () => {
       setIsCompleted(true);
       toast({
         title: "Registration Successful",
-        description: "Your company account has been created successfully",
+        description: "Your company account has been created successfully. Please wait for admin approval.",
       });
 
     } catch (error) {
