@@ -126,6 +126,75 @@ export type Database = {
           },
         ]
       }
+      employee_registrations: {
+        Row: {
+          area: string | null
+          company_id: string | null
+          company_name: string | null
+          created_at: string | null
+          employee_id: string
+          first_name: string
+          full_name: string
+          id: string
+          insurance_number: string | null
+          last_name: string
+          mid_name: string | null
+          national_id: string | null
+          photo_url: string | null
+          position: string | null
+          request_type: string | null
+          sex: string | null
+          status: string | null
+          submission_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          company_id?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          employee_id: string
+          first_name: string
+          full_name: string
+          id?: string
+          insurance_number?: string | null
+          last_name: string
+          mid_name?: string | null
+          national_id?: string | null
+          photo_url?: string | null
+          position?: string | null
+          request_type?: string | null
+          sex?: string | null
+          status?: string | null
+          submission_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          company_id?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          employee_id?: string
+          first_name?: string
+          full_name?: string
+          id?: string
+          insurance_number?: string | null
+          last_name?: string
+          mid_name?: string | null
+          national_id?: string | null
+          photo_url?: string | null
+          position?: string | null
+          request_type?: string | null
+          sex?: string | null
+          status?: string | null
+          submission_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       gifts: {
         Row: {
           created_at: string | null

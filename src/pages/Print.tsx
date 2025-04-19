@@ -6,6 +6,8 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 interface PrintProps {
   request?: any;
@@ -13,6 +15,15 @@ interface PrintProps {
 
 const Print = ({ request: propRequest }: PrintProps) => {
   const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // If no user is logged in, redirect to auth
+  if (!user) {
+    navigate("/auth");
+    return null;
+  }
+
   const queryId = id || null;
 
   const { data: fetchedRequest, isLoading } = useQuery({
@@ -21,15 +32,16 @@ const Print = ({ request: propRequest }: PrintProps) => {
       if (!queryId) return null;
       
       const { data, error } = await supabase
-        .from('registration_requests')
+        .from('employee_registrations')
         .select('*')
         .eq('id', queryId)
+        .eq('user_id', user.id) // Ensure user can only access their own requests
         .single();
       
       if (error) throw error;
       return data;
     },
-    enabled: !!queryId && !propRequest
+    enabled: !!queryId && !!user
   });
 
   const request = propRequest || fetchedRequest;
@@ -47,7 +59,7 @@ const Print = ({ request: propRequest }: PrintProps) => {
       <Card className="max-w-3xl mx-auto p-6 my-8">
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-4">ID Card Preview</h2>
-          <p>No employee data found. Please select an employee to print their ID card.</p>
+          <p>No employee data found. Please submit a registration request first.</p>
         </div>
       </Card>
     );
