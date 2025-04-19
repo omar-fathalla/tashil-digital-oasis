@@ -5,16 +5,16 @@ import { AlertsCard } from "@/components/dashboard/AlertsCard";
 import DigitalIDCard from "@/components/dashboard/DigitalIDCard";
 import { RegistrationRequestsTable } from "@/components/registration-requests/RegistrationRequestsTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import Print from "./Print";
 
 const Dashboard = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const printId = new URLSearchParams(location.search).get('print');
   
-  const { data: request, isLoading } = useQuery({
+  const { data: request } = useQuery({
     queryKey: ['print-request', printId],
     queryFn: async () => {
       if (!printId) return null;
@@ -31,18 +31,10 @@ const Dashboard = () => {
     enabled: !!printId
   });
 
-  if (printId && !isLoading && request) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="p-6 max-w-4xl mx-auto">
-          <div className="grid gap-8 md:grid-cols-2">
-            <div>
-              <Print request={request} />
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
+  // If we have a print ID in the URL, redirect to the Print page with that ID
+  if (printId && request) {
+    navigate(`/print/${printId}`);
+    return null;
   }
 
   return (
