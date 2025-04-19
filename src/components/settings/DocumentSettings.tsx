@@ -38,7 +38,13 @@ export const DocumentSettings = () => {
         .single();
 
       if (error) throw error;
-      return data?.value as DocumentType[] || [];
+      
+      // Ensure we always return an array
+      const typesData = data?.value;
+      if (!typesData) return [];
+      
+      // Make sure we're dealing with an array
+      return Array.isArray(typesData) ? typesData : [];
     }
   });
 
@@ -81,8 +87,11 @@ export const DocumentSettings = () => {
       return;
     }
 
+    // Ensure we're working with an array when adding new documents
+    const docTypesArray = Array.isArray(documentTypes) ? documentTypes : [];
+
     const newDocTypes = [
-      ...documentTypes,
+      ...docTypesArray,
       {
         id: Date.now().toString(),
         ...newDocument,
@@ -98,12 +107,18 @@ export const DocumentSettings = () => {
   };
 
   const handleRemoveDocument = (id: string) => {
-    const newDocTypes = documentTypes.filter((doc) => doc.id !== id);
+    // Ensure we're working with an array when removing documents
+    const docTypesArray = Array.isArray(documentTypes) ? documentTypes : [];
+    
+    const newDocTypes = docTypesArray.filter((doc) => doc.id !== id);
     updateDocumentTypes.mutate(newDocTypes);
   };
 
   const handleUpdateDocument = (id: string, field: keyof Omit<DocumentType, "id">, value: string | boolean) => {
-    const newDocTypes = documentTypes.map((doc) =>
+    // Ensure we're working with an array when updating documents
+    const docTypesArray = Array.isArray(documentTypes) ? documentTypes : [];
+    
+    const newDocTypes = docTypesArray.map((doc) =>
       doc.id === id ? { ...doc, [field]: value } : doc
     );
     updateDocumentTypes.mutate(newDocTypes);
@@ -112,6 +127,9 @@ export const DocumentSettings = () => {
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  // Ensure we always have an array for rendering
+  const safeDocumentTypes = Array.isArray(documentTypes) ? documentTypes : [];
 
   return (
     <div className="space-y-6">
@@ -123,7 +141,7 @@ export const DocumentSettings = () => {
       </div>
 
       <div className="space-y-4">
-        {documentTypes.map((doc) => (
+        {safeDocumentTypes.map((doc) => (
           <Card key={doc.id} className="relative">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -30,7 +30,13 @@ export const FormFieldSettings = () => {
         .single();
 
       if (error) throw error;
-      return data?.value as PositionType[] || [];
+      
+      // Ensure we always return an array
+      const positionsData = data?.value;
+      if (!positionsData) return [];
+      
+      // Make sure we're dealing with an array
+      return Array.isArray(positionsData) ? positionsData : [];
     }
   });
 
@@ -73,8 +79,11 @@ export const FormFieldSettings = () => {
       return;
     }
 
+    // Ensure we're working with an array when adding new positions
+    const positionsArray = Array.isArray(positions) ? positions : [];
+    
     const newPositions = [
-      ...positions,
+      ...positionsArray,
       {
         id: Date.now().toString(),
         name: newPosition.trim(),
@@ -86,13 +95,19 @@ export const FormFieldSettings = () => {
   };
 
   const handleRemovePosition = (id: string) => {
-    const newPositions = positions.filter((pos) => pos.id !== id);
+    // Ensure we're working with an array when removing positions
+    const positionsArray = Array.isArray(positions) ? positions : [];
+    
+    const newPositions = positionsArray.filter((pos) => pos.id !== id);
     updatePositionTypes.mutate(newPositions);
   };
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  // Ensure we always have an array for rendering
+  const safePositions = Array.isArray(positions) ? positions : [];
 
   return (
     <div className="space-y-6">
@@ -106,13 +121,16 @@ export const FormFieldSettings = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {positions.map((position) => (
+            {safePositions.map((position) => (
               <div key={position.id} className="flex items-center justify-between">
                 <div className="flex-1">
                   <Input
                     value={position.name}
                     onChange={(e) => {
-                      const newPositions = positions.map((pos) =>
+                      // Ensure we're working with an array when updating positions
+                      const positionsArray = Array.isArray(positions) ? positions : [];
+                      
+                      const newPositions = positionsArray.map((pos) =>
                         pos.id === position.id ? { ...pos, name: e.target.value } : pos
                       );
                       updatePositionTypes.mutate(newPositions);
