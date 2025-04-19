@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PrintableIDCard from "@/components/print/PrintableIDCard";
 import EmployeePrintTable from "@/components/print/EmployeePrintTable";
 import { Input } from "@/components/ui/input";
@@ -13,21 +13,53 @@ import { Button } from "@/components/ui/button";
 import { Search, Printer, X } from "lucide-react";
 import { downloadIdCard } from "@/utils/idCardUtils";
 import { toast } from "sonner";
+import IDCardPreview from "@/components/print/IDCardPreview";
+import PrintControls from "@/components/print/PrintControls";
 
 const Print = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "printed" | "not_printed">("all");
 
-  // If no user is logged in, redirect to auth
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
 
-  const { data: employees, isLoading, refetch } = useQuery({
+  // If we're on a specific ID page
+  const isSinglePrint = !!id;
+
+  // Fetch single employee if ID is provided
+  const {
+    data: singleEmployee,
+    isLoading: isSingleLoading
+  } = useQuery({
+    queryKey: ['single-employee', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('employee_registrations')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id && !!user
+  });
+
+  // Fetch all employees for batch printing
+  const {
+    data: employees,
+    isLoading: isEmployeesLoading,
+    refetch
+  } = useQuery({
     queryKey: ['employee-registrations'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,8 +69,14 @@ const Print = () => {
       
       if (error) throw error;
       return data || [];
-    }
+    },
+    enabled: !isSinglePrint && !!user
   });
+
+  // Loading state handling
+  if ((isSinglePrint && isSingleLoading) || (!isSinglePrint && isEmployeesLoading)) {
+    return <div className="container max-w-7xl mx-auto py-6 px-4">Loading...</div>;
+  }
 
   const handleBulkPrint = async () => {
     if (selectedEmployees.length === 0) {
@@ -70,6 +108,25 @@ const Print = () => {
     }
   };
 
+  // If we're on a specific ID page, show the single print view
+  if (isSinglePrint && singleEmployee) {
+    return (
+      <div className="container max-w-7xl mx-auto py-6 px-4">
+        <h1 className="text-2xl font-bold mb-6">Employee ID Card</h1>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="p-6">
+            <IDCardPreview request={singleEmployee} />
+          </Card>
+          <Card className="p-6">
+            <PrintControls request={singleEmployee} onPrintComplete={refetch} />
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // For batch printing view
   const filteredEmployees = employees?.filter(employee => {
     const matchesSearch = 
       employee.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
