@@ -1,18 +1,18 @@
 
--- Create a new storage bucket for company documents
+-- Create a storage bucket for employee documents
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('documents', 'documents', false);
+VALUES ('employee-documents', 'employee-documents', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow public access to view files
+CREATE POLICY "Public Access"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'employee-documents' );
 
 -- Allow authenticated users to upload files
-CREATE POLICY "Allow users to upload their own documents"
-ON storage.objects
-FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'documents');
-
--- Allow users to read their own documents
-CREATE POLICY "Allow users to read their own documents"
-ON storage.objects
-FOR SELECT
-TO authenticated
-USING (bucket_id = 'documents');
+CREATE POLICY "Authenticated users can upload files"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'employee-documents' 
+  AND auth.role() = 'authenticated'
+);

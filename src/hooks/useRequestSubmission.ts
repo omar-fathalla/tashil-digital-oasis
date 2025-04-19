@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +48,15 @@ export const useRequestSubmission = () => {
   };
 
   const onSubmit = async (values: FormData) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to submit a request.",
+      });
+      return;
+    }
+
     const allFilesUploaded = Object.values(uploadedFiles).every(file => file !== null);
     
     if (!allFilesUploaded) {
@@ -58,33 +68,25 @@ export const useRequestSubmission = () => {
       return;
     }
 
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Required",
-        description: "Please log in to submit a request.",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
     
     try {
-      // Upload documents to Supabase storage
-      const documentUploads = await Promise.all(
-        Object.entries(uploadedFiles).map(async ([key, file]) => {
-          if (!file) return null;
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}_${key}.${fileExt}`;
+      // Upload employee photo to Supabase storage
+      let photoUrl = null;
+      if (uploadedFiles.employeePhoto) {
+        const fileName = `${Date.now()}_${uploadedFiles.employeePhoto.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('employee-documents')
+          .upload(fileName, uploadedFiles.employeePhoto);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('employee-documents')
+          .getPublicUrl(fileName);
           
-          const { error: uploadError } = await supabase.storage
-            .from('employee-documents')
-            .upload(fileName, file);
-          
-          if (uploadError) throw uploadError;
-          return fileName;
-        })
-      );
+        photoUrl = publicUrl;
+      }
 
       // Prepare the registration data
       const registrationData = {
@@ -100,6 +102,7 @@ export const useRequestSubmission = () => {
         request_type: values.requestType,
         company_id: values.companyId,
         user_id: user.id,
+        photo_url: photoUrl,
       };
 
       // Insert the registration data
@@ -114,9 +117,13 @@ export const useRequestSubmission = () => {
       setRequestId(data.id);
       setIsCompleted(true);
       
-      // Navigate to the print page
+      // Navigate to the print page with the registration ID
       navigate(`/print/${data.id}`);
       
+      toast({
+        title: "Registration Successful",
+        description: "Your employee registration has been submitted.",
+      });
     } catch (error) {
       console.error('Submission error:', error);
       toast({
