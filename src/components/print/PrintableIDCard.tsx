@@ -9,9 +9,10 @@ import { formatDate } from "@/utils/print/formatters";
 
 interface PrintableIDCardProps {
   employee: any;
+  onPrintComplete?: () => void;
 }
 
-const PrintableIDCard = ({ employee }: PrintableIDCardProps) => {
+const PrintableIDCard = ({ employee, onPrintComplete }: PrintableIDCardProps) => {
   const handlePrint = async () => {
     try {
       await printIdCard(employee);
@@ -27,6 +28,7 @@ const PrintableIDCard = ({ employee }: PrintableIDCardProps) => {
       if (error) throw error;
       
       toast.success('ID Card printed successfully');
+      onPrintComplete?.();
     } catch (error) {
       console.error('Print error:', error);
       toast.error('Failed to print ID card');

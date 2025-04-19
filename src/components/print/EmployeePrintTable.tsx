@@ -2,6 +2,7 @@
 import { formatDate } from "@/utils/print/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Check, X, Printer } from "lucide-react";
 import {
   Table,
@@ -14,17 +15,35 @@ import {
 
 interface EmployeePrintTableProps {
   employees: any[];
-  onSelect: (employee: any) => void;
-  selectedEmployee: any;
+  selectedEmployees: any[];
+  onSelectEmployee: (employee: any, selected: boolean) => void;
+  onRefresh: () => void;
 }
 
-const EmployeePrintTable = ({ employees, onSelect, selectedEmployee }: EmployeePrintTableProps) => {
+const EmployeePrintTable = ({ 
+  employees, 
+  selectedEmployees, 
+  onSelectEmployee,
+  onRefresh 
+}: EmployeePrintTableProps) => {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Employee Records</h2>
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]">
+              <Checkbox 
+                checked={employees.length > 0 && selectedEmployees.length === employees.length}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    employees.forEach(emp => onSelectEmployee(emp, true));
+                  } else {
+                    employees.forEach(emp => onSelectEmployee(emp, false));
+                  }
+                }}
+              />
+            </TableHead>
             <TableHead>Full Name</TableHead>
             <TableHead>Employee ID</TableHead>
             <TableHead>Company Name</TableHead>
@@ -37,8 +56,14 @@ const EmployeePrintTable = ({ employees, onSelect, selectedEmployee }: EmployeeP
           {employees.map((employee) => (
             <TableRow 
               key={employee.id}
-              className={selectedEmployee?.id === employee.id ? "bg-muted/50" : ""}
+              className={selectedEmployees.some(emp => emp.id === employee.id) ? "bg-muted/50" : ""}
             >
+              <TableCell>
+                <Checkbox 
+                  checked={selectedEmployees.some(emp => emp.id === employee.id)}
+                  onCheckedChange={(checked) => onSelectEmployee(employee, !!checked)}
+                />
+              </TableCell>
               <TableCell>{employee.full_name}</TableCell>
               <TableCell>{employee.employee_id}</TableCell>
               <TableCell>{employee.company_name}</TableCell>
@@ -60,7 +85,7 @@ const EmployeePrintTable = ({ employees, onSelect, selectedEmployee }: EmployeeP
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onSelect(employee)}
+                  onClick={() => onSelectEmployee(employee, true)}
                 >
                   <Printer className="w-4 h-4 mr-1" />
                   Preview & Print
