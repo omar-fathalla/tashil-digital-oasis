@@ -15,7 +15,7 @@ const Dashboard = () => {
       </div>
       
       <Card className="mt-8">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Registration Requests</CardTitle>
         </CardHeader>
         <CardContent>
