@@ -6,17 +6,34 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UseFormReturn } from "react-hook-form";
 import { FormData } from "./types";
 import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EmployeeFormProps {
   form: UseFormReturn<FormData>;
 }
 
 export const EmployeeForm = ({ form }: EmployeeFormProps) => {
-  const mockCompanies = [
-    { id: "1", name: "Company A" },
-    { id: "2", name: "Company B" },
-    { id: "3", name: "Company C" },
-  ];
+  const [companies, setCompanies] = useState<{ id: string, name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, company_name');
+
+      if (error) {
+        console.error('Error fetching companies:', error);
+      } else {
+        setCompanies(data.map(company => ({
+          id: company.id,
+          name: company.company_name
+        })));
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -33,7 +50,7 @@ export const EmployeeForm = ({ form }: EmployeeFormProps) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {mockCompanies.map((company) => (
+                {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
                     {company.name}
                   </SelectItem>
