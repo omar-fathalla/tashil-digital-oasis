@@ -1,4 +1,6 @@
 
+import { formatDate } from './formatters';
+
 export const generateIdCardHTML = (request: any) => {
   const company = request.company_name || 'Company Name';
   const formattedDate = formatDate(request.submission_date);
