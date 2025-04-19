@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,49 +50,35 @@ export const DocumentSettings = () => {
         return [] as DocumentType[];
       }
 
-      try {
-        // If it's already an array, validate and return it
-        if (Array.isArray(data.value)) {
-          const validDocuments = data.value
-            .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item && 'required' in item)
-            .map(item => ({
-              id: String(item.id),
-              name: String(item.name),
-              required: Boolean(item.required),
-              instructions: 'instructions' in item ? String(item.instructions) : ''
-            }));
-          console.log("Documents array after validation:", validDocuments);
-          return validDocuments;
-        }
-        
-        // Try to parse JSON string if needed
-        if (typeof data.value === 'string') {
-          try {
-            const parsed = JSON.parse(data.value);
-            if (Array.isArray(parsed)) {
-              const validDocuments = parsed
-                .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item && 'required' in item)
-                .map(item => ({
-                  id: String(item.id),
-                  name: String(item.name),
-                  required: Boolean(item.required),
-                  instructions: 'instructions' in item ? String(item.instructions) : ''
-                }));
-              console.log("Documents array after parsing string:", validDocuments);
-              return validDocuments;
-            }
-          } catch (e) {
-            console.error('Failed to parse document data string:', e);
-            return [] as DocumentType[];
-          }
-        }
-        
-        console.warn('Document data is not recognized as an array:', data.value);
-        return [] as DocumentType[];
-      } catch (e) {
-        console.error('Error processing document types:', e);
-        return [] as DocumentType[];
+      // If data.value is already an array, verify and use it
+      if (Array.isArray(data.value)) {
+        return data.value.map(item => ({
+          id: typeof item.id === 'string' ? item.id : String(item.id),
+          name: typeof item.name === 'string' ? item.name : String(item.name),
+          required: Boolean(item.required),
+          instructions: typeof item.instructions === 'string' ? item.instructions : ''
+        })) as DocumentType[];
       }
+      
+      // If data.value is a string, try to parse it
+      if (typeof data.value === 'string') {
+        try {
+          const parsed = JSON.parse(data.value);
+          if (Array.isArray(parsed)) {
+            return parsed.map(item => ({
+              id: typeof item.id === 'string' ? item.id : String(item.id),
+              name: typeof item.name === 'string' ? item.name : String(item.name),
+              required: Boolean(item.required),
+              instructions: typeof item.instructions === 'string' ? item.instructions : ''
+            })) as DocumentType[];
+          }
+        } catch (e) {
+          console.error('Failed to parse document data string:', e);
+        }
+      }
+      
+      console.warn('Document data is not recognized as an array:', data.value);
+      return [] as DocumentType[];
     }
   });
 
@@ -188,7 +175,7 @@ export const DocumentSettings = () => {
       </div>
 
       <div className="space-y-4">
-        {documentTypes && documentTypes.length > 0 ? (
+        {documentTypes.length > 0 ? (
           documentTypes.map((doc) => (
             <Card key={doc.id} className="relative">
               <CardContent className="pt-6">

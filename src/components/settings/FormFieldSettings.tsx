@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,45 +42,31 @@ export const FormFieldSettings = () => {
         return [] as PositionType[];
       }
 
-      try {
-        // If it's already an array, validate and return it
-        if (Array.isArray(data.value)) {
-          const validPositions = data.value
-            .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item)
-            .map(item => ({
-              id: String(item.id),
-              name: String(item.name)
-            }));
-          console.log("Positions array after validation:", validPositions);
-          return validPositions;
-        }
-        
-        // Try to parse JSON string if needed
-        if (typeof data.value === 'string') {
-          try {
-            const parsed = JSON.parse(data.value);
-            if (Array.isArray(parsed)) {
-              const validPositions = parsed
-                .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item)
-                .map(item => ({
-                  id: String(item.id),
-                  name: String(item.name)
-                }));
-              console.log("Positions array after parsing string:", validPositions);
-              return validPositions;
-            }
-          } catch (e) {
-            console.error('Failed to parse position data string:', e);
-            return [] as PositionType[];
-          }
-        }
-        
-        console.warn('Position data is not recognized as an array:', data.value);
-        return [] as PositionType[];
-      } catch (e) {
-        console.error('Error processing position types:', e);
-        return [] as PositionType[];
+      // If data.value is already an array, verify and use it
+      if (Array.isArray(data.value)) {
+        return data.value.map(item => ({
+          id: typeof item.id === 'string' ? item.id : String(item.id),
+          name: typeof item.name === 'string' ? item.name : String(item.name)
+        })) as PositionType[];
       }
+      
+      // If data.value is a string, try to parse it
+      if (typeof data.value === 'string') {
+        try {
+          const parsed = JSON.parse(data.value);
+          if (Array.isArray(parsed)) {
+            return parsed.map(item => ({
+              id: typeof item.id === 'string' ? item.id : String(item.id),
+              name: typeof item.name === 'string' ? item.name : String(item.name)
+            })) as PositionType[];
+          }
+        } catch (e) {
+          console.error('Failed to parse position data string:', e);
+        }
+      }
+      
+      console.warn('Position data is not recognized as an array:', data.value);
+      return [] as PositionType[];
     }
   });
 
@@ -167,7 +154,7 @@ export const FormFieldSettings = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {positions && positions.length > 0 ? (
+            {positions.length > 0 ? (
               positions.map((position) => (
                 <div key={position.id} className="flex items-center justify-between">
                   <div className="flex-1">
