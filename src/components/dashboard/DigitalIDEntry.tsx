@@ -24,7 +24,7 @@ const DigitalIDEntry = ({ request }: DigitalIDEntryProps) => {
           <Download className="h-4 w-4" />
           Download
         </Button>
-        <Link to={`/print/${request.id}`}>
+        <Link to={`/?print=${request.id}`}>
           <Button
             variant="outline"
             size="sm"

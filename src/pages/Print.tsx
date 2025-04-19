@@ -33,16 +33,16 @@ const Print = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Card className="p-6 max-w-4xl mx-auto">
       <div className="grid gap-8 md:grid-cols-2">
-        <Card className="p-6">
+        <div>
           <IDCardPreview request={request} />
-        </Card>
-        <Card className="p-6">
+        </div>
+        <div>
           <PrintControls request={request} />
-        </Card>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
