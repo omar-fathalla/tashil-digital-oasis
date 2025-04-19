@@ -15,6 +15,9 @@ interface EmployeeFormProps {
 
 export const EmployeeForm = ({ form }: EmployeeFormProps) => {
   const [companies, setCompanies] = useState<{ id: string, name: string }[]>([]);
+  const [positions, setPositions] = useState<string[]>([]);
+  const [areas, setAreas] = useState<string[]>([]);
+  const [requestTypes, setRequestTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -32,7 +35,31 @@ export const EmployeeForm = ({ form }: EmployeeFormProps) => {
       }
     };
 
+    // Fetch predefined list of positions, areas, and request types from the database or hardcode if static
+    const fetchPositions = async () => {
+      const predefinedPositions = ['promoter', 'superuser'];
+      setPositions(predefinedPositions);
+    };
+
+    const fetchAreas = async () => {
+      const predefinedAreas = ['alexandria', 'cairo'];
+      setAreas(predefinedAreas);
+    };
+
+    const fetchRequestTypes = async () => {
+      const predefinedRequestTypes = [
+        'new-registration', 
+        'id-renewal', 
+        'information-update', 
+        'employment-termination'
+      ];
+      setRequestTypes(predefinedRequestTypes);
+    };
+
     fetchCompanies();
+    fetchPositions();
+    fetchAreas();
+    fetchRequestTypes();
   }, []);
 
   return (
@@ -172,8 +199,11 @@ export const EmployeeForm = ({ form }: EmployeeFormProps) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="promoter">Promoter</SelectItem>
-                <SelectItem value="superuser">Superuser</SelectItem>
+                {positions.map((position) => (
+                  <SelectItem key={position} value={position}>
+                    {position}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -194,8 +224,11 @@ export const EmployeeForm = ({ form }: EmployeeFormProps) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="alexandria">Alexandria</SelectItem>
-                <SelectItem value="cairo">Cairo</SelectItem>
+                {areas.map((area) => (
+                  <SelectItem key={area} value={area}>
+                    {area}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -216,10 +249,11 @@ export const EmployeeForm = ({ form }: EmployeeFormProps) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="new-registration">New Employee Registration</SelectItem>
-                <SelectItem value="id-renewal">ID Renewal</SelectItem>
-                <SelectItem value="information-update">Information Update</SelectItem>
-                <SelectItem value="employment-termination">Employment Termination</SelectItem>
+                {requestTypes.map((requestType) => (
+                  <SelectItem key={requestType} value={requestType}>
+                    {requestType}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
