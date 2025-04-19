@@ -1,114 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tashil Platform</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-<body class="bg-gray-50">
-  <nav class="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
-    <div class="container flex h-16 max-w-screen-2xl items-center mx-auto px-4">
-      <div class="flex items-center gap-2 mr-4">
-        <a href="index.html" class="flex items-center gap-2">
-          <div class="rounded-full bg-blue-600 p-1">
-            <i class="fas fa-th-large text-white"></i>
-          </div>
-          <span class="text-xl font-bold text-blue-600 hidden sm:block">تسهيل</span>
-          <span class="text-xl font-semibold text-gray-800 hidden sm:block">Platform</span>
-        </a>
-      </div>
-      <div class="hidden md:flex items-center space-x-1">
-        <a href="index.html" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
-          <i class="fas fa-th-large mr-1 text-sm"></i>
-          Dashboard
-        </a>
-        <a href="#" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
-          <i class="fas fa-user-plus mr-1 text-sm"></i>
-          Register Employee
-        </a>
-        <a href="#" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
-          <i class="fas fa-file-alt mr-1 text-sm"></i>
-          Register Company
-        </a>
-        <a href="#" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
-          <i class="fas fa-chart-bar mr-1 text-sm"></i>
-          Status
-        </a>
-        <a href="print.html" class="px-3 py-2 text-blue-600 bg-blue-50 rounded-md flex items-center">
-          <i class="fas fa-print mr-1 text-sm"></i>
-          Print
-        </a>
-        <a href="#" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
-          <i class="fas fa-info-circle mr-1 text-sm"></i>
-          About
-        </a>
-        <a href="#" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
-          <i class="fas fa-question-circle mr-1 text-sm"></i>
-          FAQ
-        </a>
-      </div>
-      <div class="flex-1"></div>
-      <div class="flex items-center gap-2">
-        <div class="hidden md:flex items-center gap-2">
-          <span class="text-sm text-gray-600">user@example.com</span>
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hidden md:flex items-center">
-            <i class="fas fa-sign-out-alt mr-1"></i>
-            Sign Out
-          </button>
-        </div>
-        <button class="md:hidden p-2 text-gray-700">
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
-    </div>
-  </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tashil-digital-oasis</title>
+    <meta name="description" content="Lovable Generated Project" />
+    <meta name="author" content="Lovable" />
 
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Tashil Platform Dashboard</h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold">Print Employee ID Cards</h2>
-          <i class="fas fa-print text-gray-500"></i>
-        </div>
-        <p class="text-gray-600 mb-4">Manage and print employee identification cards</p>
-        <a href="print.html" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-          Go to Print System
-        </a>
-      </div>
-      
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold">Register New Employee</h2>
-          <i class="fas fa-user-plus text-gray-500"></i>
-        </div>
-        <p class="text-gray-600 mb-4">Create new employee profiles and ID cards</p>
-        <button class="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-          Register Employee
-        </button>
-      </div>
-      
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold">View Reports</h2>
-          <i class="fas fa-chart-bar text-gray-500"></i>
-        </div>
-        <p class="text-gray-600 mb-4">Access detailed system reports and analytics</p>
-        <button class="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-          View Reports
-        </button>
-      </div>
-    </div>
-  </div>
+    <meta property="og:title" content="tashil-digital-oasis" />
+    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-  <footer class="bg-gray-100 mt-12 py-8 border-t">
-    <div class="container mx-auto px-4">
-      <p class="text-center text-gray-600">© 2023 Tashil Platform. All rights reserved.</p>
-    </div>
-  </footer>
-</body>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
