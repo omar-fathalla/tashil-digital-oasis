@@ -35,9 +35,10 @@ export const FormFieldSettings = () => {
       const positionsData = data?.value;
       if (!positionsData) return [];
       
-      // Explicitly cast the JSON value to the expected PositionType[] type
-      // and ensure it's actually an array
-      return Array.isArray(positionsData) ? positionsData as PositionType[] : [];
+      // Properly handle the type casting with the unknown intermediate step
+      return Array.isArray(positionsData) 
+        ? (positionsData as unknown) as PositionType[] 
+        : [];
     }
   });
 

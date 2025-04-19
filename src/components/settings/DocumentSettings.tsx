@@ -43,9 +43,10 @@ export const DocumentSettings = () => {
       const typesData = data?.value;
       if (!typesData) return [];
       
-      // Explicitly cast the JSON value to the expected DocumentType[] type
-      // and ensure it's actually an array
-      return Array.isArray(typesData) ? typesData as DocumentType[] : [];
+      // Properly handle the type casting with the unknown intermediate step
+      return Array.isArray(typesData) 
+        ? (typesData as unknown) as DocumentType[] 
+        : [];
     }
   });
 
