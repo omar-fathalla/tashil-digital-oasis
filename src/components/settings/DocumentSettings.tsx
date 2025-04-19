@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,47 +43,41 @@ export const DocumentSettings = () => {
       
       console.log("Raw document data from Supabase:", data?.value);
       
-      // Parse value and ensure it's an array of DocumentType
+      // Handle the case when data.value is null or undefined
+      if (!data?.value) {
+        console.log("No document data found, returning empty array");
+        return [] as DocumentType[];
+      }
+
       try {
-        const typesData = data?.value;
-        if (!typesData) return [] as DocumentType[];
-        
         // If it's already an array, validate and return it
-        if (Array.isArray(typesData)) {
-          // Cast to DocumentType[] after validating structure
-          const validDocuments: DocumentType[] = [];
-          for (const item of typesData) {
-            if (typeof item === 'object' && item !== null && 
-                'id' in item && 'name' in item && 'required' in item) {
-              validDocuments.push({
-                id: String(item.id),
-                name: String(item.name),
-                required: Boolean(item.required),
-                instructions: 'instructions' in item ? String(item.instructions) : ''
-              });
-            }
-          }
+        if (Array.isArray(data.value)) {
+          const validDocuments = data.value
+            .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item && 'required' in item)
+            .map(item => ({
+              id: String(item.id),
+              name: String(item.name),
+              required: Boolean(item.required),
+              instructions: 'instructions' in item ? String(item.instructions) : ''
+            }));
+          console.log("Documents array after validation:", validDocuments);
           return validDocuments;
         }
         
         // Try to parse JSON string if needed
-        if (typeof typesData === 'string') {
+        if (typeof data.value === 'string') {
           try {
-            const parsed = JSON.parse(typesData);
+            const parsed = JSON.parse(data.value);
             if (Array.isArray(parsed)) {
-              // Same validation as above
-              const validDocuments: DocumentType[] = [];
-              for (const item of parsed) {
-                if (typeof item === 'object' && item !== null && 
-                    'id' in item && 'name' in item && 'required' in item) {
-                  validDocuments.push({
-                    id: String(item.id),
-                    name: String(item.name),
-                    required: Boolean(item.required),
-                    instructions: 'instructions' in item ? String(item.instructions) : ''
-                  });
-                }
-              }
+              const validDocuments = parsed
+                .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item && 'required' in item)
+                .map(item => ({
+                  id: String(item.id),
+                  name: String(item.name),
+                  required: Boolean(item.required),
+                  instructions: 'instructions' in item ? String(item.instructions) : ''
+                }));
+              console.log("Documents array after parsing string:", validDocuments);
               return validDocuments;
             }
           } catch (e) {
@@ -93,25 +86,24 @@ export const DocumentSettings = () => {
           }
         }
         
-        // Default fallback
-        console.warn('Document data is neither an array nor a parsable string:', typesData);
+        console.warn('Document data is not recognized as an array:', data.value);
         return [] as DocumentType[];
       } catch (e) {
-        console.error('Error parsing document types:', e);
+        console.error('Error processing document types:', e);
         return [] as DocumentType[];
       }
     }
   });
 
-  // Make sure documentTypes is always an array
+  // Ensure documentTypes is always a valid array
   const documentTypes = Array.isArray(rawData) ? rawData : [];
   
-  console.log("Final document types array:", documentTypes);
+  console.log("Final document types array for rendering:", documentTypes);
 
   // Update document types mutation
   const updateDocumentTypes = useMutation({
     mutationFn: async (newDocTypes: DocumentType[]) => {
-      // Check that newDocTypes is an array
+      // Ensure newDocTypes is an array
       if (!Array.isArray(newDocTypes)) {
         console.error("Expected array for document types update, got:", newDocTypes);
         throw new Error("Invalid document types data format");

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,43 +35,37 @@ export const FormFieldSettings = () => {
       
       console.log("Raw position data from Supabase:", data?.value);
       
-      // Parse value and ensure it's an array of PositionType
+      // Handle the case when data.value is null or undefined
+      if (!data?.value) {
+        console.log("No position data found, returning empty array");
+        return [] as PositionType[];
+      }
+
       try {
-        const positionsData = data?.value;
-        if (!positionsData) return [] as PositionType[];
-        
         // If it's already an array, validate and return it
-        if (Array.isArray(positionsData)) {
-          // Cast to PositionType[] after validating structure
-          const validPositions: PositionType[] = [];
-          for (const item of positionsData) {
-            if (typeof item === 'object' && item !== null && 
-                'id' in item && 'name' in item) {
-              validPositions.push({
-                id: String(item.id),
-                name: String(item.name)
-              });
-            }
-          }
+        if (Array.isArray(data.value)) {
+          const validPositions = data.value
+            .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item)
+            .map(item => ({
+              id: String(item.id),
+              name: String(item.name)
+            }));
+          console.log("Positions array after validation:", validPositions);
           return validPositions;
         }
         
         // Try to parse JSON string if needed
-        if (typeof positionsData === 'string') {
+        if (typeof data.value === 'string') {
           try {
-            const parsed = JSON.parse(positionsData);
+            const parsed = JSON.parse(data.value);
             if (Array.isArray(parsed)) {
-              // Same validation as above
-              const validPositions: PositionType[] = [];
-              for (const item of parsed) {
-                if (typeof item === 'object' && item !== null && 
-                    'id' in item && 'name' in item) {
-                  validPositions.push({
-                    id: String(item.id),
-                    name: String(item.name)
-                  });
-                }
-              }
+              const validPositions = parsed
+                .filter(item => item && typeof item === 'object' && 'id' in item && 'name' in item)
+                .map(item => ({
+                  id: String(item.id),
+                  name: String(item.name)
+                }));
+              console.log("Positions array after parsing string:", validPositions);
               return validPositions;
             }
           } catch (e) {
@@ -81,25 +74,24 @@ export const FormFieldSettings = () => {
           }
         }
         
-        // Default fallback
-        console.warn('Position data is neither an array nor a parsable string:', positionsData);
+        console.warn('Position data is not recognized as an array:', data.value);
         return [] as PositionType[];
       } catch (e) {
-        console.error('Error parsing position types:', e);
+        console.error('Error processing position types:', e);
         return [] as PositionType[];
       }
     }
   });
 
-  // Make sure positions is always an array
+  // Ensure positions is always a valid array
   const positions = Array.isArray(rawData) ? rawData : [];
   
-  console.log("Final positions array:", positions);
+  console.log("Final positions array for rendering:", positions);
 
   // Update position types mutation
   const updatePositionTypes = useMutation({
     mutationFn: async (newPositions: PositionType[]) => {
-      // Check that newPositions is an array
+      // Ensure newPositions is an array
       if (!Array.isArray(newPositions)) {
         console.error("Expected array for positions update, got:", newPositions);
         throw new Error("Invalid positions data format");
