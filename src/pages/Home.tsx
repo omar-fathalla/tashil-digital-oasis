@@ -3,7 +3,7 @@ import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
 import DigitalIDCard from "@/components/dashboard/DigitalIDCard";
-import { RegistrationRequestsTable } from "@/components/registration-requests/RegistrationRequestsTable";
+import { RequestsManagement } from "@/components/requests/RequestsManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -31,7 +31,6 @@ const Dashboard = () => {
     enabled: !!printId
   });
 
-  // If we have a print ID in the URL, redirect to the Print page with that ID
   if (printId && request) {
     navigate(`/print/${printId}`);
     return null;
@@ -50,11 +49,11 @@ const Dashboard = () => {
       </div>
       
       <Card className="mt-8">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Registration Requests</CardTitle>
+        <CardHeader>
+          <CardTitle>Request Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <RegistrationRequestsTable />
+          <RequestsManagement />
         </CardContent>
       </Card>
     </div>

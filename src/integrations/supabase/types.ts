@@ -162,6 +162,36 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_requests: {
+        Row: {
+          employee_id: string
+          employee_name: string
+          id: string
+          notes: string | null
+          request_date: string
+          request_type: string
+          status: string
+        }
+        Insert: {
+          employee_id: string
+          employee_name: string
+          id?: string
+          notes?: string | null
+          request_date?: string
+          request_type: string
+          status?: string
+        }
+        Update: {
+          employee_id?: string
+          employee_name?: string
+          id?: string
+          notes?: string | null
+          request_date?: string
+          request_type?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
