@@ -13,6 +13,17 @@ export type EmployeeRequest = {
   notes: string | null;
 };
 
+export const REJECTION_REASONS = [
+  "Incomplete Information",
+  "Invalid Documentation",
+  "Duplicate Request",
+  "Not Eligible",
+  "Request Expired",
+  "Other"
+] as const;
+
+export type RejectionReason = typeof REJECTION_REASONS[number] | string;
+
 export const useEmployeeRequests = () => {
   const queryClient = useQueryClient();
 
