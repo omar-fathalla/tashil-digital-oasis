@@ -1,13 +1,20 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, Printer } from "lucide-react";
+import { Download, Printer, ArrowLeft } from "lucide-react";
 import { downloadIdCard, printIdCard } from "@/utils/idCardUtils";
+import { useNavigate } from "react-router-dom";
 
 interface PrintControlsProps {
   request: any;
 }
 
 const PrintControls = ({ request }: PrintControlsProps) => {
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate('/');
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold mb-4">Print Options</h2>
@@ -29,6 +36,15 @@ const PrintControls = ({ request }: PrintControlsProps) => {
           <Download className="mr-2 h-4 w-4" />
           Download as PDF
         </Button>
+
+        <Button
+          variant="secondary"
+          onClick={handleGoBack}
+          className="w-full"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Button>
       </div>
 
       <div className="mt-8">
@@ -45,3 +61,4 @@ const PrintControls = ({ request }: PrintControlsProps) => {
 };
 
 export default PrintControls;
+
