@@ -38,8 +38,14 @@ export const DocumentSettings = () => {
         .single();
 
       if (error) throw error;
+      
+      // Ensure we have an array even if data is null or not an array
+      const typesData = data?.value;
+      if (!typesData) return [];
+      
       // Explicitly cast the JSON value to the expected DocumentType[] type
-      return (data?.value as unknown) as DocumentType[] || [];
+      // and ensure it's actually an array
+      return Array.isArray(typesData) ? typesData as DocumentType[] : [];
     }
   });
 
@@ -83,7 +89,7 @@ export const DocumentSettings = () => {
     }
 
     const newDocTypes = [
-      ...documentTypes,
+      ...(Array.isArray(documentTypes) ? documentTypes : []),
       {
         id: Date.now().toString(),
         ...newDocument,
@@ -99,11 +105,21 @@ export const DocumentSettings = () => {
   };
 
   const handleRemoveDocument = (id: string) => {
+    if (!Array.isArray(documentTypes)) {
+      console.error("documentTypes is not an array");
+      return;
+    }
+    
     const newDocTypes = documentTypes.filter((doc) => doc.id !== id);
     updateDocumentTypes.mutate(newDocTypes);
   };
 
   const handleUpdateDocument = (id: string, field: keyof Omit<DocumentType, "id">, value: string | boolean) => {
+    if (!Array.isArray(documentTypes)) {
+      console.error("documentTypes is not an array");
+      return;
+    }
+    
     const newDocTypes = documentTypes.map((doc) =>
       doc.id === id ? { ...doc, [field]: value } : doc
     );
@@ -113,6 +129,9 @@ export const DocumentSettings = () => {
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  // Safety check - ensure documentTypes is always an array before rendering
+  const safeDocumentTypes = Array.isArray(documentTypes) ? documentTypes : [];
 
   return (
     <div className="space-y-6">
@@ -124,7 +143,7 @@ export const DocumentSettings = () => {
       </div>
 
       <div className="space-y-4">
-        {documentTypes.map((doc) => (
+        {safeDocumentTypes.map((doc) => (
           <Card key={doc.id} className="relative">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
