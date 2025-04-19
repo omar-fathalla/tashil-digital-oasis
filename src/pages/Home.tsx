@@ -1,9 +1,9 @@
-
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
 import DigitalIDCard from "@/components/dashboard/DigitalIDCard";
 import { RequestsManagement } from "@/components/requests/RequestsManagement";
+import { SettingsCard } from "@/components/dashboard/SettingsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -43,6 +43,7 @@ const Dashboard = () => {
         <StatsCards />
         <QuickActions />
         <AlertsCard />
+        <SettingsCard />
       </div>
       
       <div className="mt-8">

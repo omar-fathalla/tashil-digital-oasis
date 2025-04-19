@@ -26,8 +26,17 @@ export function RequestsTable({ requests, onApprove, onReject, onView }: Request
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead>Employee</TableHead>
-            <TableHead>ID</TableHead>
+            {requests[0]?.type === 'employee' ? (
+              <>
+                <TableHead>Employee</TableHead>
+                <TableHead>ID</TableHead>
+              </>
+            ) : (
+              <>
+                <TableHead>Company</TableHead>
+                <TableHead>Num Company</TableHead>
+              </>
+            )}
             <TableHead>Type</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Status</TableHead>
@@ -44,8 +53,12 @@ export function RequestsTable({ requests, onApprove, onReject, onView }: Request
           ) : (
             requests.map((request) => (
               <TableRow key={request.id} className="hover:bg-muted/50">
-                <TableCell className="font-medium">{request.employee_name}</TableCell>
-                <TableCell className="font-mono text-sm">{request.employee_id}</TableCell>
+                <TableCell className="font-medium">
+                  {request.type === 'employee' ? request.employee_name : request.company_name}
+                </TableCell>
+                <TableCell className="font-mono text-sm">
+                  {request.type === 'employee' ? request.employee_id : request.company_number}
+                </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="bg-primary/10">
                     {request.request_type}
