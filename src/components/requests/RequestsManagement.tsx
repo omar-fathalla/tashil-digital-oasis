@@ -1,15 +1,9 @@
+
 import { useState } from "react";
 import { useEmployeeRequests, type EmployeeRequest, REJECTION_REASONS } from "@/hooks/useEmployeeRequests";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RequestsHeader } from "./RequestsHeader";
+import { RequestsTable } from "./RequestsTable";
 import {
   Sheet,
   SheetContent,
@@ -27,14 +21,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -42,11 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Check, X, Plus } from "lucide-react";
-import { format } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
-import { RequestForm } from "./RequestForm";
-import { useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 export function RequestsManagement() {
   const { requests, isLoading, updateRequestStatus } = useEmployeeRequests();
@@ -55,7 +37,6 @@ export function RequestsManagement() {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState<string>("");
   const [customNote, setCustomNote] = useState("");
-  const queryClient = useQueryClient();
 
   const handleApprove = async (request: EmployeeRequest) => {
     await updateRequestStatus.mutate({
@@ -84,120 +65,28 @@ export function RequestsManagement() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-20 w-full" />
-        ))}
+        <Skeleton className="h-10 w-[200px]" />
+        <Skeleton className="h-[400px] w-full" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Employee Requests</h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Request
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Submit New Request</DialogTitle>
-              <DialogDescription>
-                Fill out the form below to submit a new employee request.
-              </DialogDescription>
-            </DialogHeader>
-            <RequestForm onRequestSubmitted={() => {
-              queryClient.invalidateQueries({ queryKey: ["employee-requests"] });
-            }} />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Employee</TableHead>
-            <TableHead>ID</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {requests.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                No requests found
-              </TableCell>
-            </TableRow>
-          ) : (
-            requests.map((request) => (
-              <TableRow key={request.id}>
-                <TableCell>{request.employee_name}</TableCell>
-                <TableCell className="font-mono">{request.employee_id}</TableCell>
-                <TableCell>{request.request_type}</TableCell>
-                <TableCell>{format(new Date(request.request_date), "PPP")}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={
-                      request.status === "approved"
-                        ? "bg-green-100 text-green-800 border-green-200"
-                        : request.status === "rejected"
-                        ? "bg-red-100 text-red-800 border-red-200"
-                        : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                    }
-                  >
-                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  {request.status === "pending" && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleApprove(request)}
-                        className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
-                      >
-                        <Check className="h-4 w-4 mr-2" />
-                        Approve
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setIsRejectDialogOpen(true);
-                        }}
-                        className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedRequest(request);
-                      setIsViewingDetails(true);
-                    }}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+      <RequestsHeader />
+      
+      <RequestsTable
+        requests={requests}
+        onApprove={handleApprove}
+        onReject={(request) => {
+          setSelectedRequest(request);
+          setIsRejectDialogOpen(true);
+        }}
+        onView={(request) => {
+          setSelectedRequest(request);
+          setIsViewingDetails(true);
+        }}
+      />
 
       <Sheet open={isViewingDetails} onOpenChange={setIsViewingDetails}>
         <SheetContent>
@@ -240,7 +129,7 @@ export function RequestsManagement() {
               {selectedRequest.notes && (
                 <div>
                   <p className="text-sm text-muted-foreground">Notes</p>
-                  <p className="font-medium">{selectedRequest.notes}</p>
+                  <p className="font-medium mt-1 text-sm">{selectedRequest.notes}</p>
                 </div>
               )}
             </div>
