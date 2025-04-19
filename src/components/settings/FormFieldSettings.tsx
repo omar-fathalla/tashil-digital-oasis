@@ -19,7 +19,7 @@ export const FormFieldSettings = () => {
   const [newPosition, setNewPosition] = useState("");
 
   // Fetch position types from system_settings
-  const { data = [], isLoading } = useQuery({
+  const { data: rawData = [], isLoading } = useQuery({
     queryKey: ['system-settings', 'position-types'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,6 +33,8 @@ export const FormFieldSettings = () => {
         console.error('Error fetching position types:', error);
         return [] as PositionType[];
       }
+      
+      console.log("Raw position data from Supabase:", data?.value);
       
       // Parse value and ensure it's an array of PositionType
       try {
@@ -90,7 +92,9 @@ export const FormFieldSettings = () => {
   });
 
   // Make sure positions is always an array
-  const positions = Array.isArray(data) ? data : [];
+  const positions = Array.isArray(rawData) ? rawData : [];
+  
+  console.log("Final positions array:", positions);
 
   // Update position types mutation
   const updatePositionTypes = useMutation({
@@ -138,9 +142,8 @@ export const FormFieldSettings = () => {
     }
 
     // Create a new array with the existing positions and the new one
-    const currentPositions = Array.isArray(positions) ? positions : [];
     const newPositions = [
-      ...currentPositions,
+      ...positions,
       {
         id: Date.now().toString(),
         name: newPosition.trim(),
@@ -152,8 +155,7 @@ export const FormFieldSettings = () => {
   };
 
   const handleRemovePosition = (id: string) => {
-    const currentPositions = Array.isArray(positions) ? positions : [];
-    const newPositions = currentPositions.filter((pos) => pos.id !== id);
+    const newPositions = positions.filter((pos) => pos.id !== id);
     updatePositionTypes.mutate(newPositions);
   };
 
@@ -173,30 +175,33 @@ export const FormFieldSettings = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {positions.map((position) => (
-              <div key={position.id} className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Input
-                    value={position.name}
-                    onChange={(e) => {
-                      const currentPositions = Array.isArray(positions) ? positions : [];
-                      const newPositions = currentPositions.map((pos) =>
-                        pos.id === position.id ? { ...pos, name: e.target.value } : pos
-                      );
-                      updatePositionTypes.mutate(newPositions);
-                    }}
-                  />
+            {positions && positions.length > 0 ? (
+              positions.map((position) => (
+                <div key={position.id} className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Input
+                      value={position.name}
+                      onChange={(e) => {
+                        const newPositions = positions.map((pos) =>
+                          pos.id === position.id ? { ...pos, name: e.target.value } : pos
+                        );
+                        updatePositionTypes.mutate(newPositions);
+                      }}
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemovePosition(position.id)}
+                    className="ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemovePosition(position.id)}
-                  className="ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div className="text-muted-foreground">No position types found. Add one below.</div>
+            )}
           </div>
 
           <div className="mt-6 flex items-center gap-2">

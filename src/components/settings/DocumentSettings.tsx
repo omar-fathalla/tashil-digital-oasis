@@ -27,7 +27,7 @@ export const DocumentSettings = () => {
   });
 
   // Fetch document types from system_settings
-  const { data = [], isLoading } = useQuery({
+  const { data: rawData = [], isLoading } = useQuery({
     queryKey: ['system-settings', 'document-types'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -41,6 +41,8 @@ export const DocumentSettings = () => {
         console.error('Error fetching document types:', error);
         return [] as DocumentType[];
       }
+      
+      console.log("Raw document data from Supabase:", data?.value);
       
       // Parse value and ensure it's an array of DocumentType
       try {
@@ -102,7 +104,9 @@ export const DocumentSettings = () => {
   });
 
   // Make sure documentTypes is always an array
-  const documentTypes = Array.isArray(data) ? data : [];
+  const documentTypes = Array.isArray(rawData) ? rawData : [];
+  
+  console.log("Final document types array:", documentTypes);
 
   // Update document types mutation
   const updateDocumentTypes = useMutation({
@@ -150,9 +154,8 @@ export const DocumentSettings = () => {
     }
 
     // Create a new array with the existing documents and the new one
-    const currentDocTypes = Array.isArray(documentTypes) ? documentTypes : [];
     const newDocTypes = [
-      ...currentDocTypes,
+      ...documentTypes,
       {
         id: Date.now().toString(),
         ...newDocument,
@@ -168,14 +171,12 @@ export const DocumentSettings = () => {
   };
 
   const handleRemoveDocument = (id: string) => {
-    const currentDocTypes = Array.isArray(documentTypes) ? documentTypes : [];
-    const newDocTypes = currentDocTypes.filter((doc) => doc.id !== id);
+    const newDocTypes = documentTypes.filter((doc) => doc.id !== id);
     updateDocumentTypes.mutate(newDocTypes);
   };
 
   const handleUpdateDocument = (id: string, field: keyof Omit<DocumentType, "id">, value: string | boolean) => {
-    const currentDocTypes = Array.isArray(documentTypes) ? documentTypes : [];
-    const newDocTypes = currentDocTypes.map((doc) =>
+    const newDocTypes = documentTypes.map((doc) =>
       doc.id === id ? { ...doc, [field]: value } : doc
     );
     updateDocumentTypes.mutate(newDocTypes);
@@ -195,54 +196,58 @@ export const DocumentSettings = () => {
       </div>
 
       <div className="space-y-4">
-        {documentTypes.map((doc) => (
-          <Card key={doc.id} className="relative">
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Document Name</label>
-                  <Input
-                    value={doc.name}
-                    onChange={(e) => handleUpdateDocument(doc.id, "name", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Required</label>
-                  <div className="flex items-center mt-3">
-                    <Switch
-                      checked={doc.required}
-                      onCheckedChange={(checked) => handleUpdateDocument(doc.id, "required", checked)}
+        {documentTypes && documentTypes.length > 0 ? (
+          documentTypes.map((doc) => (
+            <Card key={doc.id} className="relative">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Document Name</label>
+                    <Input
+                      value={doc.name}
+                      onChange={(e) => handleUpdateDocument(doc.id, "name", e.target.value)}
+                      className="mt-1"
                     />
-                    <span className="ml-2 text-sm">
-                      {doc.required ? "Required" : "Optional"}
-                    </span>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Required</label>
+                    <div className="flex items-center mt-3">
+                      <Switch
+                        checked={doc.required}
+                        onCheckedChange={(checked) => handleUpdateDocument(doc.id, "required", checked)}
+                      />
+                      <span className="ml-2 text-sm">
+                        {doc.required ? "Required" : "Optional"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium">Instructions</label>
+                    <Textarea
+                      value={doc.instructions}
+                      onChange={(e) => handleUpdateDocument(doc.id, "instructions", e.target.value)}
+                      placeholder="Add specific instructions..."
+                      className="mt-1"
+                    />
                   </div>
                 </div>
                 
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium">Instructions</label>
-                  <Textarea
-                    value={doc.instructions}
-                    onChange={(e) => handleUpdateDocument(doc.id, "instructions", e.target.value)}
-                    placeholder="Add specific instructions..."
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleRemoveDocument(doc.id)}
-                className="absolute top-3 right-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveDocument(doc.id)}
+                  className="absolute top-3 right-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-muted-foreground">No document types found. Add one below.</div>
+        )}
       </div>
 
       <Card>
