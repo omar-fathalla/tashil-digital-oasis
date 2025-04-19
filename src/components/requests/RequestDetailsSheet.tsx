@@ -12,6 +12,8 @@ interface RequestDetailsSheetProps {
 export function RequestDetailsSheet({ request, open, onOpenChange }: RequestDetailsSheetProps) {
   if (!request) return null;
 
+  const isCompanyRequest = request.type === "company";
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
@@ -21,14 +23,37 @@ export function RequestDetailsSheet({ request, open, onOpenChange }: RequestDeta
         
         <div className="space-y-6 mt-6">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Employee Name</p>
-              <p className="font-medium">{request.employee_name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Employee ID</p>
-              <p className="font-medium font-mono">{request.employee_id}</p>
-            </div>
+            {isCompanyRequest ? (
+              <>
+                <div>
+                  <p className="text-sm text-muted-foreground">Company Name</p>
+                  <p className="font-medium">{request.company_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Company Number</p>
+                  <p className="font-medium font-mono">{request.company_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tax Card Number</p>
+                  <p className="font-medium">{request.tax_card_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Commercial Register</p>
+                  <p className="font-medium">{request.commercial_register_number}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="text-sm text-muted-foreground">Employee Name</p>
+                  <p className="font-medium">{request.employee_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Employee ID</p>
+                  <p className="font-medium font-mono">{request.employee_id}</p>
+                </div>
+              </>
+            )}
             <div>
               <p className="text-sm text-muted-foreground">Request Type</p>
               <p className="font-medium">{request.request_type}</p>
