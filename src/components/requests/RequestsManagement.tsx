@@ -46,6 +46,7 @@ import { FileText, Check, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequestForm } from "./RequestForm";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function RequestsManagement() {
   const { requests, isLoading, updateRequestStatus } = useEmployeeRequests();
@@ -54,6 +55,7 @@ export function RequestsManagement() {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState<string>("");
   const [customNote, setCustomNote] = useState("");
+  const queryClient = useQueryClient();
 
   const handleApprove = async (request: EmployeeRequest) => {
     await updateRequestStatus.mutate({

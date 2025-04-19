@@ -34,12 +34,24 @@ export const useAuthForm = () => {
           description: "Please check your email for activation",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+
+        // Check if user exists and set admin role for the specified email
+        if (user && user.email === "fathalla80800@gmail.com") {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .upsert(
+              { user_id: user.id, role: 'admin' },
+              { onConflict: 'user_id' }
+            );
+
+          if (roleError) console.error("Error setting admin role:", roleError);
+        }
         
         toast({
           title: "Login Successful",
