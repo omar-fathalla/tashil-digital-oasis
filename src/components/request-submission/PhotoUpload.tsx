@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
     hasFace?: boolean;
     quality?: { hasWhiteBackground?: boolean; isHighQuality?: boolean };
   }>({});
+
   const { toast } = useToast();
 
   const handleFileSelect = async (selectedFile: File) => {
@@ -35,7 +35,6 @@ export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
     reader.onload = (e) => setPreview(e.target?.result as string);
     reader.readAsDataURL(selectedFile);
 
-    // Validate photo
     setIsValidating(true);
     try {
       const response = await fetch('/api/validate-photo', {
@@ -72,7 +71,6 @@ export const PhotoUpload = ({ onPhotoUpload }: PhotoUploadProps) => {
         });
       }
 
-      // Upload to Supabase storage
       const filePath = `personal-photos/${Date.now()}_${selectedFile.name}`;
       const { data, error } = await supabase.storage
         .from('employee-documents')
