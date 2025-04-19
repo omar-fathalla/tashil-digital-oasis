@@ -192,6 +192,50 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          recipient_id: string
+          request_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          recipient_id: string
+          request_id?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          recipient_id?: string
+          request_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "registration_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -308,10 +352,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_notification: {
+        Args: {
+          p_recipient_id: string
+          p_type: Database["public"]["Enums"]["notification_type"]
+          p_title: string
+          p_message: string
+          p_metadata?: Json
+          p_request_id?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      notification_type:
+        | "request_submitted"
+        | "request_approved"
+        | "request_rejected"
+        | "id_generated"
+        | "missing_documents"
+        | "document_rejected"
+        | "admin_alert"
       request_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -429,6 +491,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      notification_type: [
+        "request_submitted",
+        "request_approved",
+        "request_rejected",
+        "id_generated",
+        "missing_documents",
+        "document_rejected",
+        "admin_alert",
+      ],
       request_status: ["pending", "approved", "rejected"],
     },
   },
