@@ -24,15 +24,15 @@ const DigitalIDEntry = ({ request }: DigitalIDEntryProps) => {
           <Download className="h-4 w-4" />
           Download
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          as={Link}
-          to={`/print/${request.id}`}
-        >
-          <Printer className="h-4 w-4" />
-          Print
-        </Button>
+        <Link to={`/print/${request.id}`}>
+          <Button
+            variant="outline"
+            size="sm"
+          >
+            <Printer className="h-4 w-4" />
+            Print
+          </Button>
+        </Link>
       </div>
     </div>
   );
