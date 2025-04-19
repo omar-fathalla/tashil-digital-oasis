@@ -1,12 +1,14 @@
 
-import { AlertCircle, Bell } from "lucide-react";
+import { AlertCircle, Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNotifications } from "@/hooks/useNotifications";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const AlertsCard = () => {
-  const { notifications, isLoading, markAsRead, unreadCount } = useNotifications();
+  const { notifications, isLoading, error, markAsRead, deleteNotification, unreadCount } = useNotifications();
 
   if (isLoading) {
     return (
@@ -14,8 +16,34 @@ export const AlertsCard = () => {
         <CardHeader>
           <CardTitle>Alerts</CardTitle>
         </CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-start gap-3 border-b pb-3">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-1/4" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Alerts</CardTitle>
+        </CardHeader>
         <CardContent>
-          <p>Loading alerts...</p>
+          <Alert variant="destructive">
+            <AlertDescription>
+              Failed to load notifications. Please try again later.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -48,9 +76,9 @@ export const AlertsCard = () => {
         <AlertCircle className="h-4 w-4 text-red-500" />
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[300px] overflow-y-auto">
           {notifications && notifications.length > 0 ? (
-            notifications.slice(0, 3).map((notification) => (
+            notifications.slice(0, 5).map((notification) => (
               <div
                 key={notification.id}
                 className={`flex items-start gap-3 border-b pb-3 last:border-0 ${
@@ -69,15 +97,26 @@ export const AlertsCard = () => {
                     {format(new Date(notification.created_at), "PPp")}
                   </p>
                 </div>
-                {!notification.read && (
+                <div className="flex flex-col gap-2">
+                  {!notification.read && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => markAsRead.mutate(notification.id)}
+                    >
+                      Mark as read
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
-                    size="sm"
-                    onClick={() => markAsRead.mutate(notification.id)}
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => deleteNotification.mutate(notification.id)}
                   >
-                    Mark as read
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                )}
+                </div>
               </div>
             ))
           ) : (

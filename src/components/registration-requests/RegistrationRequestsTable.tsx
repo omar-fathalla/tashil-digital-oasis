@@ -13,9 +13,19 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { RequestDetailsDialog } from "./RequestDetailsDialog";
-import { FileText, CheckCircle, XCircle, Clock } from "lucide-react";
+import { FileText, CheckCircle, XCircle, Clock, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useQueryClient } from "@tanstack/react-query";
 
 type RegistrationRequest = {
   id: string;
@@ -35,13 +45,42 @@ type RegistrationRequest = {
 
 export function RegistrationRequestsTable() {
   const [requests, setRequests] = useState<RegistrationRequest[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<RegistrationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedRequest, setSelectedRequest] = useState<RegistrationRequest | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
+  // Fetch requests on component mount
   useEffect(() => {
     fetchRequests();
+
+    // Set up realtime subscription
+    const channel = supabase
+      .channel('registration-changes')
+      .on('postgres_changes', 
+        {
+          event: '*', 
+          schema: 'public',
+          table: 'registration_requests',
+        }, 
+        (payload) => {
+          fetchRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  // Filter requests when search term or status filter changes
+  useEffect(() => {
+    filterRequests();
+  }, [requests, searchTerm, statusFilter]);
 
   async function fetchRequests() {
     try {
@@ -62,6 +101,27 @@ export function RegistrationRequestsTable() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function filterRequests() {
+    let filtered = [...requests];
+    
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(request => request.status === statusFilter);
+    }
+    
+    // Apply search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(request => 
+        request.full_name.toLowerCase().includes(term) ||
+        request.national_id.toLowerCase().includes(term) ||
+        request.id.toLowerCase().includes(term)
+      );
+    }
+    
+    setFilteredRequests(filtered);
   }
 
   const getStatusIcon = (status: string) => {
@@ -101,7 +161,7 @@ export function RegistrationRequestsTable() {
   };
 
   const getDocumentStatus = (request: RegistrationRequest) => {
-    if (!request.documents) return 0;
+    if (!request.documents) return "0/0";
     
     const totalDocs = Object.keys(request.documents).length;
     const uploadedDocs = Object.values(request.documents).filter(Boolean).length;
@@ -113,72 +173,115 @@ export function RegistrationRequestsTable() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-[200px]" />
-          <Skeleton className="h-10 w-[100px]" />
+          <Skeleton className="h-10 w-[250px]" />
+          <Skeleton className="h-10 w-[120px]" />
         </div>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="border rounded-md p-4">
-            <div className="flex justify-between items-center">
-              <Skeleton className="h-5 w-[150px]" />
-              <Skeleton className="h-6 w-[100px]" />
-            </div>
-            <div className="mt-2 space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          </div>
-        ))}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-28" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                <TableHead className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-10" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-24" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="h-9 w-28 ml-auto" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Full Name</TableHead>
-            <TableHead>National ID</TableHead>
-            <TableHead>Submission Date</TableHead>
-            <TableHead>Documents</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {requests.length === 0 ? (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search by name, ID or request number..."
+            className="pl-9"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
-                No registration requests found
-              </TableCell>
+              <TableHead>Full Name</TableHead>
+              <TableHead>National ID</TableHead>
+              <TableHead>Submission Date</TableHead>
+              <TableHead>Documents</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ) : (
-            requests.map((request) => (
-              <TableRow key={request.id}>
-                <TableCell className="font-medium">{request.full_name}</TableCell>
-                <TableCell>{request.national_id}</TableCell>
-                <TableCell>
-                  {format(new Date(request.submission_date), "PPP")}
-                </TableCell>
-                <TableCell>{getDocumentStatus(request)}</TableCell>
-                <TableCell>
-                  {getStatusBadge(request.status)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                    onClick={() => setSelectedRequest(request)}
-                  >
-                    <FileText className="h-4 w-4" /> View Details
-                  </Button>
+          </TableHeader>
+          <TableBody>
+            {filteredRequests.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  {requests.length === 0 
+                    ? "No registration requests found" 
+                    : "No requests match your search criteria"}
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              filteredRequests.map((request) => (
+                <TableRow key={request.id}>
+                  <TableCell className="font-medium">{request.full_name}</TableCell>
+                  <TableCell>{request.national_id}</TableCell>
+                  <TableCell>
+                    {format(new Date(request.submission_date), "PPP")}
+                  </TableCell>
+                  <TableCell className="text-center">{getDocumentStatus(request)}</TableCell>
+                  <TableCell>
+                    {getStatusBadge(request.status)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={() => setSelectedRequest(request)}
+                    >
+                      <FileText className="h-4 w-4" /> View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <RequestDetailsDialog
         request={selectedRequest}

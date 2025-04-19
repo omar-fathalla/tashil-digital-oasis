@@ -1,4 +1,6 @@
-import { Eye, Download, Upload } from "lucide-react";
+
+import { useEffect } from "react";
+import { Eye, Download, Upload, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -11,14 +13,49 @@ import {
 import { type Application } from "@/hooks/useApplications";
 import { StatusBadge } from "./StatusBadge";
 import { StatusIcon } from "./StatusIcon";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type ApplicationsTableProps = {
   applications: Application[];
   isLoading: boolean;
   error: Error | null;
+  onViewDetails: (application: Application) => void;
+  onDownloadId?: (application: Application) => void;
+  onReuploadDocuments?: (application: Application) => void;
 };
 
-const ApplicationsTable = ({ applications, isLoading, error }: ApplicationsTableProps) => {
+const ApplicationsTable = ({ 
+  applications, 
+  isLoading, 
+  error, 
+  onViewDetails,
+  onDownloadId,
+  onReuploadDocuments
+}: ApplicationsTableProps) => {
+  const queryClient = useQueryClient();
+
+  // Set up realtime subscription for application updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('applications-changes')
+      .on('postgres_changes', 
+        {
+          event: '*', 
+          schema: 'public',
+          table: 'applications',
+        }, 
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["applications"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   if (isLoading) {
     return (
       <Table>
@@ -113,28 +150,44 @@ const ApplicationsTable = ({ applications, isLoading, error }: ApplicationsTable
       </TableHeader>
       <TableBody>
         {applications.map((application) => (
-          <TableRow key={application.id}>
+          <TableRow key={application.id} className="group hover:bg-muted/50">
             <TableCell>
               <StatusIcon status={application.status} />
             </TableCell>
-            <TableCell className="font-medium">{application.id}</TableCell>
+            <TableCell className="font-medium">{application.id.substring(0, 8)}</TableCell>
             <TableCell>{application.employee_name}</TableCell>
             <TableCell>{application.employee_id}</TableCell>
             <TableCell>{application.type}</TableCell>
-            <TableCell>{new Date(application.request_date).toLocaleDateString('ar-SA')}</TableCell>
-            <TableCell>{application.notes}</TableCell>
+            <TableCell>
+              {new Date(application.request_date || '').toLocaleDateString('ar-SA')}
+            </TableCell>
+            <TableCell className="max-w-[200px] truncate" title={application.notes || ''}>
+              {application.notes || '-'}
+            </TableCell>
             <TableCell className="text-right">
-              <div className="flex items-center justify-end gap-2">
-                <Button variant="ghost" size="icon">
+              <div className="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => onViewDetails(application)}
+                >
                   <Eye className="h-4 w-4" />
                 </Button>
-                {application.status === "approved" && (
-                  <Button variant="ghost" size="icon">
+                {application.status === "approved" && onDownloadId && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => onDownloadId(application)}
+                  >
                     <Download className="h-4 w-4" />
                   </Button>
                 )}
-                {application.status === "rejected" && (
-                  <Button variant="ghost" size="icon">
+                {application.status === "rejected" && onReuploadDocuments && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => onReuploadDocuments(application)}
+                  >
                     <Upload className="h-4 w-4" />
                   </Button>
                 )}

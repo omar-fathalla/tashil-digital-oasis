@@ -8,59 +8,198 @@ import { FormData } from "./types";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EmployeeFormProps {
   form: UseFormReturn<FormData>;
+  editMode?: boolean;
 }
 
-export const EmployeeForm = ({ form }: EmployeeFormProps) => {
+export const EmployeeForm = ({ form, editMode = false }: EmployeeFormProps) => {
   const [companies, setCompanies] = useState<{ id: string, name: string }[]>([]);
   const [positions, setPositions] = useState<string[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
   const [requestTypes, setRequestTypes] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchCompanies = async () => {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('id, company_name');
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('id, company_name');
 
-      if (error) {
+        if (error) {
+          throw error;
+        } else {
+          setCompanies(data.map(company => ({
+            id: company.id,
+            name: company.company_name
+          })));
+        }
+      } catch (error: any) {
         console.error('Error fetching companies:', error);
-      } else {
-        setCompanies(data.map(company => ({
-          id: company.id,
-          name: company.company_name
-        })));
+        setError("Failed to load company data");
+        toast.error("Failed to load company data");
       }
     };
 
-    // Fetch predefined list of positions, areas, and request types from the database or hardcode if static
+    // Fetch predefined list of positions from the database
     const fetchPositions = async () => {
-      const predefinedPositions = ['promoter', 'superuser'];
-      setPositions(predefinedPositions);
+      try {
+        // Get distinct positions from employee_registrations
+        const { data, error } = await supabase
+          .from('employee_registrations')
+          .select('position')
+          .not('position', 'is', null);
+          
+        if (error) throw error;
+        
+        // Extract unique values
+        const uniquePositions = [...new Set(data.map(item => item.position))].filter(Boolean);
+        
+        // If no positions found, use fallback defaults
+        if (uniquePositions.length === 0) {
+          setPositions(['مهندس برمجيات', 'محاسب', 'مدير مبيعات', 'مسؤول موارد بشرية', 'فني صيانة', 'مندوب مبيعات', 'مدير مشروع', 'سكرتير تنفيذي', 'مدير عام', 'موظف إداري']);
+        } else {
+          setPositions(uniquePositions as string[]);
+        }
+      } catch (error) {
+        console.error('Error fetching positions:', error);
+        // Fallback to defaults
+        setPositions(['promoter', 'superuser']);
+      }
     };
 
+    // Fetch areas from the database
     const fetchAreas = async () => {
-      const predefinedAreas = ['alexandria', 'cairo'];
-      setAreas(predefinedAreas);
+      try {
+        // Get distinct areas from employee_registrations
+        const { data, error } = await supabase
+          .from('employee_registrations')
+          .select('area')
+          .not('area', 'is', null);
+          
+        if (error) throw error;
+        
+        // Extract unique values
+        const uniqueAreas = [...new Set(data.map(item => item.area))].filter(Boolean);
+        
+        // If no areas found, use fallback defaults
+        if (uniqueAreas.length === 0) {
+          setAreas(['القاهرة', 'الإسكندرية', 'الجيزة', 'أسوان', 'المنصورة', 'شرم الشيخ', 'الساحل الشمالي']);
+        } else {
+          setAreas(uniqueAreas as string[]);
+        }
+      } catch (error) {
+        console.error('Error fetching areas:', error);
+        // Fallback to defaults
+        setAreas(['alexandria', 'cairo']);
+      }
     };
 
+    // Fetch request types from the database
     const fetchRequestTypes = async () => {
-      const predefinedRequestTypes = [
-        'new-registration', 
-        'id-renewal', 
-        'information-update', 
-        'employment-termination'
-      ];
-      setRequestTypes(predefinedRequestTypes);
+      try {
+        // Get distinct request types from employee_registrations
+        const { data, error } = await supabase
+          .from('employee_registrations')
+          .select('request_type')
+          .not('request_type', 'is', null);
+          
+        if (error) throw error;
+        
+        // Extract unique values
+        const uniqueRequestTypes = [...new Set(data.map(item => item.request_type))].filter(Boolean);
+        
+        // If no request types found, use fallback defaults
+        if (uniqueRequestTypes.length === 0) {
+          setRequestTypes(['New Registration', 'Renewal', 'Information Update', 'Employment Termination']);
+        } else {
+          setRequestTypes(uniqueRequestTypes as string[]);
+        }
+      } catch (error) {
+        console.error('Error fetching request types:', error);
+        // Fallback to defaults
+        setRequestTypes([
+          'new-registration', 
+          'id-renewal', 
+          'information-update', 
+          'employment-termination'
+        ]);
+      }
+    };
+
+    // If in edit mode and we have an ID, fetch employee data to populate the form
+    const fetchEmployeeData = async () => {
+      if (!editMode || !id) return;
+      
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('employee_registrations')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        // Populate form with employee data
+        if (data) {
+          form.reset({
+            firstName: data.first_name,
+            midName: data.mid_name || '',
+            lastName: data.last_name,
+            employeeId: data.employee_id,
+            insuranceNumber: data.insurance_number || '',
+            position: data.position,
+            requestType: data.request_type || '',
+            companyId: data.company_id || '',
+            sex: data.sex as "male" | "female" | undefined,
+            area: data.area,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+        setError("Failed to load employee data");
+        toast.error("Failed to load employee data");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchCompanies();
     fetchPositions();
     fetchAreas();
     fetchRequestTypes();
-  }, []);
+    fetchEmployeeData();
+  }, [editMode, id, form]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {Array(6).fill(0).map((_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
