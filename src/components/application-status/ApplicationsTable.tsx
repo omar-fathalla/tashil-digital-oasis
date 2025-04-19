@@ -1,4 +1,3 @@
-
 import { Eye, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,31 +21,79 @@ type ApplicationsTableProps = {
 const ApplicationsTable = ({ applications, isLoading, error }: ApplicationsTableProps) => {
   if (isLoading) {
     return (
-      <TableRow>
-        <TableCell colSpan={8} className="text-center py-8">
-          جاري تحميل الطلبات...
-        </TableCell>
-      </TableRow>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[60px]">Status</TableHead>
+            <TableHead>Request ID</TableHead>
+            <TableHead>Employee Name</TableHead>
+            <TableHead>Employee ID</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Request Date</TableHead>
+            <TableHead>Notes</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={8} className="text-center py-8">
+              جاري تحميل الطلبات...
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     );
   }
 
   if (error) {
     return (
-      <TableRow>
-        <TableCell colSpan={8} className="text-center py-8 text-red-500">
-          حدث خطأ أثناء تحميل الطلبات. الرجاء المحاولة مرة أخرى.
-        </TableCell>
-      </TableRow>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[60px]">Status</TableHead>
+            <TableHead>Request ID</TableHead>
+            <TableHead>Employee Name</TableHead>
+            <TableHead>Employee ID</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Request Date</TableHead>
+            <TableHead>Notes</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={8} className="text-center py-8 text-red-500">
+              حدث خطأ أثناء تحميل الطلبات. الرجاء المحاولة مرة أخرى.
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     );
   }
 
   if (applications.length === 0) {
     return (
-      <TableRow>
-        <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-          لا توجد طلبات تطابق بحثك.
-        </TableCell>
-      </TableRow>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[60px]">Status</TableHead>
+            <TableHead>Request ID</TableHead>
+            <TableHead>Employee Name</TableHead>
+            <TableHead>Employee ID</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Request Date</TableHead>
+            <TableHead>Notes</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+              لا توجد طلبات تطابق بحثك.
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     );
   }
 

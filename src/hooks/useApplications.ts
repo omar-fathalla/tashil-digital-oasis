@@ -1,5 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Application = {
   id: string;
@@ -15,31 +16,30 @@ export const useApplications = (filter: string = "all") => {
   return useQuery({
     queryKey: ["applications", filter],
     queryFn: async () => {
-      // Generate mock applications
-      const applications: Application[] = [];
-      const statuses: ("approved" | "rejected" | "under-review")[] = ["approved", "rejected", "under-review"];
-      
-      for (let i = 0; i < 20; i++) {
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        
-        if (filter !== "all" && status !== filter) {
-          continue;
-        }
-        
-        applications.push({
-          id: `app-${i + 1}`,
-          employee_name: `Employee ${i + 1}`,
-          employee_id: `EMP-${1000 + i}`,
-          type: Math.random() > 0.5 ? "New Hire" : "Contractor",
-          request_date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-          status: status,
-          notes: status === "approved" 
-            ? "All documents verified." 
-            : (status === "rejected" ? "Missing required information." : "Under review.")
-        });
+      let query = supabase
+        .from("employee_registrations")
+        .select("*")
+        .order("submission_date", { ascending: false });
+
+      // Apply status filter if not "all"
+      if (filter !== "all") {
+        query = query.eq("status", filter);
       }
+
+      const { data, error } = await query;
       
-      return applications;
+      if (error) throw error;
+
+      // Map the data to match our Application type
+      return (data || []).map(record => ({
+        id: record.id,
+        employee_name: record.full_name,
+        employee_id: record.employee_id,
+        type: record.request_type || "New Registration",
+        request_date: record.submission_date || new Date().toISOString(),
+        status: (record.status as "approved" | "rejected" | "under-review") || "under-review",
+        notes: null
+      }));
     },
   });
 };
