@@ -38,33 +38,37 @@ export const useDocumentSettings = () => {
 
     const updatedDoc = { ...updated, [field]: value };
 
-    supabase.from("document_types").update(updatedDoc).eq("id", id)
-      .then(() => {
+    // Using async/await with try/catch instead of then/catch
+    (async () => {
+      try {
+        await supabase.from("document_types").update(updatedDoc).eq("id", id);
         queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      })
-      .catch((error) => {
+      } catch (error) {
         toast({
           title: "Error",
           description: "Failed to update document",
           variant: "destructive",
         });
         console.error(error);
-      });
+      }
+    })();
   };
 
   const handleDeleteDocument = (id: string) => {
-    supabase.from("document_types").delete().eq("id", id)
-      .then(() => {
+    // Using async/await with try/catch instead of then/catch
+    (async () => {
+      try {
+        await supabase.from("document_types").delete().eq("id", id);
         queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      })
-      .catch((error) => {
+      } catch (error) {
         toast({
           title: "Error",
           description: "Failed to delete document",
           variant: "destructive",
         });
         console.error(error);
-      });
+      }
+    })();
   };
 
   return {
