@@ -235,6 +235,17 @@ export type Database = {
           submission_date: string | null
         }
       }
+      get_table_indexes: {
+        Args: { target_table?: string }
+        Returns: {
+          name: string
+          table_name: string
+          index_type: string
+          is_unique: boolean
+          is_primary: boolean
+          columns: string[]
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

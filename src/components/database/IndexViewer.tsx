@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -13,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { columns4, settings2 } from "lucide-react";
+import { Columns4, Settings2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -115,7 +114,7 @@ export function IndexViewer() {
       <CardHeader className="bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <columns4 className="h-5 w-5" />
+            <Columns4 className="h-5 w-5" />
             <CardTitle>Database Indexes</CardTitle>
           </div>
           

@@ -1,10 +1,10 @@
 
+import { Columns4, Database, Table } from "lucide-react";
 import { SchemaVisualizer } from "@/components/database/SchemaVisualizer";
 import { TableViewer } from "@/components/database/TableViewer";
 import { IndexViewer } from "@/components/database/IndexViewer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { database, table, columns4 } from "lucide-react";
 
 const DatabaseDashboard = () => {
   return (
@@ -14,15 +14,15 @@ const DatabaseDashboard = () => {
       <Tabs defaultValue="tables" className="w-full">
         <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="tables" className="flex items-center gap-2">
-            <table className="h-4 w-4" />
+            <Table className="h-4 w-4" />
             <span>Tables</span>
           </TabsTrigger>
           <TabsTrigger value="schema" className="flex items-center gap-2">
-            <database className="h-4 w-4" />
+            <Database className="h-4 w-4" />
             <span>Schema</span>
           </TabsTrigger>
           <TabsTrigger value="indexes" className="flex items-center gap-2">
-            <columns4 className="h-4 w-4" />
+            <Columns4 className="h-4 w-4" />
             <span>Indexes</span>
           </TabsTrigger>
         </TabsList>

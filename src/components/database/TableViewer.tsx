@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -26,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { table, search } from "lucide-react";
+import { Table as TableIcon, Search } from "lucide-react";
 
 type TableData = {
   [key: string]: any;
@@ -47,7 +46,6 @@ export function TableViewer() {
   const [searchTerm, setSearchTerm] = useState("");
   const [tableCount, setTableCount] = useState(0);
 
-  // Fetch list of tables
   useEffect(() => {
     async function fetchTables() {
       try {
@@ -69,7 +67,6 @@ export function TableViewer() {
     fetchTables();
   }, []);
 
-  // Fetch table data when selected table changes
   useEffect(() => {
     if (!selectedTable) return;
 
@@ -77,7 +74,6 @@ export function TableViewer() {
       try {
         setIsLoading(true);
         
-        // Get columns
         const { data: columnsData, error: columnsError } = await supabase.rpc(
           "get_table_columns", 
           { table_name: selectedTable, schema_name: "public" }
@@ -86,7 +82,6 @@ export function TableViewer() {
         if (columnsError) throw columnsError;
         setColumns(columnsData || []);
         
-        // Get row count
         const { count, error: countError } = await supabase
           .from(selectedTable)
           .select('*', { count: 'exact', head: true });
@@ -94,7 +89,6 @@ export function TableViewer() {
         if (countError) throw countError;
         setTableCount(count || 0);
         
-        // Get data
         let query = supabase
           .from(selectedTable)
           .select("*")
@@ -116,7 +110,6 @@ export function TableViewer() {
     fetchTableData();
   }, [selectedTable]);
 
-  // Filter data based on search term
   const filteredData = tableData.filter(row => {
     if (!searchTerm) return true;
     
@@ -140,7 +133,7 @@ export function TableViewer() {
       <CardHeader className="bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <table className="h-5 w-5" />
+            <TableIcon className="h-5 w-5" />
             <CardTitle>Table Explorer</CardTitle>
           </div>
           {tableCount > 0 && (
@@ -171,7 +164,7 @@ export function TableViewer() {
           </Select>
           
           <div className="relative flex-1">
-            <search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               className="pl-9"
               placeholder="Search table data..."

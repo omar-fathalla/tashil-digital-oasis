@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Database } from "@/integrations/supabase/client";
-import { database } from "lucide-react";
+import { Database } from "lucide-react";
 
 type TableInfo = {
   name: string;
@@ -94,7 +92,7 @@ export function SchemaVisualizer() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <database className="h-5 w-5" />
+        <Database className="h-5 w-5" />
         <h2 className="text-2xl font-bold">Database Schema</h2>
       </div>
       

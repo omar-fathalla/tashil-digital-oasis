@@ -26,7 +26,7 @@ export function MobileNav() {
         </SheetTrigger>
         <SheetContent side="right">
           <div className="flex flex-col gap-4 py-4">
-            <NavLogo variant="horizontal" className="mx-auto mb-4" />
+            <NavLogo />
             <SheetClose asChild>
               <NavLink onClick={() => setIsOpen(false)} to="/" className={`${pathname === "/" ? "text-primary" : "text-foreground/80"} py-2 text-center`}>
                 الرئيسية

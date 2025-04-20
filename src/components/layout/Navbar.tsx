@@ -38,7 +38,7 @@ const Navbar = () => {
           </Button>
         </div>
       </div>
-      <MobileNav mobileMenuOpen={mobileMenuOpen} onSignOut={handleSignOut} />
+      <MobileNav />
     </nav>
   );
 };
