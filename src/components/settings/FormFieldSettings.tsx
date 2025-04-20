@@ -1,7 +1,9 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { usePositionTypes } from "./hooks/usePositionTypes";
 import { PositionItem } from "./components/PositionItem";
 import { NewPositionForm } from "./components/NewPositionForm";
+import { Spinner } from "@/components/ui/spinner"; // Assuming you have a spinner component
 
 export const FormFieldSettings = () => {
   const {
@@ -13,7 +15,11 @@ export const FormFieldSettings = () => {
   } = usePositionTypes();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Spinner />
+      </div>
+    );
   }
 
   return (
