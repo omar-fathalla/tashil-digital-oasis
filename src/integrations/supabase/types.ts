@@ -353,6 +353,39 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings_audit: {
+        Row: {
+          category: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          key: string
+          new_value: Json | null
+          old_value: Json | null
+          setting_id: string
+        }
+        Insert: {
+          category: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          key: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_id: string
+        }
+        Update: {
+          category?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          key?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

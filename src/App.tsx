@@ -20,6 +20,7 @@ import Auth from "./pages/Auth";
 import Print from "./pages/Print";
 import Settings from "./pages/Settings";
 import PrintBatch from "./pages/PrintBatch";
+import EmployeeManagement from "./pages/EmployeeManagement"; // New import
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/print/:id" element={<Print />} />
               <Route path="/print-batch" element={<PrintBatch />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/employee-management" element={<EmployeeManagement />} /> {/* New route */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
