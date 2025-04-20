@@ -372,6 +372,24 @@ export type Database = {
         }
         Relationships: []
       }
+      regions: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       registration_requests: {
         Row: {
           documents: Json | null
