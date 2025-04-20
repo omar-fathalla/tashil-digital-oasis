@@ -45,8 +45,15 @@ export const useDocumentSettings = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ['document-types'] });
+
+      toast({
+        title: "Success",
+        description: "Document type added successfully",
+      });
+
+      return data;
     } catch (error) {
-      console.error(error);
+      console.error('Failed to add document:', error);
       throw error;
     }
   };
