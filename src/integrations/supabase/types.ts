@@ -183,18 +183,24 @@ export type Database = {
           full_name: string | null
           id: string
           national_id: string | null
+          status: string | null
+          submission_date: string | null
         }
         Insert: {
           documents?: Json | null
           full_name?: string | null
           id: string
           national_id?: string | null
+          status?: string | null
+          submission_date?: string | null
         }
         Update: {
           documents?: Json | null
           full_name?: string | null
           id?: string
           national_id?: string | null
+          status?: string | null
+          submission_date?: string | null
         }
         Relationships: []
       }
@@ -203,7 +209,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_approved_requests: {
+        Args: { limit_count?: number }
+        Returns: {
+          documents: Json | null
+          full_name: string | null
+          id: string
+          national_id: string | null
+          status: string | null
+          submission_date: string | null
+        }[]
+      }
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_print_request_by_id: {
+        Args: { request_id: string }
+        Returns: {
+          documents: Json | null
+          full_name: string | null
+          id: string
+          national_id: string | null
+          status: string | null
+          submission_date: string | null
+        }
+      }
     }
     Enums: {
       [_ in never]: never

@@ -2,16 +2,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useApprovedRequests = () => {
+export const useApprovedRequests = (limit = 5) => {
   return useQuery({
-    queryKey: ['approved-requests'],
+    queryKey: ['approved-requests', limit],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('registration_requests')
-        .select('*')
-        .eq('status', 'approved')
-        .order('submission_date', { ascending: false })
-        .limit(5);
+        .rpc('get_approved_requests', { limit_count: limit });
       
       if (error) throw error;
       return data;
