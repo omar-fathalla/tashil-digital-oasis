@@ -41,7 +41,6 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
         description: "Document type added successfully",
       });
 
-      // Reset form fields
       setNewDocument({
         name: "",
         required: true,
