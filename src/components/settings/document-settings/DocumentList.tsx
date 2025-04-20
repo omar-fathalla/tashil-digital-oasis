@@ -1,80 +1,78 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { documentApi, DocumentType } from "@/utils/documentApi";
-import { supabase } from "@/utils/supabaseClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Trash } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { DocumentType } from "@/utils/documentApi";
 
-export const useDocumentSettings = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+interface DocumentListProps {
+  documents: DocumentType[];
+  onUpdateDocument: (id: string, field: keyof DocumentType, value: string | boolean) => void;
+  onDeleteDocument: (id: string) => void;
+}
 
-  const { data: documentTypes = [], isLoading, refetch: refreshDocuments } = useQuery({
-    queryKey: ['document-types'],
-    queryFn: documentApi.getAllDocuments
-  });
+export const DocumentList = ({ 
+  documents, 
+  onUpdateDocument, 
+  onDeleteDocument 
+}: DocumentListProps) => {
+  if (!documents.length) {
+    return (
+      <div className="text-muted-foreground">No document types found. Add one below.</div>
+    );
+  }
 
-  const handleAddDocument = async (newDocument: DocumentType) => {
-    const safeDocument = {
-      name: newDocument.name,
-      required: newDocument.required ?? true,
-      instructions: newDocument.instructions ?? null,
-    };
-
-    const { data, error } = await supabase
-      .from("document_types")
-      .insert(safeDocument)
-      .select()
-      .single();
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add document",
-        variant: "destructive",
-      });
-      throw error;
-    }
-
-    queryClient.invalidateQueries({ queryKey: ['document-types'] });
-  };
-
-  const handleUpdateDocument = (id: string, field: keyof DocumentType, value: string | boolean) => {
-    const updatedDoc = { [field]: value };
-
-    supabase.from("document_types").update(updatedDoc).eq("id", id)
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      })
-      .catch((error) => {
-        toast({
-          title: "Error",
-          description: "Failed to update document",
-          variant: "destructive",
-        });
-        console.error(error);
-      });
-  };
-
-  const handleDeleteDocument = (id: string) => {
-    supabase.from("document_types").delete().eq("id", id)
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      })
-      .catch((error) => {
-        toast({
-          title: "Error",
-          description: "Failed to delete document",
-          variant: "destructive",
-        });
-        console.error(error);
-      });
-  };
-
-  return {
-    documentTypes,
-    isLoading,
-    handleAddDocument,
-    handleUpdateDocument,
-    handleDeleteDocument,
-    refreshDocuments
-  };
+  return (
+    <div className="space-y-4">
+      {documents.map((doc) => (
+        <Card key={doc.id} className="relative">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium">Document Name</label>
+                <Input
+                  value={doc.name}
+                  onChange={(e) => onUpdateDocument(doc.id!, "name", e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Required</label>
+                <div className="flex items-center mt-3">
+                  <Switch
+                    checked={doc.required}
+                    onCheckedChange={(checked) => onUpdateDocument(doc.id!, "required", checked)}
+                  />
+                  <span className="ml-2 text-sm">
+                    {doc.required ? "Required" : "Optional"}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium">Instructions</label>
+                <Textarea
+                  value={doc.instructions || ''}
+                  onChange={(e) => onUpdateDocument(doc.id!, "instructions", e.target.value)}
+                  placeholder="Add specific instructions..."
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDeleteDocument(doc.id!)}
+              className="absolute top-3 right-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 };
