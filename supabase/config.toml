@@ -26,5 +26,5 @@ enabled = true
 [analytics]
 enabled = true
 
-[functions.notify-user]
+[functions.approveRequest]
 verify_jwt = true
