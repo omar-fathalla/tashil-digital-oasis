@@ -1,7 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { documentApi, DocumentType } from "@/utils/documentApi";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useDocumentSettings = () => {
   const { toast } = useToast();
@@ -19,54 +20,57 @@ export const useDocumentSettings = () => {
       instructions: newDocument.instructions ?? null,
     };
 
-    const { data, error } = await supabase
-      .from("document_types")
-      .insert(safeDocument)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("document_types")
+        .insert(safeDocument)
+        .select()
+        .single();
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add document",
-        variant: "destructive",
-      });
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to add document",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['document-types'] });
+    } catch (error) {
+      console.error(error);
       throw error;
     }
-
-    queryClient.invalidateQueries({ queryKey: ['document-types'] });
   };
 
-  const handleUpdateDocument = (id: string, field: keyof DocumentType, value: string | boolean) => {
+  const handleUpdateDocument = async (id: string, field: keyof DocumentType, value: string | boolean) => {
     const updatedDoc = { [field]: value };
 
-    supabase.from("document_types").update(updatedDoc).eq("id", id)
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      })
-      .catch((error) => {
-        toast({
-          title: "Error",
-          description: "Failed to update document",
-          variant: "destructive",
-        });
-        console.error(error);
+    try {
+      await supabase.from("document_types").update(updatedDoc).eq("id", id);
+      queryClient.invalidateQueries({ queryKey: ['document-types'] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update document",
+        variant: "destructive",
       });
+      console.error(error);
+    }
   };
 
-  const handleDeleteDocument = (id: string) => {
-    supabase.from("document_types").delete().eq("id", id)
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      })
-      .catch((error) => {
-        toast({
-          title: "Error",
-          description: "Failed to delete document",
-          variant: "destructive",
-        });
-        console.error(error);
+  const handleDeleteDocument = async (id: string) => {
+    try {
+      await supabase.from("document_types").delete().eq("id", id);
+      queryClient.invalidateQueries({ queryKey: ['document-types'] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete document",
+        variant: "destructive",
       });
+      console.error(error);
+    }
   };
 
   return {
