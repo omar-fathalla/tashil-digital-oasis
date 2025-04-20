@@ -1,60 +1,39 @@
-
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { PositionType } from "../types/position";
 
 interface NewPositionFormProps {
-  onAdd: (positions: PositionType[]) => void;
-  positions: PositionType[];
+  onAdd: (position: { name: string }) => Promise<void>;
 }
 
-export const NewPositionForm = ({ onAdd, positions }: NewPositionFormProps) => {
-  const [newPosition, setNewPosition] = useState("");
-  const { toast } = useToast();
+export const NewPositionForm = ({ onAdd }: NewPositionFormProps) => {
+  const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddPosition = () => {
-    if (!newPosition.trim()) {
-      toast({
-        title: "Error",
-        description: "Position name is required",
-        variant: "destructive",
-      });
-      return;
+  const handleAdd = async () => {
+    if (!name.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await onAdd({ name });
+      setName("");
+    } catch (e) {
+      console.error("Add position failed", e);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newPositions = [
-      ...positions,
-      {
-        id: Date.now().toString(),
-        name: newPosition.trim(),
-      },
-    ];
-
-    onAdd(newPositions);
-    setNewPosition("");
   };
 
   return (
-    <div className="mt-6 flex items-center gap-2">
-      <div className="flex-1">
-        <Input
-          placeholder="Enter new position type..."
-          value={newPosition}
-          onChange={(e) => setNewPosition(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAddPosition();
-            }
-          }}
-        />
-      </div>
-      <Button onClick={handleAddPosition}>
-        <Plus className="h-4 w-4 mr-2" />
-        Add Position
+    <div className="mt-6 flex gap-2">
+      <Input
+        placeholder="New position type"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <Button onClick={handleAdd} disabled={isSubmitting || !name.trim()}>
+        <Plus className="w-4 h-4 mr-1" /> Add Position
       </Button>
     </div>
   );
