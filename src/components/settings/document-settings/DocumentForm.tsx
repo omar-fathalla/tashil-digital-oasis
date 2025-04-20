@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,16 +32,28 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
     }
 
     setIsSubmitting(true);
+
     try {
       await onAddDocument(newDocument);
-      // Reset form after successful submission
+
+      toast({
+        title: "Success",
+        description: "Document type added successfully",
+      });
+
+      // Reset form fields
       setNewDocument({
         name: "",
         required: true,
         instructions: "",
       });
     } catch (error) {
-      console.error('Error adding document:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add document type",
+        variant: "destructive",
+      });
+      console.error("Add document error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -62,7 +73,7 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
               className="mt-1"
             />
           </div>
-          
+
           <div>
             <label className="text-sm font-medium">Required</label>
             <div className="flex items-center mt-3">
@@ -77,20 +88,22 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
               </span>
             </div>
           </div>
-          
+
           <div className="md:col-span-2">
             <label className="text-sm font-medium">Instructions</label>
             <Textarea
-              value={newDocument.instructions || ''}
-              onChange={(e) => setNewDocument({ ...newDocument, instructions: e.target.value })}
+              value={newDocument.instructions || ""}
+              onChange={(e) =>
+                setNewDocument({ ...newDocument, instructions: e.target.value })
+              }
               placeholder="Add specific instructions..."
               className="mt-1"
             />
           </div>
         </div>
-        
+
         <div className="mt-4 flex justify-end">
-          <Button 
+          <Button
             onClick={handleAddDocument}
             disabled={!newDocument.name.trim() || isSubmitting}
             className="flex items-center"
