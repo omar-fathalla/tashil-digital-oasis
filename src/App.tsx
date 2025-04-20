@@ -20,7 +20,6 @@ import Auth from "./pages/Auth";
 import Print from "./pages/Print";
 import Settings from "./pages/Settings";
 import PrintBatch from "./pages/PrintBatch";
-import DatabaseDashboard from "./pages/DatabaseDashboard";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +46,6 @@ const App = () => (
               <Route path="/print/:id" element={<Print />} />
               <Route path="/print-batch" element={<PrintBatch />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/database" element={<DatabaseDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

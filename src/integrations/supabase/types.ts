@@ -183,24 +183,18 @@ export type Database = {
           full_name: string | null
           id: string
           national_id: string | null
-          status: string | null
-          submission_date: string | null
         }
         Insert: {
           documents?: Json | null
           full_name?: string | null
           id: string
           national_id?: string | null
-          status?: string | null
-          submission_date?: string | null
         }
         Update: {
           documents?: Json | null
           full_name?: string | null
           id?: string
           national_id?: string | null
-          status?: string | null
-          submission_date?: string | null
         }
         Relationships: []
       }
@@ -209,43 +203,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_approved_requests: {
-        Args: { limit_count?: number }
-        Returns: {
-          documents: Json | null
-          full_name: string | null
-          id: string
-          national_id: string | null
-          status: string | null
-          submission_date: string | null
-        }[]
-      }
-      get_dashboard_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_print_request_by_id: {
-        Args: { request_id: string }
-        Returns: {
-          documents: Json | null
-          full_name: string | null
-          id: string
-          national_id: string | null
-          status: string | null
-          submission_date: string | null
-        }
-      }
-      get_table_indexes: {
-        Args: { target_table?: string }
-        Returns: {
-          name: string
-          table_name: string
-          index_type: string
-          is_unique: boolean
-          is_primary: boolean
-          columns: string[]
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

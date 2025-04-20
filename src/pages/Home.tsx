@@ -1,3 +1,4 @@
+
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
@@ -22,7 +23,10 @@ const Dashboard = () => {
       if (!printId) return null;
       
       const { data, error } = await supabase
-        .rpc('get_print_request_by_id', { request_id: printId });
+        .from('registration_requests')
+        .select('*')
+        .eq('id', printId)
+        .single();
       
       if (error) throw error;
       return data;
