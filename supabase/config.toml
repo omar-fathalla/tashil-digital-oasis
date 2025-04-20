@@ -28,3 +28,6 @@ enabled = true
 
 [functions.approveRequest]
 verify_jwt = true
+
+[functions.submitRequest]
+verify_jwt = true
