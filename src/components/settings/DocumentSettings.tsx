@@ -16,15 +16,19 @@ export const DocumentSettings = () => {
     refreshDocuments
   } = useDocumentSettings();
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates for document types
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('document-types-updates')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'document_types' },
-        () => {
-          console.log('Document types updated, refreshing data...');
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'document_types' 
+        },
+        (payload) => {
+          console.log('Document types updated:', payload);
           refreshDocuments();
         }
       )
