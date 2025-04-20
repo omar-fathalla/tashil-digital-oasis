@@ -8,69 +8,69 @@ export function usePositionTypes() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: rawData = [], isLoading } = useQuery({
-    queryKey: ['system-settings', 'position-types'],
+  const { data: positions = [], isLoading } = useQuery({
+    queryKey: ['position-types'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('category', 'form_fields')
-        .eq('key', 'position_types')
-        .single();
+        .from('position_types')
+        .select('*')
+        .order('name');
 
       if (error) {
         console.error('Error fetching position types:', error);
-        return [] as PositionType[];
-      }
-      
-      if (!data?.value) {
-        return [] as PositionType[];
+        return [];
       }
 
-      if (Array.isArray(data.value)) {
-        return (data.value as any[]).map(item => ({
-          id: typeof item.id === 'string' ? item.id : String(item.id),
-          name: typeof item.name === 'string' ? item.name : String(item.name)
-        })) as PositionType[];
-      }
-      
-      if (typeof data.value === 'string') {
-        try {
-          const parsed = JSON.parse(data.value);
-          if (Array.isArray(parsed)) {
-            return parsed.map(item => ({
-              id: typeof item.id === 'string' ? item.id : String(item.id),
-              name: typeof item.name === 'string' ? item.name : String(item.name)
-            })) as PositionType[];
-          }
-        } catch (e) {
-          console.error('Failed to parse position data string:', e);
-        }
-      }
-      
-      return [] as PositionType[];
+      return data.map(pos => ({
+        id: pos.id,
+        name: pos.name
+      }));
     }
   });
 
-  const positions = Array.isArray(rawData) ? rawData : [];
-
   const updatePositionTypes = useMutation({
     mutationFn: async (newPositions: PositionType[]) => {
-      if (!Array.isArray(newPositions)) {
-        throw new Error("Invalid positions data format");
+      // First, get all existing positions
+      const { data: existingPositions } = await supabase
+        .from('position_types')
+        .select('id, name');
+
+      // Delete removed positions
+      const existingIds = existingPositions?.map(p => p.id) || [];
+      const newIds = newPositions.map(p => p.id);
+      const toDelete = existingIds.filter(id => !newIds.includes(id));
+
+      if (toDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('position_types')
+          .delete()
+          .in('id', toDelete);
+
+        if (deleteError) throw deleteError;
       }
-      
-      const { data, error } = await supabase.rpc('update_setting', {
-        p_category: 'form_fields',
-        p_key: 'position_types',
-        p_value: JSON.stringify(newPositions)
-      });
-      
-      if (error) throw error;
-      return data;
+
+      // Update or insert positions
+      for (const position of newPositions) {
+        if (position.id && existingIds.includes(position.id)) {
+          // Update existing position
+          const { error: updateError } = await supabase
+            .from('position_types')
+            .update({ name: position.name })
+            .eq('id', position.id);
+
+          if (updateError) throw updateError;
+        } else {
+          // Insert new position
+          const { error: insertError } = await supabase
+            .from('position_types')
+            .insert({ name: position.name });
+
+          if (insertError) throw insertError;
+        }
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['system-settings', 'position-types'] });
+      queryClient.invalidateQueries({ queryKey: ['position-types'] });
       toast({
         title: "Success",
         description: "Position types updated successfully",
