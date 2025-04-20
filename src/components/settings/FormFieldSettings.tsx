@@ -1,142 +1,11 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash } from "lucide-react";
-
-interface PositionType {
-  id: string;
-  name: string;
-}
+import { usePositionTypes } from "./hooks/usePositionTypes";
+import { PositionItem } from "./components/PositionItem";
+import { NewPositionForm } from "./components/NewPositionForm";
 
 export const FormFieldSettings = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [newPosition, setNewPosition] = useState("");
-
-  // Fetch position types from system_settings
-  const { data: rawData = [], isLoading } = useQuery({
-    queryKey: ['system-settings', 'position-types'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('category', 'form_fields')
-        .eq('key', 'position_types')
-        .single();
-
-      if (error) {
-        console.error('Error fetching position types:', error);
-        return [] as PositionType[];
-      }
-      
-      console.log("Raw position data from Supabase:", data?.value);
-      
-      // Handle the case when data.value is null or undefined
-      if (!data?.value) {
-        console.log("No position data found, returning empty array");
-        return [] as PositionType[];
-      }
-
-      // If data.value is already an array, verify and use it
-      if (Array.isArray(data.value)) {
-        return (data.value as any[]).map(item => ({
-          id: typeof item.id === 'string' ? item.id : String(item.id),
-          name: typeof item.name === 'string' ? item.name : String(item.name)
-        })) as PositionType[];
-      }
-      
-      // If data.value is a string, try to parse it
-      if (typeof data.value === 'string') {
-        try {
-          const parsed = JSON.parse(data.value);
-          if (Array.isArray(parsed)) {
-            return parsed.map(item => ({
-              id: typeof item.id === 'string' ? item.id : String(item.id),
-              name: typeof item.name === 'string' ? item.name : String(item.name)
-            })) as PositionType[];
-          }
-        } catch (e) {
-          console.error('Failed to parse position data string:', e);
-        }
-      }
-      
-      console.warn('Position data is not recognized as an array:', data.value);
-      return [] as PositionType[];
-    }
-  });
-
-  // Ensure positions is always a valid array
-  const positions = Array.isArray(rawData) ? rawData : [];
-  
-  console.log("Final positions array for rendering:", positions);
-
-  // Update position types mutation
-  const updatePositionTypes = useMutation({
-    mutationFn: async (newPositions: PositionType[]) => {
-      // Ensure newPositions is an array
-      if (!Array.isArray(newPositions)) {
-        console.error("Expected array for positions update, got:", newPositions);
-        throw new Error("Invalid positions data format");
-      }
-      
-      const { data, error } = await supabase.rpc('update_setting', {
-        p_category: 'form_fields',
-        p_key: 'position_types',
-        p_value: JSON.stringify(newPositions)
-      });
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['system-settings', 'position-types'] });
-      toast({
-        title: "Success",
-        description: "Position types updated successfully",
-      });
-    },
-    onError: (error) => {
-      console.error('Error updating position types:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update position types",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleAddPosition = () => {
-    if (!newPosition.trim()) {
-      toast({
-        title: "Error",
-        description: "Position name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create a new array with the existing positions and the new one
-    const newPositions = [
-      ...positions,
-      {
-        id: Date.now().toString(),
-        name: newPosition.trim(),
-      },
-    ];
-
-    updatePositionTypes.mutate(newPositions);
-    setNewPosition("");
-  };
-
-  const handleRemovePosition = (id: string) => {
-    const newPositions = positions.filter((pos) => pos.id !== id);
-    updatePositionTypes.mutate(newPositions);
-  };
+  const { positions, isLoading, updatePositionTypes } = usePositionTypes();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -156,52 +25,26 @@ export const FormFieldSettings = () => {
           <div className="space-y-4">
             {positions.length > 0 ? (
               positions.map((position) => (
-                <div key={position.id} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <Input
-                      value={position.name}
-                      onChange={(e) => {
-                        const newPositions = positions.map((pos) =>
-                          pos.id === position.id ? { ...pos, name: e.target.value } : pos
-                        );
-                        updatePositionTypes.mutate(newPositions);
-                      }}
-                    />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemovePosition(position.id)}
-                    className="ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
+                <PositionItem
+                  key={position.id}
+                  position={position}
+                  positions={positions}
+                  onUpdate={(newPositions) => updatePositionTypes.mutate(newPositions)}
+                  onRemove={(id) => {
+                    const newPositions = positions.filter((pos) => pos.id !== id);
+                    updatePositionTypes.mutate(newPositions);
+                  }}
+                />
               ))
             ) : (
               <div className="text-muted-foreground">No position types found. Add one below.</div>
             )}
           </div>
 
-          <div className="mt-6 flex items-center gap-2">
-            <div className="flex-1">
-              <Input
-                placeholder="Enter new position type..."
-                value={newPosition}
-                onChange={(e) => setNewPosition(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddPosition();
-                  }
-                }}
-              />
-            </div>
-            <Button onClick={handleAddPosition}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Position
-            </Button>
-          </div>
+          <NewPositionForm
+            positions={positions}
+            onAdd={(newPositions) => updatePositionTypes.mutate(newPositions)}
+          />
         </CardContent>
       </Card>
     </div>
