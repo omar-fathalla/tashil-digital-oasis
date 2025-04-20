@@ -1,7 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { documentApi, DocumentType } from "@/utils/documentApi";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useDocumentSettings = () => {
   const { toast } = useToast();
