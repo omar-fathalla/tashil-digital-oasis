@@ -7,14 +7,7 @@ import { Plus, Trash } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-
-interface DocumentType {
-  id?: string;
-  name: string;
-  required: boolean;
-  instructions?: string;
-}
+import { documentApi, DocumentType } from "@/utils/documentApi";
 
 export const DocumentSettings = () => {
   const { toast } = useToast();
@@ -25,48 +18,15 @@ export const DocumentSettings = () => {
     instructions: "",
   });
 
-  // Fetch document types from the database
+  // Fetch document types using the new API
   const { data: documentTypes = [], isLoading } = useQuery({
     queryKey: ['document-types'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('document_types')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching document types:', error);
-        return [];
-      }
-      
-      return data as DocumentType[];
-    }
+    queryFn: documentApi.getAllDocuments
   });
 
-  // Mutation to save all document types
+  // Mutation to save document types using the new API
   const saveDocumentTypesMutation = useMutation({
-    mutationFn: async (documents: DocumentType[]) => {
-      // Validate documents before saving
-      const invalidDocs = documents.filter(doc => !doc.name.trim());
-      if (invalidDocs.length > 0) {
-        throw new Error('All documents must have a name');
-      }
-
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        throw new Error('You must be logged in to save settings');
-      }
-
-      const { data, error } = await supabase.functions.invoke('saveRequiredDocuments', {
-        body: { documents },
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      });
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: documentApi.saveDocuments,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['document-types'] });
       toast({

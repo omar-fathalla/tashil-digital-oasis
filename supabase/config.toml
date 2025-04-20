@@ -26,8 +26,14 @@ enabled = true
 [analytics]
 enabled = true
 
+[functions.api-documents]
+verify_jwt = true
+
 [functions.approveRequest]
 verify_jwt = true
 
 [functions.submitRequest]
+verify_jwt = true
+
+[functions.saveRequiredDocuments]
 verify_jwt = true
