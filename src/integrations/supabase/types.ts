@@ -30,6 +30,33 @@ export type Database = {
         }
         Relationships: []
       }
+      document_types: {
+        Row: {
+          created_at: string | null
+          id: string
+          instructions: string | null
+          name: string
+          required: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instructions?: string | null
+          name: string
+          required?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instructions?: string | null
+          name?: string
+          required?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       employee_registrations: {
         Row: {
           area: string | null
