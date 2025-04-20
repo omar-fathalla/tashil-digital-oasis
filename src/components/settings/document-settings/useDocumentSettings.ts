@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { documentApi, DocumentType } from "@/utils/documentApi";
@@ -7,7 +6,7 @@ export const useDocumentSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: documentTypes = [], isLoading } = useQuery({
+  const { data: documentTypes = [], isLoading, refetch: refreshDocuments } = useQuery({
     queryKey: ['document-types'],
     queryFn: documentApi.getAllDocuments
   });
@@ -30,9 +29,9 @@ export const useDocumentSettings = () => {
     }
   });
 
-  const handleAddDocument = (newDocument: DocumentType) => {
+  const handleAddDocument = async (newDocument: DocumentType) => {
     const updatedDocuments = [...documentTypes, newDocument];
-    saveDocumentTypesMutation.mutate(updatedDocuments);
+    await saveDocumentTypesMutation.mutateAsync(updatedDocuments);
   };
 
   const handleUpdateDocument = (id: string, field: keyof DocumentType, value: string | boolean) => {
@@ -56,6 +55,7 @@ export const useDocumentSettings = () => {
     isLoading,
     handleAddDocument,
     handleUpdateDocument,
-    handleDeleteDocument
+    handleDeleteDocument,
+    refreshDocuments
   };
 };

@@ -2,6 +2,9 @@
 import { DocumentForm } from "./document-settings/DocumentForm";
 import { DocumentList } from "./document-settings/DocumentList";
 import { useDocumentSettings } from "./document-settings/useDocumentSettings";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { DocumentType } from "@/utils/documentApi";
 
 export const DocumentSettings = () => {
   const {
@@ -9,8 +12,28 @@ export const DocumentSettings = () => {
     isLoading,
     handleAddDocument,
     handleUpdateDocument,
-    handleDeleteDocument
+    handleDeleteDocument,
+    refreshDocuments
   } = useDocumentSettings();
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'document_types' },
+        () => {
+          console.log('Document types updated, refreshing data...');
+          refreshDocuments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refreshDocuments]);
 
   if (isLoading) {
     return <div>Loading...</div>;

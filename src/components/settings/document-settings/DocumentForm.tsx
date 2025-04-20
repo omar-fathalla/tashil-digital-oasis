@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DocumentType } from "@/utils/documentApi";
 
 interface DocumentFormProps {
-  onAddDocument: (document: DocumentType) => void;
+  onAddDocument: (document: DocumentType) => Promise<void>;
 }
 
 export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
@@ -20,8 +20,9 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
     required: true,
     instructions: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddDocument = () => {
+  const handleAddDocument = async () => {
     if (!newDocument.name.trim()) {
       toast({
         title: "Error",
@@ -31,14 +32,20 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
       return;
     }
 
-    onAddDocument(newDocument);
-    
-    // Reset form
-    setNewDocument({
-      name: "",
-      required: true,
-      instructions: "",
-    });
+    setIsSubmitting(true);
+    try {
+      await onAddDocument(newDocument);
+      // Reset form after successful submission
+      setNewDocument({
+        name: "",
+        required: true,
+        instructions: "",
+      });
+    } catch (error) {
+      console.error('Error adding document:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -84,8 +91,8 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
         
         <div className="mt-4 flex justify-end">
           <Button 
-            onClick={handleAddDocument} 
-            disabled={!newDocument.name.trim()}
+            onClick={handleAddDocument}
+            disabled={!newDocument.name.trim() || isSubmitting}
             className="flex items-center"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Document Type
