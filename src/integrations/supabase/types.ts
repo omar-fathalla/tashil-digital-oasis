@@ -9,7 +9,168 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      employee_registrations: {
+        Row: {
+          area: string | null
+          collected_at: string | null
+          collector_name: string | null
+          company_id: string | null
+          employee_id: string
+          first_name: string
+          full_name: string
+          id: string
+          insurance_number: string | null
+          last_name: string
+          mid_name: string | null
+          photo_url: string | null
+          position: string | null
+          printed: boolean | null
+          printed_at: string | null
+          request_type: string | null
+          sex: string | null
+          status: string | null
+          submission_date: string | null
+          user_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          collected_at?: string | null
+          collector_name?: string | null
+          company_id?: string | null
+          employee_id: string
+          first_name: string
+          full_name: string
+          id?: string
+          insurance_number?: string | null
+          last_name: string
+          mid_name?: string | null
+          photo_url?: string | null
+          position?: string | null
+          printed?: boolean | null
+          printed_at?: string | null
+          request_type?: string | null
+          sex?: string | null
+          status?: string | null
+          submission_date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          collected_at?: string | null
+          collector_name?: string | null
+          company_id?: string | null
+          employee_id?: string
+          first_name?: string
+          full_name?: string
+          id?: string
+          insurance_number?: string | null
+          last_name?: string
+          mid_name?: string | null
+          photo_url?: string | null
+          position?: string | null
+          printed?: boolean | null
+          printed_at?: string | null
+          request_type?: string | null
+          sex?: string | null
+          status?: string | null
+          submission_date?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      employee_requests: {
+        Row: {
+          commercial_register_number: string | null
+          company_id: string | null
+          company_name: string | null
+          company_number: string | null
+          employee_id: string
+          employee_name: string
+          id: string
+          notes: string | null
+          request_date: string | null
+          request_type: string
+          status: string | null
+          tax_card_number: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          commercial_register_number?: string | null
+          company_id?: string | null
+          company_name?: string | null
+          company_number?: string | null
+          employee_id: string
+          employee_name: string
+          id?: string
+          notes?: string | null
+          request_date?: string | null
+          request_type: string
+          status?: string | null
+          tax_card_number?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          commercial_register_number?: string | null
+          company_id?: string | null
+          company_name?: string | null
+          company_number?: string | null
+          employee_id?: string
+          employee_name?: string
+          id?: string
+          notes?: string | null
+          request_date?: string | null
+          request_type?: string
+          status?: string | null
+          tax_card_number?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      registration_requests: {
+        Row: {
+          documents: Json | null
+          full_name: string | null
+          id: string
+          national_id: string | null
+        }
+        Insert: {
+          documents?: Json | null
+          full_name?: string | null
+          id: string
+          national_id?: string | null
+        }
+        Update: {
+          documents?: Json | null
+          full_name?: string | null
+          id?: string
+          national_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
