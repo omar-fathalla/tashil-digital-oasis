@@ -67,7 +67,9 @@ export const DocumentForm = ({ onAddDocument }: DocumentFormProps) => {
             <label className="text-sm font-medium">Document Name</label>
             <Input
               value={newDocument.name}
-              onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
+              onChange={(e) =>
+                setNewDocument({ ...newDocument, name: e.target.value })
+              }
               placeholder="e.g., Work Permit"
               className="mt-1"
             />
