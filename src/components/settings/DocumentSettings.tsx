@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,55 +43,26 @@ export const DocumentSettings = () => {
     }
   });
 
-  // Mutation to add a new document type
-  const addDocumentTypeMutation = useMutation({
-    mutationFn: async (newDocType: DocumentType) => {
-      const { data, error } = await supabase
-        .from('document_types')
-        .insert(newDocType)
-        .select()
-        .single();
+  // Mutation to save all document types
+  const saveDocumentTypesMutation = useMutation({
+    mutationFn: async (documents: DocumentType[]) => {
+      // Validate documents before saving
+      const invalidDocs = documents.filter(doc => !doc.name.trim());
+      if (invalidDocs.length > 0) {
+        throw new Error('All documents must have a name');
+      }
 
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (newDocType) => {
-      queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      toast({
-        title: "Document Type Added",
-        description: `${newDocType.name} has been added successfully`,
-      });
-      // Reset the form
-      setNewDocument({
-        name: "",
-        required: true,
-        instructions: "",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to add document type: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  });
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        throw new Error('You must be logged in to save settings');
+      }
 
-  // Mutation to update a document type
-  const updateDocumentTypeMutation = useMutation({
-    mutationFn: async (updatedDocType: DocumentType) => {
-      if (!updatedDocType.id) throw new Error("Document type ID is required");
-
-      const { data, error } = await supabase
-        .from('document_types')
-        .update({
-          name: updatedDocType.name,
-          required: updatedDocType.required,
-          instructions: updatedDocType.instructions
-        })
-        .eq('id', updatedDocType.id)
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('saveRequiredDocuments', {
+        body: { documents },
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      });
 
       if (error) throw error;
       return data;
@@ -100,40 +70,14 @@ export const DocumentSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['document-types'] });
       toast({
-        title: "Document Type Updated",
-        description: "Document type was successfully updated",
+        title: "Success",
+        description: "Document settings saved successfully",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: `Failed to update document type: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Mutation to delete a document type
-  const deleteDocumentTypeMutation = useMutation({
-    mutationFn: async (docTypeId: string) => {
-      const { error } = await supabase
-        .from('document_types')
-        .delete()
-        .eq('id', docTypeId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['document-types'] });
-      toast({
-        title: "Document Type Deleted",
-        description: "Document type was successfully removed",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to delete document type: ${error.message}`,
+        description: error.message || "Failed to save document settings",
         variant: "destructive",
       });
     }
@@ -149,16 +93,31 @@ export const DocumentSettings = () => {
       return;
     }
 
-    addDocumentTypeMutation.mutate(newDocument);
+    const updatedDocuments = [...documentTypes, newDocument];
+    saveDocumentTypesMutation.mutate(updatedDocuments);
+    
+    // Reset form
+    setNewDocument({
+      name: "",
+      required: true,
+      instructions: "",
+    });
   };
 
   const handleUpdateDocument = (id: string, field: keyof DocumentType, value: string | boolean) => {
-    const docToUpdate = { 
-      id, 
-      ...documentTypes.find(doc => doc.id === id),
-      [field]: value 
-    };
-    updateDocumentTypeMutation.mutate(docToUpdate);
+    const updatedDocuments = documentTypes.map(doc => {
+      if (doc.id === id) {
+        return { ...doc, [field]: value };
+      }
+      return doc;
+    });
+    
+    saveDocumentTypesMutation.mutate(updatedDocuments);
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    const updatedDocuments = documentTypes.filter(doc => doc.id !== id);
+    saveDocumentTypesMutation.mutate(updatedDocuments);
   };
 
   if (isLoading) {
@@ -216,7 +175,7 @@ export const DocumentSettings = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => deleteDocumentTypeMutation.mutate(doc.id!)}
+                  onClick={() => handleDeleteDocument(doc.id!)}
                   className="absolute top-3 right-3 text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash className="h-4 w-4" />
