@@ -1,6 +1,7 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export const usePositionTypes = () => {
   const { toast } = useToast();
