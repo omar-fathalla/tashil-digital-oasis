@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -34,6 +35,19 @@ export const InterfaceSettings = () => {
     });
   };
 
+  // Create typed handler functions for each setting
+  const handleBilingualToggle = (checked: boolean) => {
+    setLocalSettings(prev => ({ ...prev, enableBilingual: checked }));
+  };
+
+  const handleLanguageChange = (value: string) => {
+    setLocalSettings(prev => ({ ...prev, language: value }));
+  };
+
+  const handleThemeChange = (value: string) => {
+    setLocalSettings(prev => ({ ...prev, theme: value }));
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -54,12 +68,12 @@ export const InterfaceSettings = () => {
             </div>
             <Switch
               checked={localSettings.enableBilingual}
-              onCheckedChange={setLocalSettings}
+              onCheckedChange={handleBilingualToggle}
             />
           </div>
           
           <h3 className="text-lg font-medium mb-4">Default Language</h3>
-          <RadioGroup value={localSettings.language} onValueChange={setLocalSettings} disabled={!localSettings.enableBilingual}>
+          <RadioGroup value={localSettings.language} onValueChange={handleLanguageChange} disabled={!localSettings.enableBilingual}>
             <div className="flex items-center space-x-2 mb-4">
               <RadioGroupItem value="english" id="english" />
               <Label htmlFor="english">English</Label>
@@ -76,7 +90,7 @@ export const InterfaceSettings = () => {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-medium mb-4">Theme Settings</h3>
-          <RadioGroup value={localSettings.theme} onValueChange={setLocalSettings}>
+          <RadioGroup value={localSettings.theme} onValueChange={handleThemeChange}>
             <div className="flex items-center space-x-2 mb-4">
               <RadioGroupItem value="light" id="light" />
               <Label htmlFor="light">Light Theme</Label>
