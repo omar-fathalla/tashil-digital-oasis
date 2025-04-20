@@ -91,7 +91,7 @@ export const usePositionTypes = () => {
     }
 
     // Real-time will handle UI update via subscription
-    return data;
+    return;
   };
 
   const updatePosition = async (
@@ -114,6 +114,7 @@ export const usePositionTypes = () => {
     }
 
     // Real-time will handle UI update via subscription
+    return;
   };
 
   const deletePosition = async (id: string) => {
@@ -132,6 +133,7 @@ export const usePositionTypes = () => {
     }
 
     // Real-time will handle UI update via subscription
+    return;
   };
 
   return {
