@@ -1,11 +1,16 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { usePositionTypes } from "./hooks/usePositionTypes";
 import { PositionItem } from "./components/PositionItem";
 import { NewPositionForm } from "./components/NewPositionForm";
 
 export const FormFieldSettings = () => {
-  const { positions, isLoading, updatePositionTypes } = usePositionTypes();
+  const {
+    positions,
+    isLoading,
+    addPosition,
+    updatePosition,
+    deletePosition,
+  } = usePositionTypes();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -28,12 +33,8 @@ export const FormFieldSettings = () => {
                 <PositionItem
                   key={position.id}
                   position={position}
-                  positions={positions}
-                  onUpdate={(newPositions) => updatePositionTypes.mutate(newPositions)}
-                  onRemove={(id) => {
-                    const newPositions = positions.filter((pos) => pos.id !== id);
-                    updatePositionTypes.mutate(newPositions);
-                  }}
+                  onUpdate={(field, value) => updatePosition(position.id!, field, value)}
+                  onRemove={() => deletePosition(position.id!)}
                 />
               ))
             ) : (
@@ -41,10 +42,7 @@ export const FormFieldSettings = () => {
             )}
           </div>
 
-          <NewPositionForm
-            positions={positions}
-            onAdd={(newPositions) => updatePositionTypes.mutate(newPositions)}
-          />
+          <NewPositionForm onAdd={addPosition} />
         </CardContent>
       </Card>
     </div>
