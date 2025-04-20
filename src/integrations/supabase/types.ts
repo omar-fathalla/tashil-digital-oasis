@@ -9,6 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          target: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attachments: {
+        Row: {
+          file_name: string
+          file_url: string
+          id: string
+          related_request: string | null
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          file_name: string
+          file_url: string
+          id?: string
+          related_request?: string | null
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          file_name?: string
+          file_url?: string
+          id?: string
+          related_request?: string | null
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachments_related_request_fkey"
+            columns: ["related_request"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           company_name: string
@@ -27,6 +104,24 @@ export type Database = {
           created_at?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      document_templates: {
+        Row: {
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -177,24 +272,282 @@ export type Database = {
         }
         Relationships: []
       }
+      form_fields: {
+        Row: {
+          id: string
+          is_required: boolean | null
+          name: string
+          position: string | null
+          type: string
+        }
+        Insert: {
+          id?: string
+          is_required?: boolean | null
+          name: string
+          position?: string | null
+          type: string
+        }
+        Update: {
+          id?: string
+          is_required?: boolean | null
+          name?: string
+          position?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_fields_position_fkey"
+            columns: ["position"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          read: boolean | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          read?: boolean | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          read?: boolean | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       registration_requests: {
         Row: {
           documents: Json | null
           full_name: string | null
           id: string
           national_id: string | null
+          status: string | null
+          submission_date: string | null
         }
         Insert: {
           documents?: Json | null
           full_name?: string | null
           id: string
           national_id?: string | null
+          status?: string | null
+          submission_date?: string | null
         }
         Update: {
           documents?: Json | null
           full_name?: string | null
           id?: string
           national_id?: string | null
+          status?: string | null
+          submission_date?: string | null
+        }
+        Relationships: []
+      }
+      request_documents: {
+        Row: {
+          id: string
+          request_id: string | null
+          status: string | null
+          submitted_at: string | null
+          template_id: string | null
+        }
+        Insert: {
+          id?: string
+          request_id?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          template_id?: string | null
+        }
+        Update: {
+          id?: string
+          request_id?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_documents_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_documents_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "document_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          request_type: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          request_type?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          request_type?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_settings: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      system_settings_audit: {
+        Row: {
+          category: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          key: string
+          new_value: Json | null
+          old_value: Json | null
+          setting_id: string
+        }
+        Insert: {
+          category: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          key: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_id: string
+        }
+        Update: {
+          category?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          key?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_audit_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_settings_audit_setting_id_fkey"
+            columns: ["setting_id"]
+            isOneToOne: false
+            referencedRelation: "system_settings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          role: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
         }
         Relationships: []
       }
@@ -203,7 +556,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_approved_requests: {
+        Args: { limit_count?: number }
+        Returns: {
+          documents: Json | null
+          full_name: string | null
+          id: string
+          national_id: string | null
+          status: string | null
+          submission_date: string | null
+        }[]
+      }
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_print_request_by_id: {
+        Args: { request_id: string }
+        Returns: {
+          documents: Json | null
+          full_name: string | null
+          id: string
+          national_id: string | null
+          status: string | null
+          submission_date: string | null
+        }
+      }
+      get_table_indexes: {
+        Args: { target_table?: string }
+        Returns: {
+          name: string
+          table_name: string
+          index_type: string
+          is_unique: boolean
+          is_primary: boolean
+          columns: string[]
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
