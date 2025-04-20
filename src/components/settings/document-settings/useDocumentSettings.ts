@@ -1,7 +1,7 @@
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { documentApi, DocumentType } from "@/utils/documentApi";
+import { DocumentType } from "@/utils/documentApi";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useDocumentSettings = () => {
@@ -10,7 +10,15 @@ export const useDocumentSettings = () => {
 
   const { data: documentTypes = [], isLoading, refetch: refreshDocuments } = useQuery({
     queryKey: ['document-types'],
-    queryFn: documentApi.getAllDocuments
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("document_types")
+        .select("*")
+        .order('name');
+        
+      if (error) throw error;
+      return data;
+    }
   });
 
   const handleAddDocument = async (newDocument: DocumentType) => {
