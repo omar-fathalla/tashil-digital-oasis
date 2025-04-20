@@ -28,11 +28,13 @@ export const InterfaceSettings = () => {
   }, [settings]);
 
   const handleSaveChanges = () => {
-    updateSettings.mutate(localSettings);
-    toast({
-      title: "Success",
-      description: "Interface settings saved successfully",
-    });
+    // Convert localSettings object into key-value pairs for the database
+    const settingsToUpdate = Object.entries(localSettings).reduce((acc, [key, value]) => {
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, any>);
+    
+    updateSettings.mutate(settingsToUpdate);
   };
 
   // Create typed handler functions for each setting

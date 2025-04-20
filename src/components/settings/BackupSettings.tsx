@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -31,7 +32,13 @@ export const BackupSettings = () => {
   }, [settings]);
 
   const handleSaveChanges = () => {
-    updateSettings.mutate(localSettings);
+    // Convert localSettings object into key-value pairs for the database
+    const settingsToUpdate = Object.entries(localSettings).reduce((acc, [key, value]) => {
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, any>);
+    
+    updateSettings.mutate(settingsToUpdate);
   };
 
   const handleExportNow = (format: string) => {

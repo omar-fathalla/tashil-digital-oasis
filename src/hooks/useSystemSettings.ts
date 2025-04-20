@@ -34,12 +34,17 @@ export function useSystemSettings(category: string) {
 
   const updateSettings = useMutation({
     mutationFn: async (newSettings: Record<string, any>) => {
+      // Create an array of upsert operations for each setting
       const updates = Object.entries(newSettings).map(([key, value]) => ({
         category,
         key,
         value,
       }));
 
+      // Log the updates for debugging
+      console.log('Updating settings with:', updates);
+      
+      // Upsert each setting
       const { error } = await supabase
         .from('system_settings')
         .upsert(
@@ -51,10 +56,17 @@ export function useSystemSettings(category: string) {
           { onConflict: 'category,key' }
         );
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating settings:', error);
+        throw error;
+      }
+      
+      return { success: true };
     },
     onSuccess: () => {
+      // Invalidate and refetch queries after successful mutation
       queryClient.invalidateQueries({ queryKey: ['system-settings', category] });
+      
       toast({
         title: "Success",
         description: "Settings saved successfully",
