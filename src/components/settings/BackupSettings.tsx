@@ -1,25 +1,37 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export const BackupSettings = () => {
+  const { settings, updateSettings } = useSystemSettings('backup');
   const { toast } = useToast();
-  const [scheduledBackups, setScheduledBackups] = useState(true);
-  const [backupFrequency, setBackupFrequency] = useState("daily");
-  const [exportFormat, setExportFormat] = useState("csv");
-  const [backupDestination, setBackupDestination] = useState("firebase");
+  const [localSettings, setLocalSettings] = useState({
+    scheduledBackups: true,
+    backupFrequency: "daily",
+    exportFormat: "csv",
+    backupDestination: "firebase",
+    apiKey: "",
+  });
+
+  useEffect(() => {
+    // Initialize local state from database settings
+    if (settings.length > 0) {
+      const backupSettings = settings.reduce((acc, setting) => ({
+        ...acc,
+        [setting.key]: setting.value
+      }), {});
+      setLocalSettings(prev => ({ ...prev, ...backupSettings }));
+    }
+  }, [settings]);
 
   const handleSaveChanges = () => {
-    toast({
-      title: "Success",
-      description: "Backup settings saved successfully",
-    });
+    updateSettings.mutate(localSettings);
   };
 
   const handleExportNow = (format: string) => {
@@ -48,20 +60,20 @@ export const BackupSettings = () => {
               </p>
             </div>
             <Switch
-              checked={scheduledBackups}
-              onCheckedChange={setScheduledBackups}
+              checked={localSettings.scheduledBackups}
+              onCheckedChange={(checked) => setLocalSettings(prev => ({ ...prev, scheduledBackups: checked }))}
             />
           </div>
           
-          {scheduledBackups && (
+          {localSettings.scheduledBackups && (
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium block mb-2">
                   Backup Frequency
                 </label>
                 <Select 
-                  value={backupFrequency} 
-                  onValueChange={setBackupFrequency}
+                  value={localSettings.backupFrequency} 
+                  onValueChange={(value) => setLocalSettings(prev => ({ ...prev, backupFrequency: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -79,8 +91,8 @@ export const BackupSettings = () => {
                   Backup Destination
                 </label>
                 <Select 
-                  value={backupDestination} 
-                  onValueChange={setBackupDestination}
+                  value={localSettings.backupDestination} 
+                  onValueChange={(value) => setLocalSettings(prev => ({ ...prev, backupDestination: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -93,12 +105,17 @@ export const BackupSettings = () => {
                 </Select>
               </div>
               
-              {backupDestination !== "firebase" && (
+              {localSettings.backupDestination !== "firebase" && (
                 <div>
                   <label className="text-sm font-medium block mb-2">
                     Storage Credentials
                   </label>
-                  <Input type="password" placeholder="Enter storage API key" />
+                  <Input 
+                    type="password" 
+                    placeholder="Enter storage API key" 
+                    value={localSettings.apiKey}
+                    onChange={(e) => setLocalSettings(prev => ({ ...prev, apiKey: e.target.value }))}
+                  />
                   <p className="text-xs text-muted-foreground mt-1">
                     Your credentials are encrypted and stored securely
                   </p>
@@ -118,7 +135,10 @@ export const BackupSettings = () => {
               <label className="text-sm font-medium block mb-2">
                 Default Export Format
               </label>
-              <Select value={exportFormat} onValueChange={setExportFormat}>
+              <Select 
+                value={localSettings.exportFormat} 
+                onValueChange={(value) => setLocalSettings(prev => ({ ...prev, exportFormat: value }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

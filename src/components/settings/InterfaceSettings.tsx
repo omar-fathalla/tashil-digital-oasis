@@ -1,19 +1,33 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useToast } from "@/hooks/use-toast";
 
 export const InterfaceSettings = () => {
+  const { settings, updateSettings } = useSystemSettings('interface');
   const { toast } = useToast();
-  const [language, setLanguage] = useState("english");
-  const [enableBilingual, setEnableBilingual] = useState(true);
-  const [theme, setTheme] = useState("light");
+  const [localSettings, setLocalSettings] = useState({
+    language: "english",
+    enableBilingual: true,
+    theme: "light"
+  });
+
+  useEffect(() => {
+    if (settings.length > 0) {
+      const interfaceSettings = settings.reduce((acc, setting) => ({
+        ...acc,
+        [setting.key]: setting.value
+      }), {});
+      setLocalSettings(prev => ({ ...prev, ...interfaceSettings }));
+    }
+  }, [settings]);
 
   const handleSaveChanges = () => {
+    updateSettings.mutate(localSettings);
     toast({
       title: "Success",
       description: "Interface settings saved successfully",
@@ -39,13 +53,13 @@ export const InterfaceSettings = () => {
               </p>
             </div>
             <Switch
-              checked={enableBilingual}
-              onCheckedChange={setEnableBilingual}
+              checked={localSettings.enableBilingual}
+              onCheckedChange={setLocalSettings}
             />
           </div>
           
           <h3 className="text-lg font-medium mb-4">Default Language</h3>
-          <RadioGroup value={language} onValueChange={setLanguage} disabled={!enableBilingual}>
+          <RadioGroup value={localSettings.language} onValueChange={setLocalSettings} disabled={!localSettings.enableBilingual}>
             <div className="flex items-center space-x-2 mb-4">
               <RadioGroupItem value="english" id="english" />
               <Label htmlFor="english">English</Label>
@@ -62,7 +76,7 @@ export const InterfaceSettings = () => {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-medium mb-4">Theme Settings</h3>
-          <RadioGroup value={theme} onValueChange={setTheme}>
+          <RadioGroup value={localSettings.theme} onValueChange={setLocalSettings}>
             <div className="flex items-center space-x-2 mb-4">
               <RadioGroupItem value="light" id="light" />
               <Label htmlFor="light">Light Theme</Label>
