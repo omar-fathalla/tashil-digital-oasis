@@ -404,6 +404,27 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          name?: string
+        }
+        Relationships: []
+      }
       position_types: {
         Row: {
           created_at: string | null
@@ -553,6 +574,63 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string | null
+          role_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string | null
+          role_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string | null
+          role_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           category: string
@@ -635,6 +713,7 @@ export type Database = {
           full_name: string | null
           id: string
           role: string | null
+          role_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -642,6 +721,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: string | null
+          role_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -649,8 +729,17 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: string | null
+          role_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
