@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,8 +20,6 @@ import Auth from "./pages/Auth";
 import Print from "./pages/Print";
 import Settings from "./pages/Settings";
 import PrintBatch from "./pages/PrintBatch";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import Unauthorized from "./pages/Unauthorized";
 
 const queryClient = new QueryClient();
 
@@ -34,17 +33,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route element={<RootLayout />}>
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute requiredPermission="manage_company">
-                  <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/company-registration" element={<CompanyRegistration />} />
@@ -56,6 +45,7 @@ const App = () => (
               <Route path="/print" element={<Print />} />
               <Route path="/print/:id" element={<Print />} />
               <Route path="/print-batch" element={<PrintBatch />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

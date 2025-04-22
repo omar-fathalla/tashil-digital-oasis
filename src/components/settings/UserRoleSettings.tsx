@@ -37,8 +37,21 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+// Define types
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+  userCount: number;
+  permissions: string[];
+}
+
+interface Permission {
+  id: string;
+  key: string;
+  name: string;
+}
 
 // Form schema for validation
 const roleFormSchema = z.object({
@@ -51,27 +64,45 @@ type RoleFormValues = z.infer<typeof roleFormSchema>;
 
 export const UserRoleSettings = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [roles, setRoles] = useState<Role[]>([
+    {
+      id: "1",
+      name: "System Admin",
+      description: "Full system administrator with all permissions",
+      userCount: 2,
+      permissions: ["view_users", "edit_users", "delete_users", "upload_documents", "review_requests", "send_notifications", "manage_company"]
+    },
+    {
+      id: "2",
+      name: "HR Manager",
+      description: "Can manage employees and requests",
+      userCount: 5,
+      permissions: ["view_users", "edit_users", "upload_documents", "review_requests"]
+    },
+    {
+      id: "3",
+      name: "Editor",
+      description: "Can edit and upload documents only",
+      userCount: 8,
+      permissions: ["upload_documents"]
+    }
+  ]);
+
+  // Available permissions
+  const permissions: Permission[] = [
+    { id: "1", key: "view_users", name: "View Users" },
+    { id: "2", key: "edit_users", name: "Edit Users" },
+    { id: "3", key: "delete_users", name: "Delete Users" },
+    { id: "4", key: "upload_documents", name: "Upload Documents" },
+    { id: "5", key: "review_requests", name: "Review Requests" },
+    { id: "6", key: "send_notifications", name: "Send Notifications" },
+    { id: "7", key: "manage_company", name: "Manage Company" },
+  ];
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState<Role | null>(null);
-
-  interface Role {
-    id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    _count?: {
-      users: number;
-    };
-  }
-
-  interface Permission {
-    id: string;
-    key: string;
-    name: string;
-  }
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleFormSchema),
@@ -80,174 +111,6 @@ export const UserRoleSettings = () => {
       description: "",
       permissions: [],
     },
-  });
-
-  // Fetch roles
-  const { data: roles = [], isLoading: isLoadingRoles } = useQuery({
-    queryKey: ['roles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('roles')
-        .select(`
-          *,
-          _count: users(count)
-        `);
-
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  // Fetch permissions
-  const { data: permissions = [], isLoading: isLoadingPermissions } = useQuery({
-    queryKey: ['permissions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('permissions')
-        .select('*');
-
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  // Fetch role permissions
-  const { data: rolePermissions = [], isLoading: isLoadingRolePermissions } = useQuery({
-    queryKey: ['role_permissions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('role_permissions')
-        .select('*');
-
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  const createRole = useMutation({
-    mutationFn: async (values: RoleFormValues) => {
-      // Insert new role
-      const { data: roleData, error: roleError } = await supabase
-        .from('roles')
-        .insert([
-          { name: values.name, description: values.description }
-        ])
-        .select()
-        .single();
-
-      if (roleError) throw roleError;
-
-      // Insert role permissions
-      if (values.permissions.length > 0) {
-        const rolePermissions = values.permissions.map(permissionId => ({
-          role_id: roleData.id,
-          permission_id: permissionId
-        }));
-
-        const { error: permError } = await supabase
-          .from('role_permissions')
-          .insert(rolePermissions);
-
-        if (permError) throw permError;
-      }
-
-      return roleData;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
-      queryClient.invalidateQueries({ queryKey: ['role_permissions'] });
-      setIsRoleModalOpen(false);
-      toast({
-        title: "Role Created",
-        description: "The role has been created successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to create role. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const updateRole = useMutation({
-    mutationFn: async (values: RoleFormValues & { id: string }) => {
-      // Update role
-      const { error: roleError } = await supabase
-        .from('roles')
-        .update({ 
-          name: values.name, 
-          description: values.description 
-        })
-        .eq('id', values.id);
-
-      if (roleError) throw roleError;
-
-      // Delete existing permissions
-      const { error: deleteError } = await supabase
-        .from('role_permissions')
-        .delete()
-        .eq('role_id', values.id);
-
-      if (deleteError) throw deleteError;
-
-      // Insert new permissions
-      if (values.permissions.length > 0) {
-        const rolePermissions = values.permissions.map(permissionId => ({
-          role_id: values.id,
-          permission_id: permissionId
-        }));
-
-        const { error: permError } = await supabase
-          .from('role_permissions')
-          .insert(rolePermissions);
-
-        if (permError) throw permError;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
-      queryClient.invalidateQueries({ queryKey: ['role_permissions'] });
-      setIsRoleModalOpen(false);
-      toast({
-        title: "Role Updated",
-        description: "The role has been updated successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update role. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const deleteRole = useMutation({
-    mutationFn: async (roleId: string) => {
-      const { error } = await supabase
-        .from('roles')
-        .delete()
-        .eq('id', roleId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
-      setIsDeleteDialogOpen(false);
-      toast({
-        title: "Role Deleted",
-        description: "The role has been deleted successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete role. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 
   const filteredRoles = roles.filter(role =>
@@ -265,15 +128,10 @@ export const UserRoleSettings = () => {
   };
 
   const openEditRoleModal = (role: Role) => {
-    // Use the rolePermissions data from the query to find the permissions for this role
-    const currentRolePermissions = rolePermissions
-      .filter(rp => rp.role_id === role.id)
-      .map(rp => rp.permission_id);
-
     form.reset({
       name: role.name,
       description: role.description,
-      permissions: currentRolePermissions,
+      permissions: role.permissions,
     });
     setCurrentRole(role);
     setIsRoleModalOpen(true);
@@ -286,16 +144,50 @@ export const UserRoleSettings = () => {
 
   const handleFormSubmit = (values: RoleFormValues) => {
     if (currentRole) {
-      updateRole.mutate({ ...values, id: currentRole.id });
+      // Edit existing role
+      const updatedRoles = roles.map(role => 
+        role.id === currentRole.id 
+          ? { ...role, ...values } 
+          : role
+      );
+      setRoles(updatedRoles);
+      toast({
+        title: "Role Updated",
+        description: `The role "${values.name}" has been updated successfully.`,
+      });
     } else {
-      createRole.mutate(values);
+      // Add new role
+      const newRole: Role = {
+        id: `${Date.now()}`, // Simple ID generation for demo
+        name: values.name,
+        description: values.description,
+        userCount: 0,
+        permissions: values.permissions,
+      };
+      setRoles([...roles, newRole]);
+      toast({
+        title: "Role Created",
+        description: `The role "${values.name}" has been created successfully.`,
+      });
     }
+    setIsRoleModalOpen(false);
   };
 
   const handleDeleteRole = () => {
     if (currentRole) {
-      deleteRole.mutate(currentRole.id);
+      const updatedRoles = roles.filter(role => role.id !== currentRole.id);
+      setRoles(updatedRoles);
+      toast({
+        title: "Role Deleted",
+        description: `The role "${currentRole.name}" has been deleted successfully.`,
+      });
+      setIsDeleteDialogOpen(false);
     }
+  };
+
+  const getPermissionName = (key: string) => {
+    const permission = permissions.find(p => p.key === key);
+    return permission ? permission.name : key;
   };
 
   return (
@@ -346,27 +238,24 @@ export const UserRoleSettings = () => {
                 <TableCell>{role.description}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {rolePermissions
-                      .filter(rp => rp.role_id === role.id)
-                      .slice(0, 2)
-                      .map((rp) => {
-                        const permission = permissions.find(p => p.id === rp.permission_id);
-                        return permission ? (
-                          <Badge key={permission.id} variant="outline" className="bg-primary/10">
-                            {permission.name}
-                          </Badge>
-                        ) : null;
-                      })
-                    }
-                    {rolePermissions.filter(rp => rp.role_id === role.id).length > 2 && (
+                    {role.permissions.length > 0 ? (
+                      role.permissions.slice(0, 2).map((permission) => (
+                        <Badge key={permission} variant="outline" className="bg-primary/10">
+                          {getPermissionName(permission)}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground text-sm">No permissions</span>
+                    )}
+                    {role.permissions.length > 2 && (
                       <Badge variant="outline" className="bg-muted">
-                        +{rolePermissions.filter(rp => rp.role_id === role.id).length - 2} more
+                        +{role.permissions.length - 2} more
                       </Badge>
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{role._count?.users || 0}</Badge>
+                  <Badge variant="secondary">{role.userCount}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
@@ -388,6 +277,13 @@ export const UserRoleSettings = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {filteredRoles.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-4">
+                  No roles found matching your search criteria
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
@@ -451,11 +347,11 @@ export const UserRoleSettings = () => {
                           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
                               <Checkbox
-                                checked={field.value?.includes(permission.id)}
+                                checked={field.value?.includes(permission.key)}
                                 onCheckedChange={(checked) => {
                                   const updatedPermissions = checked
-                                    ? [...field.value, permission.id]
-                                    : field.value.filter((value) => value !== permission.id);
+                                    ? [...field.value, permission.key]
+                                    : field.value.filter((value) => value !== permission.key);
                                   field.onChange(updatedPermissions);
                                 }}
                               />
@@ -488,9 +384,9 @@ export const UserRoleSettings = () => {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete the role "{currentRole?.name}".
-              {currentRole && currentRole._count?.users > 0 && (
+              {currentRole && currentRole.userCount > 0 && (
                 <span className="block mt-2 font-medium text-destructive">
-                  Warning: This role has {currentRole._count.users} users assigned to it.
+                  Warning: This role has {currentRole.userCount} users assigned to it.
                 </span>
               )}
             </AlertDialogDescription>
