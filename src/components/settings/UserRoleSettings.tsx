@@ -265,14 +265,15 @@ export const UserRoleSettings = () => {
   };
 
   const openEditRoleModal = (role: Role) => {
-    const rolePermissions = rolePermissions
+    // Use the rolePermissions data from the query to find the permissions for this role
+    const currentRolePermissions = rolePermissions
       .filter(rp => rp.role_id === role.id)
       .map(rp => rp.permission_id);
 
     form.reset({
       name: role.name,
       description: role.description,
-      permissions: rolePermissions,
+      permissions: currentRolePermissions,
     });
     setCurrentRole(role);
     setIsRoleModalOpen(true);
@@ -505,4 +506,3 @@ export const UserRoleSettings = () => {
     </div>
   );
 };
-
