@@ -11,6 +11,7 @@ import { WorkflowSettings } from "@/components/settings/WorkflowSettings";
 import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
 import { BackupSettings } from "@/components/settings/BackupSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
+import { UserRoleSettings } from "@/components/settings/UserRoleSettings";
 
 const Settings = () => {
   return (
@@ -32,7 +33,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="documents" className="w-full">
-              <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 mb-8">
+              <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-11 mb-8">
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="form-fields">Form Fields</TabsTrigger>
                 <TabsTrigger value="regions">Regions</TabsTrigger>
@@ -43,6 +44,7 @@ const Settings = () => {
                 <TabsTrigger value="interface">Interface</TabsTrigger>
                 <TabsTrigger value="backup">Backup & Export</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
+                <TabsTrigger value="user-roles">User Roles</TabsTrigger>
               </TabsList>
               
               <TabsContent value="documents" className="space-y-4">
@@ -83,6 +85,10 @@ const Settings = () => {
               
               <TabsContent value="security" className="space-y-4">
                 <SecuritySettings />
+              </TabsContent>
+              
+              <TabsContent value="user-roles" className="space-y-4">
+                <UserRoleSettings />
               </TabsContent>
             </Tabs>
           </CardContent>
