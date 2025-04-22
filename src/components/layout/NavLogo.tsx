@@ -9,8 +9,7 @@ export const NavLogo = () => {
         <div className="rounded-full bg-primary p-1">
           <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
         </div>
-        <span className="text-xl font-bold text-primary hidden sm:block">تسهيل</span>
-        <span className="text-xl font-semibold text-foreground hidden sm:block">Platform</span>
+        <span className="text-xl font-semibold text-foreground hidden sm:block">ID</span>
       </Link>
     </div>
   );
