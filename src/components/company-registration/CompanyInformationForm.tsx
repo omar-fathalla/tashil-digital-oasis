@@ -53,7 +53,7 @@ export function CompanyInformationForm({ form }: CompanyInformationFormProps) {
       />
       <FormField
         control={form.control}
-        name="commercialRegisterNumber"
+        name="registerNumber"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Commercial Register Number</FormLabel>

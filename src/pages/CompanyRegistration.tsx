@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -27,7 +28,7 @@ const CompanyRegistration = () => {
       companyName: "",
       address: "",
       taxCardNumber: "",
-      commercialRegisterNumber: "",
+      registerNumber: "",
       companyNumber: "",
       username: "",
       password: "",
@@ -93,9 +94,8 @@ const CompanyRegistration = () => {
             company_name: values.companyName,
             address: values.address,
             tax_card_number: values.taxCardNumber,
-            commercial_register_number: values.commercialRegisterNumber,
+            register_number: values.registerNumber,
             company_number: values.companyNumber,
-            username: values.username,
             user_id: authData.user.id,
             commercial_register_url: commercialRegisterUrl,
             tax_card_url: taxCardUrl,
@@ -136,7 +136,7 @@ const CompanyRegistration = () => {
   const validateStep = (step: number) => {
     switch (step) {
       case 0:
-        return form.trigger(['companyName', 'address', 'taxCardNumber', 'commercialRegisterNumber', 'companyNumber'])
+        return form.trigger(['companyName', 'address', 'taxCardNumber', 'registerNumber', 'companyNumber'])
           .then(isValid => {
             if (isValid) setFormStep(1);
           });

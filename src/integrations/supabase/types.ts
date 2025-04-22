@@ -107,6 +107,39 @@ export type Database = {
         }
         Relationships: []
       }
+      company_registrations: {
+        Row: {
+          address: string | null
+          commercial_register_number: string | null
+          company_name: string
+          company_number: string | null
+          created_at: string | null
+          id: string
+          tax_card_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          commercial_register_number?: string | null
+          company_name: string
+          company_number?: string | null
+          created_at?: string | null
+          id?: string
+          tax_card_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          commercial_register_number?: string | null
+          company_name?: string
+          company_number?: string | null
+          created_at?: string | null
+          id?: string
+          tax_card_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       company_users: {
         Row: {
           company_id: string | null
