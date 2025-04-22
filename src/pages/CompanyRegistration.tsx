@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -11,6 +10,8 @@ import { AccountAccessForm } from "@/components/company-registration/AccountAcce
 import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 import { CompanyRegistrationSuccess } from "@/components/company-registration/CompanyRegistrationSteps";
 import { RegistrationFormWrapper } from "@/components/company-registration/RegistrationFormWrapper";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2 } from "lucide-react";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
@@ -130,7 +131,11 @@ const CompanyRegistration = () => {
   };
 
   if (isCompleted) {
-    return <CompanyRegistrationSuccess onNavigateToDashboard={() => navigate('/dashboard')} />;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <CompanyRegistrationSuccess onNavigateToDashboard={() => navigate('/dashboard')} />
+      </div>
+    );
   }
 
   const validateStep = (step: number) => {
@@ -187,20 +192,40 @@ const CompanyRegistration = () => {
   const { title, description, content } = getStepContent();
 
   return (
-    <RegistrationFormWrapper
-      form={form}
-      formStep={formStep}
-      title={title}
-      description={description}
-      isSubmitting={isSubmitting}
-      onPrevious={() => setFormStep(formStep - 1)}
-      onNext={() => validateStep(formStep)}
-      onSubmit={onSubmit}
-      showSubmit={formStep === 2}
-      disableSubmit={!uploadedFiles.commercialRegister || !uploadedFiles.taxCard}
-    >
-      {content}
-    </RegistrationFormWrapper>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Building2 className="h-8 w-8 text-primary" />
+          Company Registration
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Register your company and get started with our services
+        </p>
+      </div>
+
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RegistrationFormWrapper
+            form={form}
+            formStep={formStep}
+            title={title}
+            description={description}
+            isSubmitting={isSubmitting}
+            onPrevious={() => setFormStep(formStep - 1)}
+            onNext={() => validateStep(formStep)}
+            onSubmit={onSubmit}
+            showSubmit={formStep === 2}
+            disableSubmit={!uploadedFiles.commercialRegister || !uploadedFiles.taxCard}
+          >
+            {content}
+          </RegistrationFormWrapper>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
