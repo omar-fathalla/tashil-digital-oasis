@@ -783,6 +783,13 @@ export type Database = {
           columns: string[]
         }[]
       }
+      get_user_permissions: {
+        Args: { user_id: string }
+        Returns: {
+          permission_key: string
+          permission_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

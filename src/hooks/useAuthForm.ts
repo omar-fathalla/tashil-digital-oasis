@@ -22,12 +22,30 @@ export const useAuthForm = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data: { user }, error } = await supabase.auth.signUp({
           email,
           password,
         });
 
         if (error) throw error;
+
+        if (user) {
+          // Assign default user role
+          const defaultRoleQuery = await supabase
+            .from('roles')
+            .select('id')
+            .eq('name', 'User')
+            .single();
+
+          if (defaultRoleQuery.error) throw defaultRoleQuery.error;
+
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ role_id: defaultRoleQuery.data.id })
+            .eq('id', user.id);
+
+          if (updateError) throw updateError;
+        }
         
         toast({
           title: "Account Created Successfully",
