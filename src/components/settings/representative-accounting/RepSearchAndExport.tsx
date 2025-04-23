@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, FileJson, FileCsv } from "lucide-react";
+import { FileText, FileJson, File } from "lucide-react";
 import { RepWithCompany } from "./types";
 
 type RepSearchAndExportProps = {
@@ -65,7 +65,7 @@ export const RepSearchAndExport = ({ onSearch, data }: RepSearchAndExportProps) 
       </div>
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => exportData("csv")}>
-          <FileCsv className="mr-2 h-4 w-4" />
+          <File className="mr-2 h-4 w-4" />
           Export CSV
         </Button>
         <Button variant="outline" onClick={() => exportData("json")}>

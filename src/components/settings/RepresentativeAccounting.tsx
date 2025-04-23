@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,24 +9,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RepSummaryCards } from "./representative-accounting/RepSummaryCards";
 import { RepSearchAndExport } from "./representative-accounting/RepSearchAndExport";
-import { RepWithCompany, Company } from "./representative-accounting/types";
-
-type Representative = {
-  id: string;
-  full_name: string;
-  type: "promo" | "company";
-  company_id: string | null;
-  value: number;
-  created_at: string;
-};
-
-type Company = {
-  id: string;
-  name: string;
-  type: "advertising" | "product";
-};
-
-type RepWithCompany = Representative & { company_name: string; company_type: string };
+// Import types from the types file instead of redeclaring
+import { RepWithCompany, Company, Representative } from "./representative-accounting/types";
 
 export const RepresentativeAccounting = () => {
   const [representatives, setRepresentatives] = useState<RepWithCompany[]>([]);
