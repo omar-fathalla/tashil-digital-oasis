@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApplications } from "@/hooks/useApplications";
@@ -45,10 +46,10 @@ const ApplicationStatus = () => {
           
           <Card className="border-none shadow-lg">
             <CardHeader className="pb-0">
-              <CardTitle>طلبات التسجيل</CardTitle>
+              <CardTitle>Registration Requests</CardTitle>
               <CardDescription>
-                {isLoading ? "جاري التحميل..." : 
-                 `عرض ${filteredApplications.length} من ${applications.length} طلب`}
+                {isLoading ? "Loading..." : 
+                 `Showing ${filteredApplications.length} of ${applications.length} requests`}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
