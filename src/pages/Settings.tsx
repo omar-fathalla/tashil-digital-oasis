@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocumentSettings } from "@/components/settings/DocumentSettings";
@@ -12,8 +11,26 @@ import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
 import { BackupSettings } from "@/components/settings/BackupSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { UserRoleSettings } from "@/components/settings/UserRoleSettings";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
+  const { user } = useAuth();
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      setPermissions([]);
+      return;
+    }
+    supabase
+      .rpc("get_user_permissions", { user_id: user.id })
+      .then(res => setPermissions(Array.isArray(res.data) ? res.data.map((p: any) => p.permission_key) : []));
+  }, [user]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col space-y-6">
@@ -94,6 +111,17 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {permissions.includes("manage_backup") && (
+        <div className="mb-8">
+          <Link
+            to="/backup-management"
+            className="inline-flex items-center gap-2 text-base font-semibold bg-background border border-primary rounded px-4 py-2 hover:bg-muted transition"
+          >
+            <span>🔒</span> Backup Management
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

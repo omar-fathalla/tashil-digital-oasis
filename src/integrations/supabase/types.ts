@@ -86,6 +86,39 @@ export type Database = {
           },
         ]
       }
+      backup_files: {
+        Row: {
+          description: string | null
+          file_data: Json
+          file_name: string
+          file_type: string
+          id: string
+          table_name: string
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          file_data: Json
+          file_name: string
+          file_type: string
+          id?: string
+          table_name: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          file_data?: Json
+          file_name?: string
+          file_type?: string
+          id?: string
+          table_name?: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           company_name: string
@@ -404,6 +437,27 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          name?: string
+        }
+        Relationships: []
+      }
       position_types: {
         Row: {
           created_at: string | null
@@ -553,6 +607,63 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string | null
+          role_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string | null
+          role_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string | null
+          role_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           category: string
@@ -635,6 +746,7 @@ export type Database = {
           full_name: string | null
           id: string
           role: string | null
+          role_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -642,6 +754,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: string | null
+          role_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -649,8 +762,17 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: string | null
+          role_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -692,6 +814,13 @@ export type Database = {
           is_unique: boolean
           is_primary: boolean
           columns: string[]
+        }[]
+      }
+      get_user_permissions: {
+        Args: { user_id: string }
+        Returns: {
+          permission_key: string
+          permission_name: string
         }[]
       }
     }
