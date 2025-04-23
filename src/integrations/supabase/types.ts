@@ -536,6 +536,41 @@ export type Database = {
         }
         Relationships: []
       }
+      representatives: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          full_name: string
+          id: string
+          type: string
+          value: number
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          full_name: string
+          id?: string
+          type: string
+          value: number
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          type?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "representatives_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_documents: {
         Row: {
           id: string

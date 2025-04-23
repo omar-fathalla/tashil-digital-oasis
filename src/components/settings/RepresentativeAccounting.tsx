@@ -11,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 type Representative = {
   id: string;
   full_name: string;
-  type: 'promo' | 'company';
-  company_name: string;
+  type: "promo" | "company";
+  company_id: string | null;
   value: number;
   created_at: string;
 };
@@ -20,67 +20,94 @@ type Representative = {
 type Company = {
   id: string;
   name: string;
-  type: 'advertising' | 'product';
+  type: "advertising" | "product";
 };
 
+type RepWithCompany = Representative & { company_name: string; company_type: string };
+
 export const RepresentativeAccounting = () => {
-  const [representatives, setRepresentatives] = useState<Representative[]>([]);
+  const [representatives, setRepresentatives] = useState<RepWithCompany[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [newRep, setNewRep] = useState({ full_name: '', type: '', company_id: '' });
-  const [filter, setFilter] = useState({ type: 'all', company_type: 'all' });
+  const [newRep, setNewRep] = useState({ full_name: "", type: "" as "promo" | "company" | "", company_id: "" });
+  const [filter, setFilter] = useState({ type: "all", company_type: "all" });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchCompanies();
-    fetchRepresentatives();
   }, []);
 
+  useEffect(() => {
+    if (companies.length > 0) {
+      fetchRepresentatives();
+    }
+  }, [companies]);
+
   const fetchCompanies = async () => {
-    const { data, error } = await supabase.from('companies').select('*');
-    if (data) setCompanies(data);
+    const { data, error } = await supabase.from("companies").select("*");
+    if (data) setCompanies(data as Company[]);
     if (error) console.error(error);
   };
 
   const fetchRepresentatives = async () => {
-    const { data, error } = await supabase
-      .from('representatives')
-      .select('representatives.*, companies.name as company_name')
-      .join('companies', 'representatives.company_id = companies.id');
-    
-    if (data) setRepresentatives(data);
+    const { data, error } = await supabase.from("representatives").select("*");
+    if (data && Array.isArray(data)) {
+      const result: RepWithCompany[] = data.map((rep: Representative) => {
+        const company = companies.find((c) => c.id === rep.company_id);
+        return {
+          ...rep,
+          company_name: company?.name || "",
+          company_type: company?.type || "",
+        };
+      });
+      setRepresentatives(result);
+    }
     if (error) console.error(error);
   };
 
   const addRepresentative = async () => {
-    const { data, error } = await supabase.from('representatives').insert({
+    if (!newRep.full_name || !newRep.type || !newRep.company_id) {
+      toast({ title: "Please fill all fields", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.from("representatives").insert({
       full_name: newRep.full_name,
       type: newRep.type,
-      company_id: newRep.company_id
+      company_id: newRep.company_id,
+      // value is auto-set by trigger
     });
-
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: 'Success', description: 'Representative added' });
+      toast({ title: "Success", description: "Representative added" });
       fetchRepresentatives();
-      setNewRep({ full_name: '', type: '', company_id: '' });
+      setNewRep({ full_name: "", type: "", company_id: "" });
     }
   };
 
-  const filteredRepresentatives = representatives.filter(rep => 
-    (filter.type === 'all' || rep.type === filter.type) &&
-    (filter.company_type === 'all')
-  );
+  const filteredRepresentatives = representatives.filter((rep) => {
+    const typeOk = filter.type === "all" || rep.type === filter.type;
+    const companyTypeOk = filter.company_type === "all" || rep.company_type === filter.company_type;
+    return typeOk && companyTypeOk;
+  });
 
   const calculateTotals = () => {
-    const promoReps = filteredRepresentatives.filter(r => r.type === 'promo');
-    const companyReps = filteredRepresentatives.filter(r => r.type === 'company');
+    const promoReps = filteredRepresentatives.filter((r) => r.type === "promo");
+    const companyReps = filteredRepresentatives.filter((r) => r.type === "company");
 
     return {
       promoTotal: promoReps.length,
-      promoValue: promoReps.reduce((sum, rep) => sum + rep.value, 0),
+      promoValue: promoReps.reduce((sum, rep) => sum + (rep.value || 0), 0),
       companyTotal: companyReps.length,
-      companyValue: companyReps.reduce((sum, rep) => sum + rep.value, 0)
+      companyValue: companyReps.reduce((sum, rep) => sum + (rep.value || 0), 0),
+      byCompany: companies.map((company) => {
+        const reps = filteredRepresentatives.filter((r) => r.company_id === company.id);
+        return {
+          company: company.name,
+          type: company.type,
+          total: reps.length,
+          value: reps.reduce((sum, rep) => sum + (rep.value || 0), 0),
+        };
+      }),
     };
   };
 
@@ -88,18 +115,21 @@ export const RepresentativeAccounting = () => {
 
   return (
     <div className="space-y-4">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Representative Accounting</h1>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <h2 className="text-lg font-semibold mb-2">Add Representative</h2>
           <div className="space-y-2">
-            <Input 
-              placeholder="Full Name" 
+            <Input
+              placeholder="Full Name"
               value={newRep.full_name}
-              onChange={(e) => setNewRep(prev => ({ ...prev, full_name: e.target.value }))}
+              onChange={(e) => setNewRep((prev) => ({ ...prev, full_name: e.target.value }))}
             />
-            <Select 
-              value={newRep.type} 
-              onValueChange={(value) => setNewRep(prev => ({ ...prev, type: value }))}
+            <Select
+              value={newRep.type}
+              onValueChange={(value) => setNewRep((prev) => ({ ...prev, type: value as "promo" | "company" }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Representative Type" />
@@ -109,17 +139,18 @@ export const RepresentativeAccounting = () => {
                 <SelectItem value="company">Company</SelectItem>
               </SelectContent>
             </Select>
-            <Select 
-              value={newRep.company_id} 
-              onValueChange={(value) => setNewRep(prev => ({ ...prev, company_id: value }))}
+            <Select
+              value={newRep.company_id}
+              onValueChange={(value) => setNewRep((prev) => ({ ...prev, company_id: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Company" />
               </SelectTrigger>
               <SelectContent>
-                {companies.map(company => (
+                {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
-                    {company.name}
+                    {company.name}{" "}
+                    <span className="text-xs text-muted-foreground ml-1">({company.type})</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -143,15 +174,30 @@ export const RepresentativeAccounting = () => {
               <p>Total Value: {totals.companyValue}</p>
             </div>
           </div>
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2">By Company</h4>
+            <div className="space-y-1">
+              {totals.byCompany.map((c) => (
+                <div key={c.company} className="flex justify-between border-b last:border-0 pb-1 text-sm">
+                  <span>
+                    {c.company} <span className="text-muted-foreground">({c.type})</span>
+                  </span>
+                  <span>
+                    {c.total} reps / Value: {c.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       <div>
         <h2 className="text-lg font-semibold mb-2">Representatives Table</h2>
         <div className="flex space-x-2 mb-4">
-          <Select 
-            value={filter.type} 
-            onValueChange={(value) => setFilter(prev => ({ ...prev, type: value }))}
+          <Select
+            value={filter.type}
+            onValueChange={(value) => setFilter((prev) => ({ ...prev, type: value }))}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Representative Type" />
@@ -160,6 +206,19 @@ export const RepresentativeAccounting = () => {
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="promo">Promo</SelectItem>
               <SelectItem value="company">Company</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={filter.company_type}
+            onValueChange={(value) => setFilter((prev) => ({ ...prev, company_type: value }))}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Company Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Company Types</SelectItem>
+              <SelectItem value="advertising">Advertising</SelectItem>
+              <SelectItem value="product">Product</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -175,15 +234,18 @@ export const RepresentativeAccounting = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRepresentatives.map(rep => (
+            {filteredRepresentatives.map((rep) => (
               <TableRow key={rep.id}>
                 <TableCell>{rep.full_name}</TableCell>
                 <TableCell>{rep.type}</TableCell>
-                <TableCell>{rep.company_name}</TableCell>
-                <TableCell>{rep.value}</TableCell>
-                <TableCell>{new Date(rep.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Button variant="destructive" size="icon">
+                  {rep.company_name}{" "}
+                  <span className="text-xs text-muted-foreground">({rep.company_type})</span>
+                </TableCell>
+                <TableCell>{rep.value}</TableCell>
+                <TableCell>{rep.created_at ? new Date(rep.created_at).toLocaleDateString() : ""}</TableCell>
+                <TableCell>
+                  <Button variant="destructive" size="icon" disabled>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
