@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +20,6 @@ import Auth from "./pages/Auth";
 import Print from "./pages/Print";
 import Settings from "./pages/Settings";
 import PrintBatch from "./pages/PrintBatch";
-import BackupManagementPage from "./pages/BackupManagement";
 
 const queryClient = new QueryClient();
 
@@ -46,7 +46,6 @@ const App = () => (
               <Route path="/print/:id" element={<Print />} />
               <Route path="/print-batch" element={<PrintBatch />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/backup-management" element={<BackupManagementPage />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

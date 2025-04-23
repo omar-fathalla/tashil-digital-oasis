@@ -15,6 +15,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { BarChart2, Box } from "lucide-react";
+import { RepresentativeAccounting } from "@/components/settings/RepresentativeAccounting";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -50,7 +53,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="documents" className="w-full">
-              <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-11 mb-8">
+              <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-12 mb-8">
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="form-fields">Form Fields</TabsTrigger>
                 <TabsTrigger value="regions">Regions</TabsTrigger>
@@ -62,6 +65,7 @@ const Settings = () => {
                 <TabsTrigger value="backup">Backup & Export</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
                 <TabsTrigger value="user-roles">User Roles</TabsTrigger>
+                <TabsTrigger value="accounting">Accounting</TabsTrigger>
               </TabsList>
               
               <TabsContent value="documents" className="space-y-4">
@@ -107,21 +111,13 @@ const Settings = () => {
               <TabsContent value="user-roles" className="space-y-4">
                 <UserRoleSettings />
               </TabsContent>
+              <TabsContent value="accounting" className="space-y-4">
+                <RepresentativeAccounting />
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
       </div>
-
-      {permissions.includes("manage_backup") && (
-        <div className="mb-8">
-          <Link
-            to="/backup-management"
-            className="inline-flex items-center gap-2 text-base font-semibold bg-background border border-primary rounded px-4 py-2 hover:bg-muted transition"
-          >
-            <span>🔒</span> Backup Management
-          </Link>
-        </div>
-      )}
     </div>
   );
 };
