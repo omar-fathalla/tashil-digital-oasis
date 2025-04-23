@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { RepSummaryCards } from "./representative-accounting/RepSummaryCards";
+import { RepSearchAndExport } from "./representative-accounting/RepSearchAndExport";
+import { RepWithCompany, Company } from "./representative-accounting/types";
 
 type Representative = {
   id: string;
@@ -30,6 +32,7 @@ export const RepresentativeAccounting = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [newRep, setNewRep] = useState({ full_name: "", type: "" as "promo" | "company" | "", company_id: "" });
   const [filter, setFilter] = useState({ type: "all", company_type: "all" });
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,37 +90,21 @@ export const RepresentativeAccounting = () => {
   const filteredRepresentatives = representatives.filter((rep) => {
     const typeOk = filter.type === "all" || rep.type === filter.type;
     const companyTypeOk = filter.company_type === "all" || rep.company_type === filter.company_type;
-    return typeOk && companyTypeOk;
+    const searchOk = searchQuery
+      ? rep.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rep.company_name.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return typeOk && companyTypeOk && searchOk;
   });
 
-  const calculateTotals = () => {
-    const promoReps = filteredRepresentatives.filter((r) => r.type === "promo");
-    const companyReps = filteredRepresentatives.filter((r) => r.type === "company");
-
-    return {
-      promoTotal: promoReps.length,
-      promoValue: promoReps.reduce((sum, rep) => sum + (rep.value || 0), 0),
-      companyTotal: companyReps.length,
-      companyValue: companyReps.reduce((sum, rep) => sum + (rep.value || 0), 0),
-      byCompany: companies.map((company) => {
-        const reps = filteredRepresentatives.filter((r) => r.company_id === company.id);
-        return {
-          company: company.name,
-          type: company.type,
-          total: reps.length,
-          value: reps.reduce((sum, rep) => sum + (rep.value || 0), 0),
-        };
-      }),
-    };
-  };
-
-  const totals = calculateTotals();
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Representative Accounting</h1>
       </div>
+
+      <RepSummaryCards representatives={filteredRepresentatives} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <h2 className="text-lg font-semibold mb-2">Add Representative</h2>
@@ -160,41 +147,13 @@ export const RepresentativeAccounting = () => {
             </Button>
           </div>
         </div>
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Representative Totals</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-secondary p-4 rounded-lg">
-              <h3 className="font-medium">Promo Representatives</h3>
-              <p className="text-2xl font-bold">{totals.promoTotal}</p>
-              <p>Total Value: {totals.promoValue}</p>
-            </div>
-            <div className="bg-secondary p-4 rounded-lg">
-              <h3 className="font-medium">Company Representatives</h3>
-              <p className="text-2xl font-bold">{totals.companyTotal}</p>
-              <p>Total Value: {totals.companyValue}</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <h4 className="font-semibold mb-2">By Company</h4>
-            <div className="space-y-1">
-              {totals.byCompany.map((c) => (
-                <div key={c.company} className="flex justify-between border-b last:border-0 pb-1 text-sm">
-                  <span>
-                    {c.company} <span className="text-muted-foreground">({c.type})</span>
-                  </span>
-                  <span>
-                    {c.total} reps / Value: {c.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold mb-2">Representatives Table</h2>
-        <div className="flex space-x-2 mb-4">
+        <h2 className="text-lg font-semibold mb-4">Representatives Table</h2>
+        <RepSearchAndExport onSearch={setSearchQuery} data={filteredRepresentatives} />
+        
+        <div className="flex space-x-2 mb-4 mt-4">
           <Select
             value={filter.type}
             onValueChange={(value) => setFilter((prev) => ({ ...prev, type: value }))}
@@ -222,6 +181,7 @@ export const RepresentativeAccounting = () => {
             </SelectContent>
           </Select>
         </div>
+
         <Table>
           <TableHeader>
             <TableRow>
