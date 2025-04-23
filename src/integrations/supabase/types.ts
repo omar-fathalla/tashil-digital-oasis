@@ -124,18 +124,21 @@ export type Database = {
           company_name: string
           created_at: string | null
           id: string
+          type: string | null
           updated_at: string | null
         }
         Insert: {
           company_name: string
           created_at?: string | null
           id?: string
+          type?: string | null
           updated_at?: string | null
         }
         Update: {
           company_name?: string
           created_at?: string | null
           id?: string
+          type?: string | null
           updated_at?: string | null
         }
         Relationships: []

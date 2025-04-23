@@ -43,7 +43,7 @@ export const RepresentativeAccounting = () => {
         const company = companies.find((c) => c.id === rep.company_id);
         return {
           ...rep,
-          company_name: company?.name || "",
+          company_name: company?.company_name || "", // Updated from company?.name
           company_type: company?.type || "",
         };
       });
