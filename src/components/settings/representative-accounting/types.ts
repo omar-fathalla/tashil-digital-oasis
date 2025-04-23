@@ -10,7 +10,7 @@ export type Representative = {
 
 export type Company = {
   id: string;
-  name: string;
+  company_name: string;  // Changed from name to company_name to match the database schema
   type: "advertising" | "product";
 };
 

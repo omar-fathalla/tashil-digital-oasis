@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RepSummaryCards } from "./representative-accounting/RepSummaryCards";
 import { RepSearchAndExport } from "./representative-accounting/RepSearchAndExport";
-// Import types from the types file instead of redeclaring
 import { RepWithCompany, Company, Representative } from "./representative-accounting/types";
 
 export const RepresentativeAccounting = () => {
@@ -43,7 +41,7 @@ export const RepresentativeAccounting = () => {
         const company = companies.find((c) => c.id === rep.company_id);
         return {
           ...rep,
-          company_name: company?.company_name || "", // Updated from company?.name
+          company_name: company?.company_name || "",
           company_type: company?.type || "",
         };
       });
@@ -61,7 +59,6 @@ export const RepresentativeAccounting = () => {
       full_name: newRep.full_name,
       type: newRep.type,
       company_id: newRep.company_id,
-      // value is auto-set by trigger
     });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -121,7 +118,7 @@ export const RepresentativeAccounting = () => {
               <SelectContent>
                 {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
-                    {company.name}{" "}
+                    {company.company_name}{" "}
                     <span className="text-xs text-muted-foreground ml-1">({company.type})</span>
                   </SelectItem>
                 ))}
