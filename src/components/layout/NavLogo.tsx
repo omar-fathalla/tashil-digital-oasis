@@ -10,7 +10,7 @@ export const NavLogo = () => {
           <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
         </div>
         <span className="text-xl font-bold text-primary hidden sm:block">ID</span>
-        <span className="text-xl font-semibold text-foreground hidden sm:block">Platform</span>
+        <span className="text-xl font-semibold text-foreground hidden sm:block">Tashil</span>
       </Link>
     </div>
   );
