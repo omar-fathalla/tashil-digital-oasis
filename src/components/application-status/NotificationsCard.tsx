@@ -1,3 +1,4 @@
+
 import { Bell, FileX, FileMinus } from "lucide-react";
 import {
   Card,
@@ -9,41 +10,6 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const mockNotifications = [
-  {
-    id: "1",
-    type: "request_approved",
-    title: "Request Approved",
-    message: "Your employee registration request has been approved",
-    read: false,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    type: "missing_documents",
-    title: "Missing Documents",
-    message: "Please upload the required documents for your registration",
-    read: false,
-    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "3",
-    type: "document_rejected",
-    title: "Document Rejected",
-    message: "Your submitted document was rejected. Please review and resubmit",
-    read: true,
-    created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "4",
-    type: "id_generated",
-    title: "ID Card Generated",
-    message: "Your employee ID card has been generated and is ready for collection",
-    read: true,
-    created_at: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-  }
-];
 
 const NotificationsCard = () => {
   const { notifications, isLoading, error, markAsRead } = useNotifications();
@@ -158,17 +124,17 @@ const NotificationsCard = () => {
             <Bell className="h-5 w-5 text-primary mr-2" />
             <h3 className="text-lg font-semibold">Notifications</h3>
           </div>
-          {mockNotifications.some(n => !n.read) && (
+          {notifications && notifications.some(n => !n.read) && (
             <Badge variant="destructive" className="rounded-full">
-              {mockNotifications.filter(n => !n.read).length} unread
+              {notifications.filter(n => !n.read).length} unread
             </Badge>
           )}
         </div>
       </CardHeader>
       <CardContent>
-        {mockNotifications.length > 0 ? (
+        {notifications && notifications.length > 0 ? (
           <ul className="space-y-4">
-            {mockNotifications.map((notification) => (
+            {notifications.slice(0, 5).map((notification) => (
               <li 
                 key={notification.id} 
                 className={`flex items-start gap-3 pb-4 border-b ${!notification.read ? 'bg-muted/20 -mx-2 p-2 rounded' : ''}`}
