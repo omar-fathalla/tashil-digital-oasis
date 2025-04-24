@@ -543,24 +543,30 @@ export type Database = {
         Row: {
           company_id: string | null
           created_at: string | null
+          employee_id: string | null
           full_name: string
           id: string
+          photo_url: string | null
           type: string
           value: number
         }
         Insert: {
           company_id?: string | null
           created_at?: string | null
+          employee_id?: string | null
           full_name: string
           id?: string
+          photo_url?: string | null
           type: string
           value: number
         }
         Update: {
           company_id?: string | null
           created_at?: string | null
+          employee_id?: string | null
           full_name?: string
           id?: string
+          photo_url?: string | null
           type?: string
           value?: number
         }
