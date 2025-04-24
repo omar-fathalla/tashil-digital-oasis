@@ -9,7 +9,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import IDCardManager from "@/components/digital-id/IDCardManager";
 
 const Dashboard = () => {
   const location = useLocation();
@@ -46,12 +45,6 @@ const Dashboard = () => {
         <AlertsCard />
         <SettingsCard />
       </div>
-      
-      <Card className="mt-8">
-        <CardContent>
-          <IDCardManager />
-        </CardContent>
-      </Card>
       
       <Card className="mt-8">
         <CardHeader>

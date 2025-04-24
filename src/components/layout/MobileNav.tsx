@@ -1,17 +1,26 @@
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  LayoutDashboard,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger
+} from "@/components/ui/drawer";
+import { 
+  LayoutDashboard, 
   UserPlus, 
   FileText, 
-  Info,
-  HelpCircle,
+  BarChart2, 
+  Info, 
+  HelpCircle, 
+  Settings, 
+  FileCheck,
   LogOut,
-  BarChart2,
   Printer
 } from "lucide-react";
-import { useAuth } from "@/components/AuthProvider";
 
 interface MobileNavProps {
   mobileMenuOpen: boolean;
@@ -19,80 +28,60 @@ interface MobileNavProps {
 }
 
 export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
-  const { user } = useAuth();
-
+  const [open, setOpen] = useState(mobileMenuOpen);
+  
   return (
-    <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
-      <div className="space-y-1 px-4 pb-3 pt-2">
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/">
-            <LayoutDashboard className="h-4 w-4 mr-2" />
-            Dashboard
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Navigation</DrawerTitle>
+        </DrawerHeader>
+        <div className="p-4 space-y-2">
+          <Link to="/" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <LayoutDashboard className="h-5 w-5" />
+            <span>Dashboard</span>
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/request-submission">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Register Employee
+          <Link to="/request-submission" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <UserPlus className="h-5 w-5" />
+            <span>Register Employee</span>
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/company-registration">
-            <FileText className="h-4 w-4 mr-2" />
-            Register Company
+          <Link to="/company-registration" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <FileText className="h-5 w-5" />
+            <span>Register Company</span>
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/application-status">
-            <BarChart2 className="h-4 w-4 mr-2" />
-            Status
+          <Link to="/application-status" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <BarChart2 className="h-5 w-5" />
+            <span>Application Status</span>
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/print">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
+          <Link to="/print-batch" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <Printer className="h-5 w-5" />
+            <span>ID Card Management</span>
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/about">
-            <Info className="h-4 w-4 mr-2" />
-            About
+          <Link to="/report" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <FileCheck className="h-5 w-5" />
+            <span>Reports</span>
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/faq">
-            <HelpCircle className="h-4 w-4 mr-2" />
-            FAQ
+          <Link to="/about" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <Info className="h-5 w-5" />
+            <span>About</span>
           </Link>
-        </Button>
-        <div className="flex space-x-2 mt-3 pt-3 border-t">
-          {user ? (
-            <div className="pt-4 mt-4 border-t w-full">
-              <span className="block text-sm text-gray-600 mb-2">
-                {user.email}
-              </span>
-              <Button 
-                variant="outline" 
-                onClick={onSignOut}
-                className="w-full"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <div className="flex space-x-2 mt-3 pt-3 border-t w-full">
-              <Button asChild variant="outline" className="flex-1">
-                <Link to="/auth">Sign In</Link>
-              </Button>
-              <Button asChild className="flex-1">
-                <Link to="/auth">Register</Link>
-              </Button>
-            </div>
-          )}
+          <Link to="/faq" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <HelpCircle className="h-5 w-5" />
+            <span>FAQ</span>
+          </Link>
+          <Link to="/settings" className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+            <Settings className="h-5 w-5" />
+            <span>Settings</span>
+          </Link>
+          
+          <div className="pt-4 border-t">
+            <Button variant="outline" onClick={onSignOut} className="w-full">
+              <LogOut className="h-5 w-5 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
