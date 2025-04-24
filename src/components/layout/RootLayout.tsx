@@ -12,8 +12,10 @@ export default function RootLayout() {
         <Navbar />
         <div className="flex flex-1">
           <AppSidebar />
-          <main className="flex-1 w-full">
-            <Outlet />
+          <main className="flex-1 w-full overflow-x-hidden">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+              <Outlet />
+            </div>
           </main>
         </div>
         <Footer />
