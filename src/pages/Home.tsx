@@ -1,7 +1,7 @@
+
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
-import DigitalIDCard from "@/components/dashboard/DigitalIDCard";
 import { RequestsManagement } from "@/components/requests/RequestsManagement";
 import { SettingsCard } from "@/components/dashboard/SettingsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,10 +52,6 @@ const Dashboard = () => {
           <IDCardManager />
         </CardContent>
       </Card>
-      
-      <div className="mt-8">
-        <DigitalIDCard />
-      </div>
       
       <Card className="mt-8">
         <CardHeader>
