@@ -14,7 +14,6 @@ import { downloadIdCard } from "@/utils/idCardUtils";
 import { toast } from "sonner";
 import IDCardPreview from "@/components/print/IDCardPreview";
 import PrintControls from "@/components/print/PrintControls";
-import RepresentativePreview from "@/components/print/RepresentativePreview";
 
 const Print = () => {
   const { user } = useAuth();
@@ -211,8 +210,6 @@ const Print = () => {
             <PrintableIDCard employee={selectedEmployees[0]} onPrintComplete={refetch} />
           </Card>
         )}
-
-        <RepresentativePreview />
       </div>
     </div>
   );
