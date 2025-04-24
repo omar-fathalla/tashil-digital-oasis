@@ -17,7 +17,17 @@ const SearchAndFilter = ({
   setActiveFilter,
 }: SearchAndFilterProps) => {
   return (
-
+    <div className="space-y-4">
+      <div className="relative w-full">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search requests..."
+          className="w-full pl-8"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
       
       <div className="flex space-x-2">
         <Button 
