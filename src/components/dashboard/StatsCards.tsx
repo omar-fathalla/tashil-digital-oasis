@@ -1,7 +1,9 @@
+
 import { Users, FileText, Database } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStats } from "@/hooks/useStats";
 import { Skeleton } from "@/components/ui/skeleton";
+import CountUp from "react-countup";
 
 export const StatsCards = () => {
   const { totalEmployees, totalCompanies, isLoading } = useStats();
@@ -27,35 +29,41 @@ export const StatsCards = () => {
 
   return (
     <>
-      <Card>
+      <Card className="transition-all duration-300 hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+          <Users className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalEmployees.toLocaleString()}</div>
+          <div className="text-2xl font-bold">
+            <CountUp end={totalEmployees} duration={2} separator="," />
+          </div>
           <p className="text-xs text-muted-foreground">Registered employees in system</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="transition-all duration-300 hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Companies Registered</CardTitle>
-          <Database className="h-4 w-4 text-muted-foreground" />
+          <Database className="h-4 w-4 text-emerald-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalCompanies.toLocaleString()}</div>
+          <div className="text-2xl font-bold">
+            <CountUp end={totalCompanies} duration={2} separator="," />
+          </div>
           <p className="text-xs text-muted-foreground">Active companies</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="transition-all duration-300 hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-          <FileText className="h-4 w-4 text-muted-foreground" />
+          <FileText className="h-4 w-4 text-amber-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">87</div>
+          <div className="text-2xl font-bold">
+            <CountUp end={87} duration={2} separator="," />
+          </div>
           <p className="text-xs text-muted-foreground">+5 new requests today</p>
         </CardContent>
       </Card>
