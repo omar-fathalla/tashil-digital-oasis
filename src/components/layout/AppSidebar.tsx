@@ -1,5 +1,5 @@
 
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +22,6 @@ import {
   FileCheck,
   Printer
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export function AppSidebar() {
   const location = useLocation();
@@ -44,13 +43,15 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="border-r border-border/50 shadow-lg">
       <div className="flex items-center p-2">
-        <SidebarTrigger className="ml-auto" />
+        <SidebarTrigger className="ml-auto hover:bg-accent rounded-full transition-colors" />
       </div>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
@@ -59,10 +60,11 @@ export function AppSidebar() {
                     asChild 
                     isActive={isActive(item.path)}
                     tooltip={item.title}
+                    className="rounded-lg transition-all duration-200 hover:bg-accent/50"
                   >
                     <Link to={item.path}>
-                      <item.icon />
-                      <span>{item.title}</span>
+                      <item.icon className="h-5 w-5" />
+                      <span className="font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
