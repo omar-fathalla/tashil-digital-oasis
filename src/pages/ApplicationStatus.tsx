@@ -7,13 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import StatusHero from "@/components/application-status/StatusHero";
 import { RequestsManagement } from "@/components/requests/RequestsManagement";
-import UnifiedSearch from "@/components/application-status/UnifiedSearch";
 import GroupedNotifications from "@/components/application-status/GroupedNotifications";
 
 const ApplicationStatus = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   
   const { data: applications = [], isLoading: isLoadingApps } = useApplications(activeFilter);
@@ -24,42 +22,19 @@ const ApplicationStatus = () => {
     return null;
   }
 
-  const filteredApplications = applications.filter(app => 
-    searchQuery ? (
-      app.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.employee_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.type.toLowerCase().includes(searchQuery.toLowerCase())
-    ) : true
-  );
-
-  const filteredNotifications = notifications?.filter(notif =>
-    searchQuery ? (
-      notif.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      notif.message.toLowerCase().includes(searchQuery.toLowerCase())
-    ) : true
-  ) ?? [];
-
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <StatusHero />
       
       <section className="py-12 bg-white flex-1">
         <div className="container mx-auto px-4">
-          <UnifiedSearch 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            statusFilter={activeFilter}
-            setStatusFilter={setActiveFilter}
-          />
-          
-          <div className="mt-8 space-y-8">
+          <div className="space-y-8">
             <Card className="border-none shadow-lg">
               <CardHeader className="pb-0">
                 <CardTitle>Registration Requests</CardTitle>
                 <CardDescription>
                   {isLoadingApps ? "Loading..." : 
-                   `Showing ${filteredApplications.length} of ${applications.length} requests`}
+                   `Showing ${applications.length} requests`}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
@@ -77,7 +52,7 @@ const ApplicationStatus = () => {
               </CardHeader>
               <CardContent>
                 <GroupedNotifications 
-                  notifications={filteredNotifications}
+                  notifications={notifications || []}
                   onMarkAsRead={(id) => markAsRead.mutate(id)}
                 />
               </CardContent>

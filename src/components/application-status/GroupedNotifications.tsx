@@ -95,6 +95,8 @@ const GroupedNotifications = ({ notifications, onMarkAsRead }: GroupedNotificati
     );
   };
 
+  const groupedNotifications = groupNotifications();
+
   return (
     <Accordion type="single" collapsible className="w-full">
       {renderNotificationGroup("Approvals", groupedNotifications.approvals, "approvals")}
