@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,124 +8,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/components/AuthProvider";
 import { format } from "date-fns";
 import { MessageSquare, Send, Clock } from "lucide-react";
-
-interface Comment {
-  id: string;
-  text: string;
-  user: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  createdAt: string;
-}
-
-interface ProjectActivity {
-  id: string;
-  type: 'create' | 'update' | 'comment' | 'archive';
-  description: string;
-  user: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  timestamp: string;
-}
+import { useProjectComments } from "@/hooks/useProjectComments";
+import { useProjectActivities } from "@/hooks/useProjectActivities";
 
 interface ProjectCollaborationProps {
   projectId: string;
 }
 
-const ProjectCollaboration = ({ projectId }: ProjectCollaborationProps) => {
+export const ProjectCollaboration = ({ projectId }: ProjectCollaborationProps) => {
   const { user } = useAuth();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [activities, setActivities] = useState<ProjectActivity[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { comments, isLoading: isLoadingComments, addComment } = useProjectComments(projectId);
+  const { activities, isLoading: isLoadingActivities } = useProjectActivities(projectId);
 
-  // Mock data - in a real application, this would come from the API
-  useEffect(() => {
-    // Simulate loading data
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    const timer = setTimeout(() => {
-      const mockComments: Comment[] = [
-        {
-          id: "1",
-          text: "I've updated the project specifications as requested. Please review when you get a chance.",
-          user: { id: "1", name: "Admin", avatar: "/placeholder.svg" },
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: "2",
-          text: "Thanks for the update. Everything looks good to me!",
-          user: { id: "2", name: "Sarah", avatar: "/placeholder.svg" },
-          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        },
-      ];
-      
-      const mockActivities: ProjectActivity[] = [
-        {
-          id: "1",
-          type: "create",
-          description: "Project created",
-          user: { id: "1", name: "Admin" },
-          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: "2",
-          type: "update",
-          description: "Updated project description",
-          user: { id: "1", name: "Admin" },
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: "3",
-          type: "comment",
-          description: "Added a comment",
-          user: { id: "2", name: "Sarah" },
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ];
-      
-      setComments(mockComments);
-      setActivities(mockActivities);
-      setIsLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, [projectId]);
-
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    
-    const comment: Comment = {
-      id: Date.now().toString(),
-      text: newComment,
-      user: { 
-        id: user?.id || "current-user", 
-        name: user?.email?.split("@")[0] || "You"
-      },
-      createdAt: new Date().toISOString(),
-    };
-    
-    setComments([...comments, comment]);
-    
-    // Also add to activities
-    const activity: ProjectActivity = {
-      id: Date.now().toString(),
-      type: "comment",
-      description: "Added a comment",
-      user: { 
-        id: user?.id || "current-user", 
-        name: user?.email?.split("@")[0] || "You"
-      },
-      timestamp: new Date().toISOString(),
-    };
-    
-    setActivities([...activities, activity]);
-    setNewComment("");
+    try {
+      await addComment(newComment);
+      setNewComment("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
   };
 
   return (
@@ -138,7 +41,7 @@ const ProjectCollaboration = ({ projectId }: ProjectCollaborationProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoadingComments ? (
             <div className="flex justify-center p-8">
               <p>Loading comments...</p>
             </div>
@@ -153,17 +56,16 @@ const ProjectCollaboration = ({ projectId }: ProjectCollaborationProps) => {
               {comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3 text-sm">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.user.avatar} />
-                    <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
+                    <AvatarFallback>{comment.user_id[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="font-medium">{comment.user.name}</p>
+                      <p className="font-medium">{comment.user_id}</p>
                       <span className="text-xs text-muted-foreground">
-                        {format(new Date(comment.createdAt), "MMM d, h:mm a")}
+                        {format(new Date(comment.created_at), "MMM d, h:mm a")}
                       </span>
                     </div>
-                    <p className="mt-1 text-muted-foreground">{comment.text}</p>
+                    <p className="mt-1 text-muted-foreground">{comment.content}</p>
                   </div>
                 </div>
               ))}
@@ -197,7 +99,7 @@ const ProjectCollaboration = ({ projectId }: ProjectCollaborationProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoadingActivities ? (
             <div className="flex justify-center p-8">
               <p>Loading activity...</p>
             </div>
@@ -214,7 +116,7 @@ const ProjectCollaboration = ({ projectId }: ProjectCollaborationProps) => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm">
-                      <span className="font-medium">{activity.user.name}</span> {activity.description}
+                      <span className="font-medium">{activity.user_id}</span> {activity.description}
                     </p>
                     <span className="text-xs text-muted-foreground">
                       {format(new Date(activity.timestamp), "MMM d, h:mm a")}

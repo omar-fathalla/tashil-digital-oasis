@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { toast } from "sonner";
 
 export type Project = {
   id: string;
@@ -50,6 +51,10 @@ export const useProjects = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Project created successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to create project: ${error.message}`);
     },
   });
 
@@ -69,6 +74,10 @@ export const useProjects = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Project updated successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to update project: ${error.message}`);
     },
   });
 
@@ -88,6 +97,10 @@ export const useProjects = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Project archived successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to archive project: ${error.message}`);
     },
   });
 
@@ -103,8 +116,35 @@ export const useProjects = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Project deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete project: ${error.message}`);
     },
   });
+
+  // Set up realtime subscription
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('public:projects')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'projects' 
+        }, 
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['projects'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   return {
     projects,

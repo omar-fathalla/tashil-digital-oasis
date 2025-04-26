@@ -494,6 +494,138 @@ export type Database = {
         }
         Relationships: []
       }
+      project_activities: {
+        Row: {
+          action: string
+          description: string
+          id: string
+          project_id: string
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          description: string
+          id?: string
+          project_id: string
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          description?: string
+          id?: string
+          project_id?: string
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_activities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_backups: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          data: Json
+          id: string
+          name: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          data: Json
+          id?: string
+          name: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          data?: Json
+          id?: string
+          name?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_backups_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_comments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          status: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       regions: {
         Row: {
           created_at: string | null
