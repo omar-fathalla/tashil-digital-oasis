@@ -1,24 +1,24 @@
 
 import { useLocation } from "react-router-dom";
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarMenu, 
-  SidebarMenuButton, 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { 
-  LayoutDashboard, 
-  UserPlus, 
-  FileText, 
-  BarChart2, 
-  Info, 
-  HelpCircle, 
-  Settings, 
+import {
+  LayoutDashboard,
+  UserPlus,
+  FileText,
+  BarChart2,
+  Info,
+  HelpCircle,
+  Settings,
   FileCheck,
   Printer
 } from "lucide-react";
