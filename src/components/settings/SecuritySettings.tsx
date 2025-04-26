@@ -54,10 +54,24 @@ export const SecuritySettings = () => {
   };
 
   const handleSaveChanges = () => {
-    toast({
-      title: "Success",
-      description: "Security settings saved successfully",
-    });
+    try {
+      // Validate settings before saving
+      if (parseInt(passwordSettings.minLength) < 6) {
+        throw new Error("Minimum password length must be at least 6 characters");
+      }
+
+      // Success notification
+      toast({
+        title: "Settings Saved",
+        description: "Security settings have been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save settings",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocumentSettings } from "@/components/settings/DocumentSettings";
@@ -11,28 +12,25 @@ import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
 import { BackupSettings } from "@/components/settings/BackupSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { UserRoleSettings } from "@/components/settings/UserRoleSettings";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/components/AuthProvider";
-import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { BarChart2, Box } from "lucide-react";
 import { RepresentativeAccounting } from "@/components/settings/RepresentativeAccounting";
+import { useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const { user } = useAuth();
-  const [permissions, setPermissions] = useState<string[]>([]);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     if (!user) {
-      setPermissions([]);
-      return;
+      navigate("/auth");
     }
-    supabase
-      .rpc("get_user_permissions", { user_id: user.id })
-      .then(res => setPermissions(Array.isArray(res.data) ? res.data.map((p: any) => p.permission_key) : []));
-  }, [user]);
+  }, [user, navigate]);
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -52,36 +50,22 @@ const Settings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="documents" className="w-full">
-              <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-12 mb-8">
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="form-fields">Form Fields</TabsTrigger>
-                <TabsTrigger value="regions">Regions</TabsTrigger>
-                <TabsTrigger value="validation">Validation</TabsTrigger>
+            <Tabs defaultValue="security" className="w-full">
+              <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 mb-8">
+                <TabsTrigger value="security">Security</TabsTrigger>
+                <TabsTrigger value="interface">Interface</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="companies">Companies</TabsTrigger>
-                <TabsTrigger value="workflow">Workflow</TabsTrigger>
-                <TabsTrigger value="interface">Interface</TabsTrigger>
-                <TabsTrigger value="backup">Backup & Export</TabsTrigger>
-                <TabsTrigger value="security">Security</TabsTrigger>
-                <TabsTrigger value="user-roles">User Roles</TabsTrigger>
-                <TabsTrigger value="accounting">Accounting</TabsTrigger>
+                <TabsTrigger value="documents">Documents</TabsTrigger>
+                <TabsTrigger value="more">More Settings</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="documents" className="space-y-4">
-                <DocumentSettings />
+              <TabsContent value="security" className="space-y-4">
+                <SecuritySettings />
               </TabsContent>
               
-              <TabsContent value="form-fields" className="space-y-4">
-                <FormFieldSettings />
-              </TabsContent>
-              
-              <TabsContent value="regions" className="space-y-4">
-                <RegionSettings />
-              </TabsContent>
-              
-              <TabsContent value="validation" className="space-y-4">
-                <ValidationSettings />
+              <TabsContent value="interface" className="space-y-4">
+                <InterfaceSettings />
               </TabsContent>
               
               <TabsContent value="notifications" className="space-y-4">
@@ -92,27 +76,45 @@ const Settings = () => {
                 <CompanySettings />
               </TabsContent>
               
-              <TabsContent value="workflow" className="space-y-4">
-                <WorkflowSettings />
+              <TabsContent value="documents" className="space-y-4">
+                <DocumentSettings />
               </TabsContent>
               
-              <TabsContent value="interface" className="space-y-4">
-                <InterfaceSettings />
-              </TabsContent>
-              
-              <TabsContent value="backup" className="space-y-4">
-                <BackupSettings />
-              </TabsContent>
-              
-              <TabsContent value="security" className="space-y-4">
-                <SecuritySettings />
-              </TabsContent>
-              
-              <TabsContent value="user-roles" className="space-y-4">
-                <UserRoleSettings />
-              </TabsContent>
-              <TabsContent value="accounting" className="space-y-4">
-                <RepresentativeAccounting />
+              <TabsContent value="more">
+                <Tabs defaultValue="workflow" className="w-full">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="workflow">Workflow</TabsTrigger>
+                    <TabsTrigger value="validation">Validation</TabsTrigger>
+                    <TabsTrigger value="regions">Regions</TabsTrigger>
+                    <TabsTrigger value="backup">Backup</TabsTrigger>
+                    <TabsTrigger value="roles">User Roles</TabsTrigger>
+                    <TabsTrigger value="accounting">Accounting</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="workflow">
+                    <WorkflowSettings />
+                  </TabsContent>
+                  
+                  <TabsContent value="validation">
+                    <ValidationSettings />
+                  </TabsContent>
+                  
+                  <TabsContent value="regions">
+                    <RegionSettings />
+                  </TabsContent>
+                  
+                  <TabsContent value="backup">
+                    <BackupSettings />
+                  </TabsContent>
+                  
+                  <TabsContent value="roles">
+                    <UserRoleSettings />
+                  </TabsContent>
+                  
+                  <TabsContent value="accounting">
+                    <RepresentativeAccounting />
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
             </Tabs>
           </CardContent>

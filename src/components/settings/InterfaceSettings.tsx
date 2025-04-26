@@ -48,6 +48,7 @@ export const InterfaceSettings = () => {
 
   const handleThemeChange = (value: string) => {
     setLocalSettings(prev => ({ ...prev, theme: value }));
+    document.documentElement.classList.toggle('dark', value === 'dark');
   };
 
   return (
@@ -112,7 +113,9 @@ export const InterfaceSettings = () => {
       </Card>
       
       <div className="flex justify-end mt-6">
-        <Button onClick={handleSaveChanges}>Save Interface Settings</Button>
+        <Button onClick={handleSaveChanges}>
+          Save Interface Settings
+        </Button>
       </div>
     </div>
   );

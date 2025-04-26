@@ -37,6 +37,16 @@ export const NotificationSettings = () => {
   };
 
   const handleSaveChanges = () => {
+    // Validate at least one delivery method is enabled
+    if (!Object.values(deliveryMethods).some(Boolean)) {
+      toast({
+        title: "Error",
+        description: "At least one delivery method must be enabled",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Success",
       description: "Notification settings saved successfully",
