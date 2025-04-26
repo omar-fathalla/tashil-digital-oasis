@@ -1,96 +1,60 @@
 
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard,
-  UserPlus, 
-  FileText, 
-  Info,
-  HelpCircle,
-  LogOut,
-  BarChart2,
-} from "lucide-react";
-import { useAuth } from "@/components/AuthProvider";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/AuthProvider";
 
 interface MobileNavProps {
   mobileMenuOpen: boolean;
-  onSignOut: () => Promise<void>;
+  onSignOut: () => void;
 }
 
 export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
+  const { pathname } = useLocation();
   const { user } = useAuth();
 
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/services", label: "Services" },
+    { href: "/company-registration", label: "Company Registration" },
+    { href: "/request-submission", label: "Request Submission" },
+    { href: "/application-status", label: "Application Status" },
+    { href: "/project-overview", label: "Project Overview" },
+    { href: "/employee-management", label: "Employee Management" },
+    { href: "/faq", label: "FAQ" },
+    { href: "/settings", label: "Settings" },
+  ];
+
+  const isActive = (path: string) => pathname === path;
+
+  if (!mobileMenuOpen) return null;
+
   return (
-    <div 
-      className={cn(
-        "fixed inset-x-0 top-[64px] z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden transition-all duration-200 ease-in-out transform",
-        mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-      )}
-    >
-      <div className="space-y-1 px-4 pb-3 pt-2">
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/">
-            <LayoutDashboard className="h-4 w-4 mr-2" />
-            Dashboard
+    <div className="md:hidden bg-background py-4 border-b">
+      <div className="container space-y-1">
+        {links.map((link) => (
+          <Link 
+            key={link.href}
+            to={link.href}
+            className={cn(
+              "block py-2 text-base font-medium transition-colors hover:text-primary",
+              isActive(link.href)
+                ? "text-black dark:text-white"
+                : "text-muted-foreground"
+            )}
+          >
+            {link.label}
           </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/request-submission">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Register Employee
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/company-registration">
-            <FileText className="h-4 w-4 mr-2" />
-            Register Company
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/application-status">
-            <BarChart2 className="h-4 w-4 mr-2" />
-            Status
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/about">
-            <Info className="h-4 w-4 mr-2" />
-            About
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/faq">
-            <HelpCircle className="h-4 w-4 mr-2" />
-            FAQ
-          </Link>
-        </Button>
-        <div className="pt-4 mt-4 border-t">
-          {user ? (
-            <div className="space-y-3">
-              <span className="block text-sm text-gray-600">
-                {user.email}
-              </span>
-              <Button 
-                variant="outline" 
-                onClick={onSignOut}
-                className="w-full"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <Button asChild variant="outline" className="flex-1">
-                <Link to="/auth">Sign In</Link>
-              </Button>
-              <Button asChild className="flex-1">
-                <Link to="/auth">Register</Link>
-              </Button>
-            </div>
-          )}
-        </div>
+        ))}
+
+        {user && (
+          <button
+            onClick={onSignOut}
+            className="block w-full text-left py-2 text-base font-medium text-red-500 hover:text-red-700 transition-colors"
+          >
+            Log Out
+          </button>
+        )}
       </div>
     </div>
   );

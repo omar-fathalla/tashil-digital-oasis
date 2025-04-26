@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import PrintBatch from "./pages/PrintBatch";
+import EmployeeManagement from "./pages/EmployeeManagement";
+import EmployeeProfile from "./pages/EmployeeProfile";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,8 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/print-batch" element={<PrintBatch />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/employee-management" element={<EmployeeManagement />} />
+              <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

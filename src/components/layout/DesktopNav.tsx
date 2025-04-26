@@ -1,50 +1,41 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard,
-  UserPlus, 
-  FileText, 
-  Info,
-  HelpCircle,
-  BarChart2
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/AuthProvider";
 
 export const DesktopNav = () => {
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const { user } = useAuth();
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const navItems = [
-    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/request-submission", icon: UserPlus, label: "Register Employee" },
-    { to: "/company-registration", icon: FileText, label: "Register Company" },
-    { to: "/application-status", icon: BarChart2, label: "Status" },
-    { to: "/about", icon: Info, label: "About" },
-    { to: "/faq", icon: HelpCircle, label: "FAQ" },
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/services", label: "Services" },
+    { href: "/company-registration", label: "Company Registration" },
+    { href: "/request-submission", label: "Request Submission" },
+    { href: "/application-status", label: "Application Status" },
+    { href: "/project-overview", label: "Project Overview" },
+    { href: "/employee-management", label: "Employee Management" },
+    { href: "/faq", label: "FAQ" },
   ];
 
+  const isActive = (path: string) => pathname === path;
+
   return (
-    <div className="hidden md:flex items-center space-x-1">
-      {navItems.map((item) => (
-        <Button
-          key={item.to}
-          variant="ghost"
-          size="sm"
-          asChild
+    <div className="hidden md:flex md:gap-x-6 ml-6">
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          to={link.href}
           className={cn(
-            "relative",
-            isActive(item.to) && "bg-accent text-accent-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+            "text-sm font-medium transition-colors hover:text-primary",
+            isActive(link.href)
+              ? "text-black dark:text-white"
+              : "text-muted-foreground"
           )}
         >
-          <Link to={item.to}>
-            <item.icon className="h-4 w-4 mr-1" />
-            {item.label}
-          </Link>
-        </Button>
+          {link.label}
+        </Link>
       ))}
     </div>
   );
