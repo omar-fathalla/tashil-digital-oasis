@@ -16,13 +16,13 @@ export const FormCard = ({
   footer,
 }: FormCardProps) => {
   return (
-    <Card className="border-none shadow-lg w-full mx-auto">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
-        <CardDescription className="text-sm md:text-base">{description}</CardDescription>
+    <Card className="border-none shadow-lg">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="px-4 md:px-6">{children}</CardContent>
-      <CardFooter className="px-4 md:px-6">{footer}</CardFooter>
+      <CardContent>{children}</CardContent>
+      <CardFooter>{footer}</CardFooter>
     </Card>
   );
 };

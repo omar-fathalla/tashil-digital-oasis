@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import IDCardManager from "@/components/digital-id/IDCardManager";
 
 const Dashboard = () => {
   const location = useLocation();
@@ -38,35 +39,39 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatsCards />
-          <QuickActions />
-          <AlertsCard />
-          <SettingsCard />
-        </div>
-        
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Request Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="employee" className="w-full">
-              <TabsList>
-                <TabsTrigger value="employee">Employee Requests</TabsTrigger>
-                <TabsTrigger value="company">Company Requests</TabsTrigger>
-              </TabsList>
-              <TabsContent value="employee">
-                <RequestsManagement />
-              </TabsContent>
-              <TabsContent value="company">
-                <RequestsManagement type="company" />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatsCards />
+        <QuickActions />
+        <AlertsCard />
+        <SettingsCard />
       </div>
+      
+      <Card className="mt-8">
+        <CardContent>
+          <IDCardManager />
+        </CardContent>
+      </Card>
+      
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Request Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="employee" className="w-full">
+            <TabsList>
+              <TabsTrigger value="employee">Employee Requests</TabsTrigger>
+              <TabsTrigger value="company">Company Requests</TabsTrigger>
+            </TabsList>
+            <TabsContent value="employee">
+              <RequestsManagement />
+            </TabsContent>
+            <TabsContent value="company">
+              <RequestsManagement type="company" />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };

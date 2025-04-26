@@ -35,29 +35,29 @@ const ApplicationStatus = () => {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <StatusHero />
       
-      <section className="py-8 md:py-12 bg-white flex-1">
-        <div className="container mx-auto px-4 max-w-screen-2xl">
-          <div className="space-y-8">
-            <SearchAndFilter 
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              activeFilter={activeFilter}
-              setActiveFilter={setActiveFilter}
-            />
-            
-            <Card className="border-none shadow-lg">
-              <CardHeader className="pb-0">
-                <CardTitle>Registration Requests</CardTitle>
-                <CardDescription>
-                  {isLoading ? "Loading..." : 
-                   `Showing ${filteredApplications.length} of ${applications.length} requests`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <RequestsManagement />
-              </CardContent>
-            </Card>
-            
+      <section className="py-12 bg-white flex-1">
+        <div className="container mx-auto px-4">
+          <SearchAndFilter 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+          />
+          
+          <Card className="border-none shadow-lg">
+            <CardHeader className="pb-0">
+              <CardTitle>Registration Requests</CardTitle>
+              <CardDescription>
+                {isLoading ? "Loading..." : 
+                 `Showing ${filteredApplications.length} of ${applications.length} requests`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <RequestsManagement />
+            </CardContent>
+          </Card>
+          
+          <div className="mt-8">
             <NotificationsCard />
           </div>
         </div>
