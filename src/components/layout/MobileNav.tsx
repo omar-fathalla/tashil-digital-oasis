@@ -9,9 +9,9 @@ import {
   HelpCircle,
   LogOut,
   BarChart2,
-  Printer
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
+import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
   mobileMenuOpen: boolean;
@@ -22,7 +22,12 @@ export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
   const { user } = useAuth();
 
   return (
-    <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
+    <div 
+      className={cn(
+        "fixed inset-x-0 top-[64px] z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden transition-all duration-200 ease-in-out transform",
+        mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+      )}
+    >
       <div className="space-y-1 px-4 pb-3 pt-2">
         <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
           <Link to="/">
@@ -49,12 +54,6 @@ export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
           </Link>
         </Button>
         <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-          <Link to="/print">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
           <Link to="/about">
             <Info className="h-4 w-4 mr-2" />
             About
@@ -66,10 +65,10 @@ export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
             FAQ
           </Link>
         </Button>
-        <div className="flex space-x-2 mt-3 pt-3 border-t">
+        <div className="pt-4 mt-4 border-t">
           {user ? (
-            <div className="pt-4 mt-4 border-t w-full">
-              <span className="block text-sm text-gray-600 mb-2">
+            <div className="space-y-3">
+              <span className="block text-sm text-gray-600">
                 {user.email}
               </span>
               <Button 
@@ -82,7 +81,7 @@ export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
               </Button>
             </div>
           ) : (
-            <div className="flex space-x-2 mt-3 pt-3 border-t w-full">
+            <div className="flex gap-2">
               <Button asChild variant="outline" className="flex-1">
                 <Link to="/auth">Sign In</Link>
               </Button>

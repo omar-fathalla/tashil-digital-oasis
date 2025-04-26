@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard,
@@ -9,46 +9,43 @@ import {
   HelpCircle,
   BarChart2
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const DesktopNav = () => {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const navItems = [
+    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/request-submission", icon: UserPlus, label: "Register Employee" },
+    { to: "/company-registration", icon: FileText, label: "Register Company" },
+    { to: "/application-status", icon: BarChart2, label: "Status" },
+    { to: "/about", icon: Info, label: "About" },
+    { to: "/faq", icon: HelpCircle, label: "FAQ" },
+  ];
+
   return (
     <div className="hidden md:flex items-center space-x-1">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/">
-          <LayoutDashboard className="h-4 w-4 mr-1" />
-          Dashboard
-        </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/request-submission">
-          <UserPlus className="h-4 w-4 mr-1" />
-          Register Employee
-        </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/company-registration">
-          <FileText className="h-4 w-4 mr-1" />
-          Register Company
-        </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/application-status">
-          <BarChart2 className="h-4 w-4 mr-1" />
-          Status
-        </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/about">
-          <Info className="h-4 w-4 mr-1" />
-          About
-        </Link>
-      </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/faq">
-          <HelpCircle className="h-4 w-4 mr-1" />
-          FAQ
-        </Link>
-      </Button>
+      {navItems.map((item) => (
+        <Button
+          key={item.to}
+          variant="ghost"
+          size="sm"
+          asChild
+          className={cn(
+            "relative",
+            isActive(item.to) && "bg-accent text-accent-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+          )}
+        >
+          <Link to={item.to}>
+            <item.icon className="h-4 w-4 mr-1" />
+            {item.label}
+          </Link>
+        </Button>
+      ))}
     </div>
   );
 };
