@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,7 +27,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 // Define the status type explicitly to match expected values
-type RequestStatus = "approved" | "rejected" | "pending" | string;
+type RequestStatus = "approved" | "rejected" | "pending";
 
 export type RegistrationRequest = {
   id: string;
@@ -87,8 +86,12 @@ export function RegistrationRequestsTable() {
 
       if (error) throw error;
 
-      // Explicitly cast the data to our RegistrationRequest type
-      const typedData = (data || []) as RegistrationRequest[];
+      // Type guard to ensure the status is one of our allowed values
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: validateStatus(item.status)
+      })) as RegistrationRequest[];
+      
       setRequests(typedData);
     } catch (error: any) {
       toast({
@@ -99,6 +102,15 @@ export function RegistrationRequestsTable() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  // Helper function to validate status values
+  function validateStatus(status: string | null): RequestStatus {
+    if (status === "approved" || status === "rejected" || status === "pending") {
+      return status;
+    }
+    // Default to pending if an unknown status is encountered
+    return "pending";
   }
 
   function filterRequests() {
@@ -120,7 +132,7 @@ export function RegistrationRequestsTable() {
     setFilteredRequests(filtered);
   }
 
-  const getStatusIcon = (status: string | null) => {
+  const getStatusIcon = (status: RequestStatus) => {
     switch (status) {
       case "approved":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
@@ -131,7 +143,7 @@ export function RegistrationRequestsTable() {
     }
   };
 
-  const getStatusBadge = (status: string | null) => {
+  const getStatusBadge = (status: RequestStatus) => {
     const baseClasses = "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium";
     
     switch (status) {
