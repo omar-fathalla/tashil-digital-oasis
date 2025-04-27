@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,8 +9,8 @@ export interface Notification {
   created_at: string;
   user_id: string | null;
   read: boolean | null;
-  type?: string; // Made optional
-  metadata?: any; // Made optional
+  type?: string;
+  metadata?: any;
 }
 
 export const useNotifications = () => {
@@ -43,8 +44,8 @@ export const useNotifications = () => {
     queryFn: fetchNotifications,
   });
 
-  const markAsRead = useMutation(
-    async (id: string) => {
+  const markAsRead = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("notifications")
         .update({ read: true })
@@ -55,12 +56,30 @@ export const useNotifications = () => {
         throw error;
       }
     },
-    {
-      onSuccess: () => {
-        refetch();
-      },
-    }
-  );
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const deleteNotification = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error deleting notification:", error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  // Calculate unread count
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return {
     notifications,
@@ -68,5 +87,7 @@ export const useNotifications = () => {
     error,
     refetch,
     markAsRead,
+    deleteNotification,
+    unreadCount,
   };
 };

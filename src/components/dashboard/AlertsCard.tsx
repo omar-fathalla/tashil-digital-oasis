@@ -8,7 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const AlertsCard = () => {
-  const { notifications, isLoading, error, markAsRead, deleteNotification, unreadCount } = useNotifications();
+  const { 
+    notifications, 
+    isLoading, 
+    error, 
+    markAsRead, 
+    deleteNotification, 
+    unreadCount 
+  } = useNotifications();
 
   if (isLoading) {
     return (
@@ -49,7 +56,7 @@ export const AlertsCard = () => {
     );
   }
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: string = 'default') => {
     switch (type) {
       case "request_approved":
         return <Bell className="h-4 w-4 text-green-500" />;

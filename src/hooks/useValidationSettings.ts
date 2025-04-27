@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type ValidationSetting = {
   key: string;
-  value: any; // Change type to 'any' instead of 'string | object'
+  value: any; // Using any to accept any value from the database
   updated_at: string;
 };
 

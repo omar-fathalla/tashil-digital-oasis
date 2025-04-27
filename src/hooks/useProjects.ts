@@ -1,4 +1,4 @@
-// First, update the Project type to accept string for status
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -6,7 +6,7 @@ export type Project = {
   id: string;
   name: string;
   description: string | null;
-  status: string; // Changed from '"active" | "archived" | "in_progress"' to accept any string
+  status: string; // Changed to string to accept any value from the database
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -37,7 +37,7 @@ export const useProjects = () => {
   };
 
   const createProject = async (projectData: {
-    name: string; // Make name required
+    name: string;
     description?: string | null;
     status: "active" | "archived" | "in_progress";
   }) => {
@@ -48,14 +48,16 @@ export const useProjects = () => {
       
       if (!userId) throw new Error("User not authenticated");
       
+      const newProject = {
+        name: projectData.name,
+        description: projectData.description || null,
+        status: projectData.status,
+        user_id: userId
+      };
+      
       const { data, error } = await supabase
         .from('projects')
-        .insert({
-          user_id: userId,
-          name: projectData.name,
-          description: projectData.description || null,
-          status: projectData.status
-        })
+        .insert(newProject)
         .select();
       
       if (error) throw error;

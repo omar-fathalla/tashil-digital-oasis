@@ -28,20 +28,15 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 // Update the type to match what we're getting from Supabase
-type RegistrationRequest = {
+export type RegistrationRequest = {
   id: string;
   full_name: string | null;
   national_id: string | null;
   submission_date: string | null;
-  status: "pending" | "approved" | "rejected" | string | null;
+  status: string | null;
   documents: any;
   employee_details?: any;
   submission_history?: any[];
-  id_card?: {
-    id: string;
-    issue_date: string;
-    expiry_date: string;
-  };
 };
 
 export function RegistrationRequestsTable() {
@@ -94,8 +89,7 @@ export function RegistrationRequestsTable() {
       if (error) throw error;
 
       // Use type assertion to help TypeScript
-      const typedData = (data || []) as unknown as RegistrationRequest[];
-      setRequests(typedData);
+      setRequests(data || []);
     } catch (error: any) {
       toast({
         title: "Error fetching requests",
@@ -119,8 +113,8 @@ export function RegistrationRequestsTable() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(request => 
-        request.full_name.toLowerCase().includes(term) ||
-        request.national_id.toLowerCase().includes(term) ||
+        (request.full_name?.toLowerCase().includes(term) || false) ||
+        (request.national_id?.toLowerCase().includes(term) || false) ||
         request.id.toLowerCase().includes(term)
       );
     }
@@ -128,7 +122,7 @@ export function RegistrationRequestsTable() {
     setFilteredRequests(filtered);
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
     switch (status) {
       case "approved":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
@@ -139,7 +133,7 @@ export function RegistrationRequestsTable() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
     const baseClasses = "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium";
     
     switch (status) {
@@ -264,7 +258,7 @@ export function RegistrationRequestsTable() {
                   <TableCell className="font-medium">{request.full_name}</TableCell>
                   <TableCell>{request.national_id}</TableCell>
                   <TableCell>
-                    {format(new Date(request.submission_date), "PPP")}
+                    {request.submission_date && format(new Date(request.submission_date), "PPP")}
                   </TableCell>
                   <TableCell className="text-center">{getDocumentStatus(request)}</TableCell>
                   <TableCell>
@@ -287,12 +281,14 @@ export function RegistrationRequestsTable() {
         </Table>
       </div>
 
-      <RequestDetailsDialog
-        request={selectedRequest}
-        open={!!selectedRequest}
-        onOpenChange={(open) => !open && setSelectedRequest(null)}
-        onStatusUpdate={fetchRequests}
-      />
+      {selectedRequest && (
+        <RequestDetailsDialog
+          request={selectedRequest}
+          open={!!selectedRequest}
+          onOpenChange={(open) => !open && setSelectedRequest(null)}
+          onStatusUpdate={fetchRequests}
+        />
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -233,27 +234,22 @@ export const useEmployee = (employeeId?: string) => {
           .eq("id", employeeId);
         
         if (updateError) throw updateError;
-      } else {
-        // If record doesn't exist, we need to get employee data to create a minimal record
-        const { data: employeeData, error: employeeError } = await supabase
-          .from("employee_registrations")
-          .select("full_name")
-          .eq("id", employeeId)
-          .single();
-        
-        if (employeeError) throw employeeError;
-        
-        // Insert new record with required fields
+      } else if (employee) {
+        // If record doesn't exist but we have employee data, create a new record
         const { error: insertError } = await supabase
           .from("registration_requests")
           .insert({
             id: employeeId,
             documents,
-            full_name: employeeData?.full_name || "Unknown",
+            full_name: employee.full_name,
+            // Use a fallback for national_id since it might not exist in employee data
             national_id: "Unknown"
           });
         
         if (insertError) throw insertError;
+      } else {
+        // We have neither existing data nor employee data
+        throw new Error("Failed to create registration request: Missing employee data");
       }
 
       return publicUrl;

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,14 +56,43 @@ export const useAuthForm = () => {
 
         // Check if user exists and set admin role for the specified email
         if (user && user.email === "fathalla80800@gmail.com") {
-          const { error: roleError } = await supabase
+          // First, check if a role with the name 'admin' exists
+          const { data: roleData, error: roleError } = await supabase
             .from('roles')
-            .upsert(
-              { user_id: user.id, role: 'admin' },
-              { onConflict: 'user_id' }
-            );
-
-          if (roleError) console.error("Error setting admin role:", roleError);
+            .select('id')
+            .eq('name', 'admin')
+            .single();
+            
+          if (roleError && roleError.code !== 'PGRST116') {
+            console.error("Error fetching admin role:", roleError);
+          }
+          
+          let roleId = roleData?.id;
+          
+          // If the role doesn't exist, create it
+          if (!roleId) {
+            const { data: newRole, error: createError } = await supabase
+              .from('roles')
+              .insert({ name: 'admin', description: 'Administrator role' })
+              .select('id')
+              .single();
+              
+            if (createError) {
+              console.error("Error creating admin role:", createError);
+            } else {
+              roleId = newRole.id;
+            }
+          }
+          
+          // If we have a role ID, update the user's role
+          if (roleId) {
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ role: 'admin', role_id: roleId })
+              .eq('id', user.id);
+              
+            if (updateError) console.error("Error setting admin role:", updateError);
+          }
         }
         
         toast({

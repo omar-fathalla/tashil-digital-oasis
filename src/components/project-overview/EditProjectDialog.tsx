@@ -57,7 +57,7 @@ export const EditProjectDialog = ({
     defaultValues: {
       name: project.name,
       description: project.description || "",
-      status: project.status,
+      status: project.status as "active" | "archived" | "in_progress",
     },
   });
 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,12 @@ import { RepWithCompany, Company, Representative } from "./representative-accoun
 export const RepresentativeAccounting = () => {
   const [representatives, setRepresentatives] = useState<RepWithCompany[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [newRep, setNewRep] = useState({ full_name: "", type: "" as "promo" | "company" | "", company_id: "" });
+  const [newRep, setNewRep] = useState({ 
+    full_name: "", 
+    type: "" as string, 
+    company_id: "",
+    value: 0
+  });
   const [filter, setFilter] = useState({ type: "all", company_type: "all" });
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
@@ -37,7 +43,7 @@ export const RepresentativeAccounting = () => {
   const fetchRepresentatives = async () => {
     const { data, error } = await supabase.from("representatives").select("*");
     if (data && Array.isArray(data)) {
-      const reps = data as unknown as Representative[];
+      const reps = data as Representative[];
       
       const result: RepWithCompany[] = reps.map((rep) => {
         const company = companies.find((c) => c.id === rep.company_id);
@@ -58,11 +64,14 @@ export const RepresentativeAccounting = () => {
       return;
     }
     
+    // Calculate value based on type
+    const value = newRep.type === "promo" ? 100 : 500;
+    
     const { error } = await supabase.from("representatives").insert({
       full_name: newRep.full_name,
       type: newRep.type,
       company_id: newRep.company_id,
-      value: newRep.type === "promo" ? 100 : 500
+      value: value
     });
     
     if (error) {
@@ -70,7 +79,7 @@ export const RepresentativeAccounting = () => {
     } else {
       toast({ title: "Success", description: "Representative added" });
       fetchRepresentatives();
-      setNewRep({ full_name: "", type: "", company_id: "" });
+      setNewRep({ full_name: "", type: "", company_id: "", value: 0 });
     }
   };
 
@@ -103,7 +112,7 @@ export const RepresentativeAccounting = () => {
             />
             <Select
               value={newRep.type}
-              onValueChange={(value) => setNewRep((prev) => ({ ...prev, type: value as "promo" | "company" }))}
+              onValueChange={(value) => setNewRep((prev) => ({ ...prev, type: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Representative Type" />

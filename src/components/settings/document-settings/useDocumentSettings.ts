@@ -29,11 +29,9 @@ export const useDocumentSettings = () => {
     };
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("document_types")
-        .insert(safeDocument)
-        .select()
-        .single();
+        .insert(safeDocument);
 
       if (error) {
         toast({
