@@ -36,7 +36,7 @@ export type RegistrationRequest = {
   submission_date: string | null;
   status: RequestStatus; // Use our explicit status type
   documents: any;
-  employee_details?: any;
+  employee_details: any; // Not optional to match external type
   submission_history?: any[];
 };
 
@@ -89,7 +89,8 @@ export function RegistrationRequestsTable() {
       // Type guard to ensure the status is one of our allowed values
       const typedData = (data || []).map(item => ({
         ...item,
-        status: validateStatus(item.status)
+        status: validateStatus(item.status),
+        employee_details: item.employee_details || {} // Ensure employee_details exists
       })) as RegistrationRequest[];
       
       setRequests(typedData);
