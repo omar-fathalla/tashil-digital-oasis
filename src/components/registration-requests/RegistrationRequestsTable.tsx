@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,13 +26,12 @@ import {
 } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 
-// Update the type to match what we're getting from Supabase
 export type RegistrationRequest = {
   id: string;
   full_name: string | null;
   national_id: string | null;
   submission_date: string | null;
-  status: string | null;
+  status: "approved" | "rejected" | "pending" | string;
   documents: any;
   employee_details?: any;
   submission_history?: any[];
@@ -49,11 +47,9 @@ export function RegistrationRequestsTable() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch requests on component mount
   useEffect(() => {
     fetchRequests();
 
-    // Set up realtime subscription
     const channel = supabase
       .channel('registration-changes')
       .on('postgres_changes', 
@@ -73,7 +69,6 @@ export function RegistrationRequestsTable() {
     };
   }, []);
 
-  // Filter requests when search term or status filter changes
   useEffect(() => {
     filterRequests();
   }, [requests, searchTerm, statusFilter]);
@@ -88,8 +83,8 @@ export function RegistrationRequestsTable() {
 
       if (error) throw error;
 
-      // Use type assertion to help TypeScript
-      setRequests(data || []);
+      const typedData = (data || []) as RegistrationRequest[];
+      setRequests(typedData);
     } catch (error: any) {
       toast({
         title: "Error fetching requests",
@@ -104,12 +99,10 @@ export function RegistrationRequestsTable() {
   function filterRequests() {
     let filtered = [...requests];
     
-    // Apply status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter(request => request.status === statusFilter);
     }
     
-    // Apply search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(request => 

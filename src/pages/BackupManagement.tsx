@@ -12,7 +12,11 @@ import { BackupFileUpload } from "@/components/backup/BackupFileUpload";
 import { BackupPreviewTable } from "@/components/backup/BackupPreviewTable";
 import { supabase } from "@/integrations/supabase/client";
 
-const TABLES = [
+// Define allowed tables as a type to enforce type safety
+type AllowedTable = "users" | "roles" | "permissions";
+
+// Define hardcoded tables array with the correct type
+const TABLES: Array<{ key: AllowedTable; label: string }> = [
   { key: "users", label: "Users" },
   { key: "roles", label: "Roles" },
   { key: "permissions", label: "Permissions" },
@@ -24,7 +28,7 @@ const getUserPermissions = async (userId: string) => {
   return data.map((p: any) => p.permission_key);
 };
 
-const fetchTableData = async (table: string) => {
+const fetchTableData = async (table: AllowedTable) => {
   const { data, error } = await supabase.from(table).select("*").limit(1000); // Safety: limit large fetch
   if (error) throw error;
   return data;
@@ -35,7 +39,7 @@ export default function BackupManagementPage() {
   const navigate = useNavigate();
 
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [selectedTable, setSelectedTable] = useState(TABLES[0].key);
+  const [selectedTable, setSelectedTable] = useState<AllowedTable>(TABLES[0].key);
   const [tableData, setTableData] = useState<any[]>([]);
   const [loadingTable, setLoadingTable] = useState(false);
 
@@ -143,7 +147,7 @@ export default function BackupManagementPage() {
               <select
                 className={cn("rounded-md border px-3 py-2 w-full text-base")}
                 value={selectedTable}
-                onChange={e => setSelectedTable(e.target.value)}
+                onChange={e => setSelectedTable(e.target.value as AllowedTable)}
               >
                 {TABLES.map((tbl) => (
                   <option key={tbl.key} value={tbl.key}>{tbl.label}</option>
