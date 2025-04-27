@@ -1,7 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { ProjectSearch } from "@/components/project-overview/ProjectSearch";
 import { ProjectsList } from "@/components/project-overview/ProjectsList";
