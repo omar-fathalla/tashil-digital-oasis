@@ -37,7 +37,9 @@ export const RepresentativeAccounting = () => {
   const fetchRepresentatives = async () => {
     const { data, error } = await supabase.from("representatives").select("*");
     if (data && Array.isArray(data)) {
-      const result: RepWithCompany[] = data.map((rep: Representative) => {
+      const reps = data as unknown as Representative[];
+      
+      const result: RepWithCompany[] = reps.map((rep) => {
         const company = companies.find((c) => c.id === rep.company_id);
         return {
           ...rep,
@@ -55,11 +57,14 @@ export const RepresentativeAccounting = () => {
       toast({ title: "Please fill all fields", variant: "destructive" });
       return;
     }
+    
     const { error } = await supabase.from("representatives").insert({
       full_name: newRep.full_name,
       type: newRep.type,
       company_id: newRep.company_id,
+      value: newRep.type === "promo" ? 100 : 500
     });
+    
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {

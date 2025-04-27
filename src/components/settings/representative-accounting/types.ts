@@ -2,16 +2,18 @@
 export type Representative = {
   id: string;
   full_name: string;
-  type: "promo" | "company";
+  type: string; // Changed from "promo" | "company" to string to match Supabase
   company_id: string | null;
   value: number;
   created_at: string;
+  employee_id?: string | null;
+  photo_url?: string | null;
 };
 
 export type Company = {
   id: string;
-  company_name: string;  // Changed from name to company_name to match the database schema
-  type: "advertising" | "product";
+  company_name: string;
+  type: string;
 };
 
 export type RepWithCompany = Representative & {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,19 @@ export const useAuthForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Fetch roles
+  const fetchRoles = async () => {
+    const { data, error } = await supabase.from("roles").select("*");
+    
+    if (error) {
+      console.error("Error fetching roles:", error);
+      setError("Failed to fetch user roles");
+      return [];
+    }
+    
+    return data || [];
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +56,7 @@ export const useAuthForm = () => {
         // Check if user exists and set admin role for the specified email
         if (user && user.email === "fathalla80800@gmail.com") {
           const { error: roleError } = await supabase
-            .from('user_roles')
+            .from('roles')
             .upsert(
               { user_id: user.id, role: 'admin' },
               { onConflict: 'user_id' }

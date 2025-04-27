@@ -27,15 +27,16 @@ import {
 } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 
+// Update the type to match what we're getting from Supabase
 type RegistrationRequest = {
   id: string;
-  full_name: string;
-  national_id: string;
-  submission_date: string;
-  status: "pending" | "approved" | "rejected";
-  employee_details: any;
+  full_name: string | null;
+  national_id: string | null;
+  submission_date: string | null;
+  status: "pending" | "approved" | "rejected" | string | null;
   documents: any;
-  submission_history: any[];
+  employee_details?: any;
+  submission_history?: any[];
   id_card?: {
     id: string;
     issue_date: string;
@@ -91,7 +92,10 @@ export function RegistrationRequestsTable() {
         .order("submission_date", { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+
+      // Use type assertion to help TypeScript
+      const typedData = (data || []) as unknown as RegistrationRequest[];
+      setRequests(typedData);
     } catch (error: any) {
       toast({
         title: "Error fetching requests",

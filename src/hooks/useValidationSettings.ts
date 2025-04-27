@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type ValidationSetting = {
   key: string;
-  value: string | object;
+  value: any; // Change type to 'any' instead of 'string | object'
   updated_at: string;
 };
 
@@ -20,7 +20,8 @@ export const useValidationSettings = () => {
       throw error;
     }
 
-    return data || [];
+    // Cast the data to match our expected ValidationSetting type
+    return (data || []) as ValidationSetting[];
   };
 
   const { 

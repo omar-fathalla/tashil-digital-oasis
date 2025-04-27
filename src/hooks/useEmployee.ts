@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -238,7 +237,7 @@ export const useEmployee = (employeeId?: string) => {
         // If record doesn't exist, we need to get employee data to create a minimal record
         const { data: employeeData, error: employeeError } = await supabase
           .from("employee_registrations")
-          .select("full_name, national_id")
+          .select("full_name")
           .eq("id", employeeId)
           .single();
         
@@ -250,8 +249,8 @@ export const useEmployee = (employeeId?: string) => {
           .insert({
             id: employeeId,
             documents,
-            full_name: employeeData.full_name || "Unknown",
-            national_id: employeeData.national_id || "Unknown",
+            full_name: employeeData?.full_name || "Unknown",
+            national_id: "Unknown"
           });
         
         if (insertError) throw insertError;

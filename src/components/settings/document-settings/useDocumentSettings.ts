@@ -51,7 +51,8 @@ export const useDocumentSettings = () => {
         description: "Document type added successfully",
       });
 
-      return data;
+      // Return void to match the expected return type
+      return;
     } catch (error) {
       console.error('Failed to add document:', error);
       throw error;

@@ -1,157 +1,135 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// First, update the Project type to accept string for status
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/components/AuthProvider";
-import { toast } from "sonner";
 
 export type Project = {
   id: string;
   name: string;
   description: string | null;
-  status: 'active' | 'archived' | 'in_progress';
-  user_id?: string;
+  status: string; // Changed from '"active" | "archived" | "in_progress"' to accept any string
   created_at: string;
   updated_at: string;
+  user_id: string;
 };
 
 export const useProjects = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
 
-  const fetchProjects = async (): Promise<Project[]> => {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('updated_at', { ascending: false });
+  const fetchProjects = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('updated_at', { ascending: false });
       
-    if (error) throw error;
-    return data || [];
+      if (error) throw error;
+      
+      // Cast the data to our Project type
+      setProjects(data as Project[]);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const { data: projects = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['projects'],
-    queryFn: fetchProjects,
-    enabled: !!user,
-  });
-
-  const createProjectMutation = useMutation({
-    mutationFn: async (newProject: Partial<Project>) => {
+  const createProject = async (projectData: {
+    name: string; // Make name required
+    description?: string | null;
+    status: "active" | "archived" | "in_progress";
+  }) => {
+    try {
+      // Include the user_id from auth session
+      const { data: userData } = await supabase.auth.getSession();
+      const userId = userData.session?.user.id;
+      
+      if (!userId) throw new Error("User not authenticated");
+      
       const { data, error } = await supabase
         .from('projects')
         .insert({
-          ...newProject,
-          user_id: user?.id,
-          status: newProject.status || 'active',
+          user_id: userId,
+          name: projectData.name,
+          description: projectData.description || null,
+          status: projectData.status
         })
         .select();
-        
+      
       if (error) throw error;
+      
+      await fetchProjects();
       return data[0];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Project created successfully');
-    },
-    onError: (error) => {
-      toast.error(`Failed to create project: ${error.message}`);
-    },
-  });
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      throw err;
+    }
+  };
 
-  const updateProjectMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string, [key: string]: any }) => {
-      const { data, error } = await supabase
+  const updateProject = async (
+    projectId: string,
+    projectData: {
+      name?: string;
+      description?: string | null;
+      status?: string;
+    }
+  ) => {
+    try {
+      const { error } = await supabase
         .from('projects')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select();
-        
-      if (error) throw error;
-      return data[0];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Project updated successfully');
-    },
-    onError: (error) => {
-      toast.error(`Failed to update project: ${error.message}`);
-    },
-  });
+        .update(projectData)
+        .eq('id', projectId);
 
-  const archiveProjectMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await supabase
+      if (error) throw error;
+
+      await fetchProjects();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      throw err;
+    }
+  };
+
+  const archiveProject = async (projectId: string) => {
+    try {
+      const { error } = await supabase
         .from('projects')
-        .update({ 
-          status: 'archived',
-          updated_at: new Date().toISOString(), 
-        })
-        .eq('id', id)
-        .select();
-        
-      if (error) throw error;
-      return data[0];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Project archived successfully');
-    },
-    onError: (error) => {
-      toast.error(`Failed to archive project: ${error.message}`);
-    },
-  });
+        .update({ status: 'archived' })
+        .eq('id', projectId);
 
-  const deleteProjectMutation = useMutation({
-    mutationFn: async (id: string) => {
+      if (error) throw error;
+
+      await fetchProjects();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      throw err;
+    }
+  };
+
+  const deleteProject = async (projectId: string) => {
+    try {
       const { error } = await supabase
         .from('projects')
         .delete()
-        .eq('id', id);
-        
+        .eq('id', projectId);
+
       if (error) throw error;
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Project deleted successfully');
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete project: ${error.message}`);
-    },
-  });
 
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('public:projects')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'projects' 
-        }, 
-        (payload) => {
-          queryClient.invalidateQueries({ queryKey: ['projects'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
+      await fetchProjects();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      throw err;
+    }
+  };
 
   return {
     projects,
     isLoading,
+    createProject,
+    updateProject,
+    archiveProject,
+    deleteProject,
     error,
-    refetch,
-    createProject: createProjectMutation.mutateAsync,
-    updateProject: updateProjectMutation.mutateAsync,
-    archiveProject: archiveProjectMutation.mutateAsync,
-    deleteProject: deleteProjectMutation.mutateAsync,
   };
 };
