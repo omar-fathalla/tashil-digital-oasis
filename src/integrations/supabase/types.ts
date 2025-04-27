@@ -126,6 +126,7 @@ export type Database = {
           id: string
           type: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           company_name: string
@@ -133,6 +134,7 @@ export type Database = {
           id?: string
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           company_name?: string
@@ -140,8 +142,17 @@ export type Database = {
           id?: string
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_registrations: {
         Row: {
@@ -153,6 +164,7 @@ export type Database = {
           id: string
           tax_card_number: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -163,6 +175,7 @@ export type Database = {
           id?: string
           tax_card_number?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -173,8 +186,17 @@ export type Database = {
           id?: string
           tax_card_number?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "company_registrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_users: {
         Row: {
