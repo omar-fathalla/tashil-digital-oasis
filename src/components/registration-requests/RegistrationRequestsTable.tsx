@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,12 +27,15 @@ import {
 } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
 
+// Define the status type explicitly to match expected values
+type RequestStatus = "approved" | "rejected" | "pending" | string;
+
 export type RegistrationRequest = {
   id: string;
   full_name: string | null;
   national_id: string | null;
   submission_date: string | null;
-  status: "approved" | "rejected" | "pending" | string;
+  status: RequestStatus; // Use our explicit status type
   documents: any;
   employee_details?: any;
   submission_history?: any[];
@@ -83,6 +87,7 @@ export function RegistrationRequestsTable() {
 
       if (error) throw error;
 
+      // Explicitly cast the data to our RegistrationRequest type
       const typedData = (data || []) as RegistrationRequest[];
       setRequests(typedData);
     } catch (error: any) {
