@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +9,9 @@ export type Project = {
   name: string;
   description: string | null;
   status: 'active' | 'archived' | 'in_progress';
+  user_id?: string;
   created_at: string;
   updated_at: string;
-  user_id?: string;
 };
 
 export const useProjects = () => {
@@ -123,7 +122,6 @@ export const useProjects = () => {
     },
   });
 
-  // Set up realtime subscription
   useEffect(() => {
     if (!user) return;
 
