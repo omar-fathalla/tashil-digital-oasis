@@ -37,16 +37,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
-            <Route path="/about" element={<About />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/register" element={<CompanyRegistration />} />
             <Route path="/verify-email" element={<Navigate to="/" replace />} />
-
-            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
               <Route element={<RootLayout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/company-registration" element={<CompanyRegistration />} />
                 <Route path="/request-submission" element={<RequestSubmission />} />
@@ -65,9 +62,6 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Route>
-
-            {/* Catch all other routes and redirect to About for unauthenticated users */}
-            <Route path="*" element={<Navigate to="/about" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

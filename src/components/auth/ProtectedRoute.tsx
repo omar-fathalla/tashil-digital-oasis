@@ -12,7 +12,7 @@ export const ProtectedRoute = () => {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      navigate("/about", { state: { from: location }, replace: true });
+      navigate("/auth", { state: { from: location }, replace: true });
     }
   }, [user, isLoading, navigate, location]);
 
@@ -29,5 +29,5 @@ export const ProtectedRoute = () => {
     return <VerifyEmail />;
   }
 
-  return user ? <Outlet /> : <Navigate to="/about" state={{ from: location }} replace />;
+  return user ? <Outlet /> : <Navigate to="/auth" state={{ from: location }} replace />;
 };
