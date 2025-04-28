@@ -1,5 +1,5 @@
 
-import { RepresentativeAccounting } from "@/components/settings/representative-accounting/RepresentativeAccounting";
+import { RepresentativeAccounting } from "@/components/accounting/RepresentativeAccounting";
 
 const Accounting = () => {
   return (
