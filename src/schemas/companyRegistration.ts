@@ -2,6 +2,21 @@
 import { z } from "zod";
 
 export const companyRegistrationSchema = z.object({
+  // User Account Information
+  email: z.string().email({
+    message: "Please enter a valid email address",
+  }),
+  username: z.string().min(3, {
+    message: "Username must be at least 3 characters",
+  }),
+  password: z.string().min(4, {
+    message: "Password must be at least 4 characters",
+  }),
+  confirmPassword: z.string(),
+  mobileNumber: z.string().regex(/^[0-9]{10,15}$/, {
+    message: "Mobile number must be between 10-15 digits",
+  }),
+
   // Company Information
   companyName: z.string().min(2, {
     message: "Company name must be at least 2 characters.",
@@ -18,20 +33,9 @@ export const companyRegistrationSchema = z.object({
   companyNumber: z.string().regex(/^\d{5,10}$/, {
     message: "Company Number must be between 5 and 10 digits.",
   }),
-
-  // File validation 
-  commercialRegisterFile: z.any()
-    .refine((file) => file !== null, "Commercial Register file is required")
-    .refine(
-      (file) => file?.size <= 5000000,
-      "Max file size is 5MB"
-    ),
-  taxCardImage: z.any()
-    .refine((file) => file !== null, "Tax Card image is required")
-    .refine(
-      (file) => file?.size <= 5000000,
-      "Max file size is 5MB"
-    )
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 export type CompanyRegistrationFormData = z.infer<typeof companyRegistrationSchema>;

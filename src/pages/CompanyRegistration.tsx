@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -6,10 +7,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { companyRegistrationSchema, type CompanyRegistrationFormData } from "@/schemas/companyRegistration";
 import { CompanyInformationForm } from "@/components/company-registration/CompanyInformationForm";
+import { UserAccountForm } from "@/components/company-registration/UserAccountForm";
 import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 import { CompanyRegistrationSuccess } from "@/components/company-registration/CompanyRegistrationSteps";
 import { RegistrationFormWrapper } from "@/components/company-registration/RegistrationFormWrapper";
-import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 
@@ -22,11 +23,15 @@ const CompanyRegistration = () => {
     taxCard: null as File | null,
   });
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   const form = useForm<CompanyRegistrationFormData>({
     resolver: zodResolver(companyRegistrationSchema),
     defaultValues: {
+      email: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+      mobileNumber: "",
       companyName: "",
       address: "",
       taxCardNumber: "",
@@ -39,11 +44,23 @@ const CompanyRegistration = () => {
     try {
       setIsSubmitting(true);
 
-      if (!user) {
-        toast.error("Authentication Error", {
-          description: "You must be logged in to register a company.",
-        });
-        return;
+      // First, register the user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            username: values.username,
+            mobile_number: values.mobileNumber,
+          },
+          emailRedirectTo: window.location.origin + '/auth',
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error("Failed to create user account");
       }
 
       // Upload documents to storage first
@@ -80,6 +97,7 @@ const CompanyRegistration = () => {
         taxCardUrl = publicUrl;
       }
 
+      // Then create the company profile
       const { error: companyError } = await supabase
         .from('companies')
         .insert({
@@ -88,7 +106,7 @@ const CompanyRegistration = () => {
           tax_card_number: values.taxCardNumber,
           register_number: values.registerNumber,
           company_number: values.companyNumber,
-          user_id: user.id,
+          user_id: authData.user.id,
           commercial_register_url: commercialRegisterUrl,
           tax_card_url: taxCardUrl,
         });
@@ -97,13 +115,20 @@ const CompanyRegistration = () => {
 
       setIsCompleted(true);
       toast.success("Registration Successful", {
-        description: "Your company has been registered successfully.",
+        description: "Your account has been created. Please check your email for verification.",
+      });
+
+      // Redirect to auth page with notification about email verification
+      navigate("/auth", { 
+        state: { 
+          justRegistered: true 
+        }
       });
 
     } catch (error) {
       console.error('Error during registration:', error);
       toast.error("Registration Error", {
-        description: "An error occurred while registering your company. Please try again.",
+        description: "An error occurred while registering. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -120,7 +145,7 @@ const CompanyRegistration = () => {
   if (isCompleted) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <CompanyRegistrationSuccess onNavigateToDashboard={() => navigate('/dashboard')} />
+        <CompanyRegistrationSuccess onNavigateToDashboard={() => navigate('/auth')} />
       </div>
     );
   }
@@ -128,9 +153,14 @@ const CompanyRegistration = () => {
   const validateStep = (step: number) => {
     switch (step) {
       case 0:
-        return form.trigger(['companyName', 'address', 'taxCardNumber', 'registerNumber', 'companyNumber'])
+        return form.trigger(['email', 'username', 'password', 'confirmPassword', 'mobileNumber'])
           .then(isValid => {
             if (isValid) setFormStep(1);
+          });
+      case 1:
+        return form.trigger(['companyName', 'address', 'taxCardNumber', 'registerNumber', 'companyNumber'])
+          .then(isValid => {
+            if (isValid) setFormStep(2);
           });
       default:
         return Promise.resolve();
@@ -141,11 +171,17 @@ const CompanyRegistration = () => {
     switch (formStep) {
       case 0:
         return {
+          title: "Account Information",
+          description: "Create your account to get started",
+          content: <UserAccountForm form={form} />
+        };
+      case 1:
+        return {
           title: "Company Information",
           description: "Enter your company's basic information",
           content: <CompanyInformationForm form={form} />
         };
-      case 1:
+      case 2:
         return {
           title: "Required Documents",
           description: "Upload the required documents",
@@ -172,10 +208,10 @@ const CompanyRegistration = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Building2 className="h-8 w-8 text-primary" />
-          Company Registration
+          Company & User Registration
         </h1>
         <p className="text-muted-foreground mt-2">
-          Register your company and get started with our services
+          Register your account and company to get started with our services
         </p>
       </div>
 
@@ -194,7 +230,7 @@ const CompanyRegistration = () => {
             onPrevious={() => setFormStep(formStep - 1)}
             onNext={() => validateStep(formStep)}
             onSubmit={onSubmit}
-            showSubmit={formStep === 1}
+            showSubmit={formStep === 2}
             disableSubmit={!uploadedFiles.commercialRegister || !uploadedFiles.taxCard}
           >
             {content}

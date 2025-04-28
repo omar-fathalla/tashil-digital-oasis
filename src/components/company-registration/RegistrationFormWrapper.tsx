@@ -1,14 +1,13 @@
 
-import { ReactNode } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { UseFormReturn } from "react-hook-form";
-import { RegistrationSteps } from "./RegistrationSteps";
+import { Progress } from "@/components/ui/progress";
 import { CompanyRegistrationFormData } from "@/schemas/companyRegistration";
 
 interface RegistrationFormWrapperProps {
-  children: ReactNode;
+  children: React.ReactNode;
   form: UseFormReturn<CompanyRegistrationFormData>;
   formStep: number;
   title: string;
@@ -16,12 +15,12 @@ interface RegistrationFormWrapperProps {
   isSubmitting: boolean;
   onPrevious: () => void;
   onNext: () => void;
-  onSubmit: (values: CompanyRegistrationFormData) => Promise<void>;
-  showSubmit?: boolean;
+  onSubmit: (values: CompanyRegistrationFormData) => void;
+  showSubmit: boolean;
   disableSubmit?: boolean;
 }
 
-export const RegistrationFormWrapper = ({
+export function RegistrationFormWrapper({
   children,
   form,
   formStep,
@@ -31,64 +30,51 @@ export const RegistrationFormWrapper = ({
   onPrevious,
   onNext,
   onSubmit,
-  showSubmit = false,
-  disableSubmit = false,
-}: RegistrationFormWrapperProps) => {
+  showSubmit,
+  disableSubmit,
+}: RegistrationFormWrapperProps) {
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-      <section className="bg-primary-50 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Company Registration
-            </h1>
-            <p className="text-lg text-gray-600">
-              Register your company to access Tashil Platform's digital administrative services.
-            </p>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="mb-6">
+          <Progress value={((formStep + 1) / 3) * 100} className="h-2" />
+          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <span>Account</span>
+            <span>Company</span>
+            <span>Documents</span>
           </div>
         </div>
-      </section>
 
-      <section className="py-12 bg-white flex-1">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <RegistrationSteps currentStep={formStep} />
-            
-            <Card className="border-none shadow-lg">
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {children}
-                  </form>
-                </Form>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                {formStep > 0 ? (
-                  <Button variant="outline" onClick={onPrevious}>
-                    Previous
-                  </Button>
-                ) : (
-                  <div></div>
-                )}
-                {!showSubmit ? (
-                  <Button onClick={onNext}>Next</Button>
-                ) : (
-                  <Button
-                    onClick={form.handleSubmit(onSubmit)}
-                    disabled={isSubmitting || disableSubmit}
-                  >
-                    {isSubmitting ? "Submitting..." : "Complete Registration"}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-          </div>
+        {children}
+
+        <div className="flex justify-between pt-4">
+          {formStep > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onPrevious}
+              disabled={isSubmitting}
+            >
+              Previous
+            </Button>
+          ) : (
+            <div />
+          )}
+
+          {!showSubmit ? (
+            <Button type="button" onClick={onNext} disabled={isSubmitting}>
+              Next
+            </Button>
+          ) : (
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || disableSubmit}
+            >
+              {isSubmitting ? "Submitting..." : "Complete Registration"}
+            </Button>
+          )}
         </div>
-      </section>
-    </div>
+      </form>
+    </Form>
   );
-};
+}
