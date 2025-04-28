@@ -14,6 +14,8 @@ export interface Company {
   commercial_register_url: string | null;
   tax_card_url: string | null;
   created_at: string;
+  updated_at: string | null;
+  type: string | null;
   user_id: string;
 }
 
@@ -26,11 +28,26 @@ export function useCompanies() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('companies')
-        .select('*')
+        .select('id, company_name, address, tax_card_number, register_number, company_number, commercial_register_url, tax_card_url, created_at, updated_at, type, user_id')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Company[];
+      
+      // Map the response to ensure all fields are present with fallbacks for nulls
+      return (data || []).map(company => ({
+        id: company.id,
+        company_name: company.company_name || '',
+        address: company.address || '',
+        tax_card_number: company.tax_card_number || '',
+        register_number: company.register_number || '',
+        company_number: company.company_number || '',
+        commercial_register_url: company.commercial_register_url,
+        tax_card_url: company.tax_card_url,
+        created_at: company.created_at || new Date().toISOString(),
+        updated_at: company.updated_at,
+        type: company.type,
+        user_id: company.user_id || ''
+      })) as Company[];
     }
   });
 
