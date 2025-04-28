@@ -1,16 +1,21 @@
 
 import { cn } from "@/lib/utils";
-import { shimmer } from "@/utils/animations";
+import { type AnimationType, getAnimation } from "@/utils/animations";
+
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+  animation?: AnimationType;
+}
 
 function Skeleton({
   className,
+  animation = 'shimmer',
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: SkeletonProps) {
   return (
     <div
       className={cn(
         "rounded-md bg-muted/20 dark:bg-muted/10",
-        shimmer,
+        getAnimation(animation),
         className
       )}
       {...props}

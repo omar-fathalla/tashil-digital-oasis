@@ -1,13 +1,15 @@
 
 import { cn } from "@/lib/utils";
-import { shimmer } from "@/utils/animations";
+import { getAnimation } from "@/utils/animations";
+import { type SkeletonTableProps } from "./types";
 
-interface SkeletonTableProps extends React.HTMLAttributes<HTMLDivElement> {
-  rows?: number;
-  columns?: number;
-}
-
-export function SkeletonTable({ rows = 5, columns = 4, className, ...props }: SkeletonTableProps) {
+export function SkeletonTable({ 
+  rows = 5, 
+  columns = 4, 
+  className,
+  animation = 'shimmer',
+  ...props 
+}: SkeletonTableProps) {
   return (
     <div className={cn("w-full space-y-4", className)} {...props}>
       {/* Header */}
@@ -17,7 +19,7 @@ export function SkeletonTable({ rows = 5, columns = 4, className, ...props }: Sk
             key={`header-${i}`}
             className={cn(
               "h-6 bg-muted/20 dark:bg-muted/10 rounded-md flex-1",
-              shimmer
+              getAnimation(animation)
             )}
           />
         ))}
@@ -31,7 +33,7 @@ export function SkeletonTable({ rows = 5, columns = 4, className, ...props }: Sk
               key={`cell-${rowIndex}-${colIndex}`}
               className={cn(
                 "h-4 bg-muted/20 dark:bg-muted/10 rounded-md flex-1",
-                shimmer
+                getAnimation(animation)
               )}
             />
           ))}

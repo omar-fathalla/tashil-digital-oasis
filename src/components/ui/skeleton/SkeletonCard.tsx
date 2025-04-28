@@ -1,18 +1,20 @@
 
 import { cn } from "@/lib/utils";
-import { shimmer } from "@/utils/animations";
+import { getAnimation } from "@/utils/animations";
+import { type SkeletonCardProps } from "./types";
 
-interface SkeletonCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  header?: boolean;
-  rows?: number;
-}
-
-export function SkeletonCard({ header = true, rows = 3, className, ...props }: SkeletonCardProps) {
+export function SkeletonCard({ 
+  header = true, 
+  rows = 3, 
+  className, 
+  animation = 'shimmer',
+  ...props 
+}: SkeletonCardProps) {
   return (
     <div
       className={cn(
         "rounded-lg border bg-card p-4 space-y-4",
-        shimmer,
+        getAnimation(animation),
         className
       )}
       {...props}
