@@ -92,7 +92,12 @@ export default function SidebarNav() {
                     asChild 
                     isActive={isActive(link.href)}
                     tooltip={link.label}
-                    className="transition-all duration-200 hover:scale-[1.02]"
+                    className={cn(
+                      "transition-all duration-200 hover:scale-[1.02]",
+                      "relative overflow-hidden",
+                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
+                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
+                    )}
                   >
                     <Link to={link.href} className="flex items-center gap-3">
                       <link.icon className="h-5 w-5" />
@@ -117,7 +122,12 @@ export default function SidebarNav() {
                     asChild 
                     isActive={isActive(link.href)}
                     tooltip={link.label}
-                    className="transition-all duration-200 hover:scale-[1.02]"
+                    className={cn(
+                      "transition-all duration-200 hover:scale-[1.02]",
+                      "relative overflow-hidden",
+                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
+                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
+                    )}
                   >
                     <Link to={link.href} className="flex items-center gap-3">
                       <link.icon className="h-5 w-5" />
@@ -142,7 +152,12 @@ export default function SidebarNav() {
                     asChild 
                     isActive={isActive(link.href)}
                     tooltip={link.label}
-                    className="transition-all duration-200 hover:scale-[1.02]"
+                    className={cn(
+                      "transition-all duration-200 hover:scale-[1.02]",
+                      "relative overflow-hidden",
+                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
+                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
+                    )}
                   >
                     <Link to={link.href} className="flex items-center gap-3">
                       <link.icon className="h-5 w-5" />
@@ -167,7 +182,12 @@ export default function SidebarNav() {
                     asChild 
                     isActive={isActive(link.href)}
                     tooltip={link.label}
-                    className="transition-all duration-200 hover:scale-[1.02]"
+                    className={cn(
+                      "transition-all duration-200 hover:scale-[1.02]",
+                      "relative overflow-hidden",
+                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
+                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
+                    )}
                   >
                     <Link to={link.href} className="flex items-center gap-3">
                       <link.icon className="h-5 w-5" />
