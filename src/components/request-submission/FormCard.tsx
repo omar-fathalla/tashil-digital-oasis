@@ -19,7 +19,8 @@ export const FormCard = ({
     <BaseCard
       title={title}
       description={description}
-      className="max-w-2xl mx-auto hover:border-primary/10"
+      variant="primary"
+      className="max-w-2xl mx-auto"
     >
       <div className="space-y-6">
         {children}

@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BaseCardProps {
   title?: string;
@@ -9,7 +10,31 @@ interface BaseCardProps {
   error?: Error | null;
   children: React.ReactNode;
   className?: string;
+  variant?: "default" | "primary" | "secondary" | "subtle";
 }
+
+const cardVariants = {
+  default: `
+    hover:shadow-xl hover:scale-[1.02]
+    hover:bg-accent/5
+    active:scale-[0.98]
+  `,
+  primary: `
+    hover:shadow-xl hover:scale-[1.03]
+    hover:bg-primary/5
+    active:scale-[0.97]
+  `,
+  secondary: `
+    hover:shadow-lg hover:scale-[1.01]
+    hover:bg-secondary/5
+    active:scale-[0.99]
+  `,
+  subtle: `
+    hover:shadow-md hover:scale-[1.005]
+    hover:bg-accent/3
+    active:scale-[0.995]
+  `
+};
 
 export function BaseCard({
   title,
@@ -18,10 +43,17 @@ export function BaseCard({
   error,
   children,
   className,
+  variant = "default"
 }: BaseCardProps) {
   if (error) {
     return (
-      <Card className="border-none bg-destructive/10 shadow-lg transition-all duration-200 ease-in-out will-change-transform">
+      <Card 
+        className={cn(
+          "border-none bg-destructive/10",
+          "shadow-lg transition-all duration-200 ease-in-out will-change-transform",
+          "hover:shadow-xl hover:scale-[1.01] hover:bg-destructive/15"
+        )}
+      >
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
@@ -37,15 +69,12 @@ export function BaseCard({
 
   return (
     <Card 
-      className={`
-        border-none shadow-lg 
-        transition-all duration-200 ease-in-out 
-        will-change-transform
-        hover:shadow-xl hover:scale-[1.02]
-        hover:bg-accent/5
-        active:scale-[0.98]
-        ${className}
-      `}
+      className={cn(
+        "border-none shadow-lg",
+        "transition-all duration-200 ease-in-out will-change-transform",
+        cardVariants[variant],
+        className
+      )}
     >
       {(title || description) && (
         <CardHeader>

@@ -25,7 +25,10 @@ export function SidebarNavItem({ href, label, icon: Icon, badge, badgeVariant }:
         className={cn(
           "transition-all duration-200 hover:scale-[1.02]",
           "relative overflow-hidden",
-          "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
+          "before:absolute before:left-0 before:top-0 before:h-full before:w-1",
+          "before:bg-primary before:transform before:scale-y-0",
+          "before:transition-transform before:duration-200",
+          "hover:translate-x-1",
           isActive && "before:scale-y-100 bg-accent/50"
         )}
       >

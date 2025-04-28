@@ -20,6 +20,7 @@ export function CardGrid({ children, columns = 3, className = "" }: CardGridProp
         ${gridCols[columns]} 
         ${className}
         [perspective:1000px]
+        [@media(hover:hover)]:hover:children:hover:rotate-y-1
       `}
     >
       {children}
