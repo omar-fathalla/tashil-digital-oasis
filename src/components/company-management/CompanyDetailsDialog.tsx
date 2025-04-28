@@ -51,7 +51,6 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isDownloading, setIsDownloading] = useState<string | null>(null);
 
   // Initialize form with default empty values
   const form = useForm<CompanyFormValues>({
@@ -121,26 +120,6 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
       console.error("Error deleting company:", error);
     } finally {
       setIsDeleting(false);
-    }
-  };
-
-  const handleDownload = async (url: string | null, documentType: string) => {
-    if (!url) {
-      toast.error(`No ${documentType} available`);
-      return;
-    }
-
-    setIsDownloading(documentType);
-    try {
-      window.open(url, '_blank');
-      toast.success(`${documentType} opened successfully`);
-    } catch (error) {
-      toast.error(`Failed to open ${documentType}`, { 
-        description: "The file might be unavailable or restricted"
-      });
-      console.error(`Error downloading ${documentType}:`, error);
-    } finally {
-      setTimeout(() => setIsDownloading(null), 1000); // Small delay for UX
     }
   };
 
@@ -344,74 +323,6 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
                     <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
                     <p>{formatDate(company.updated_at)}</p>
                   </div>
-                </div>
-              </div>
-            
-              <div className="space-y-3">
-                <h3 className="font-medium">Documents</h3>
-                <div className="flex flex-wrap gap-4">
-                  {company.commercial_register_url ? (
-                    <button 
-                      onClick={() => handleDownload(company.commercial_register_url, "Commercial Register")}
-                      disabled={isDownloading === "Commercial Register"}
-                      className="flex items-center gap-2 bg-accent p-3 rounded-md hover:bg-accent/80 transition-colors disabled:opacity-70"
-                    >
-                      <FileText className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Commercial Register</div>
-                        <div className="text-xs text-muted-foreground">View document</div>
-                      </div>
-                      {isDownloading === "Commercial Register" ? (
-                        <Spinner className="h-4 w-4 ml-2" />
-                      ) : (
-                        <Download className="h-4 w-4 ml-2" />
-                      )}
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-muted p-3 rounded-md opacity-70">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">Commercial Register</div>
-                        <div className="text-xs text-muted-foreground">Not available</div>
-                      </div>
-                      <AlertTriangle className="h-4 w-4 ml-2 text-amber-500" />
-                    </div>
-                  )}
-                
-                  {company.tax_card_url ? (
-                    <button 
-                      onClick={() => handleDownload(company.tax_card_url, "Tax Card")}
-                      disabled={isDownloading === "Tax Card"}
-                      className="flex items-center gap-2 bg-accent p-3 rounded-md hover:bg-accent/80 transition-colors disabled:opacity-70"
-                    >
-                      <FileText className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Tax Card</div>
-                        <div className="text-xs text-muted-foreground">View document</div>
-                      </div>
-                      {isDownloading === "Tax Card" ? (
-                        <Spinner className="h-4 w-4 ml-2" />
-                      ) : (
-                        <Download className="h-4 w-4 ml-2" />
-                      )}
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-muted p-3 rounded-md opacity-70">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">Tax Card</div>
-                        <div className="text-xs text-muted-foreground">Not available</div>
-                      </div>
-                      <AlertTriangle className="h-4 w-4 ml-2 text-amber-500" />
-                    </div>
-                  )}
-                
-                  {!company.commercial_register_url && !company.tax_card_url && (
-                    <p className="text-muted-foreground flex items-center">
-                      <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" /> 
-                      No documents available for this company
-                    </p>
-                  )}
                 </div>
               </div>
 
