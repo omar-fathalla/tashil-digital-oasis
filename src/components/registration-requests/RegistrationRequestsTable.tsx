@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +37,7 @@ export type RegistrationRequest = {
   submission_date: string | null;
   status: RequestStatus;
   documents: any;
-  employee_details?: any;
+  employee_details?: any; // Making this explicitly optional
   submission_history?: any[];
 };
 
@@ -210,6 +211,51 @@ export function RegistrationRequestsTable() {
       </div>
     );
   }
+
+  const getStatusIcon = (status: RequestStatus) => {
+    switch (status) {
+      case "approved":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "rejected":
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+    }
+  };
+
+  const getStatusBadge = (status: RequestStatus) => {
+    const baseClasses = "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium";
+    
+    switch (status) {
+      case "approved":
+        return (
+          <Badge variant="outline" className={`${baseClasses} bg-green-100 text-green-800 border-green-200`}>
+            {getStatusIcon(status)} Approved
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge variant="outline" className={`${baseClasses} bg-red-100 text-red-800 border-red-200`}>
+            {getStatusIcon(status)} Rejected
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className={`${baseClasses} bg-yellow-100 text-yellow-800 border-yellow-200`}>
+            {getStatusIcon(status)} Pending
+          </Badge>
+        );
+    }
+  };
+
+  const getDocumentStatus = (request: RegistrationRequest) => {
+    if (!request.documents) return "0/0";
+    
+    const totalDocs = Object.keys(request.documents).length;
+    const uploadedDocs = Object.values(request.documents).filter(Boolean).length;
+    
+    return `${uploadedDocs}/${totalDocs}`;
+  };
 
   return (
     <div className="space-y-4">
