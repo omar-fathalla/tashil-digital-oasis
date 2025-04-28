@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ import {
   SidebarSeparator,
   SidebarMenuBadge
 } from "@/components/ui/sidebar";
+import { AnimatedBadge } from "./AnimatedBadge";
 import { NavLogo } from "./NavLogo";
 import { 
   Home, 
@@ -79,7 +81,8 @@ export default function SidebarNav() {
       href: "/report", 
       label: "View Reports", 
       icon: ChartBar,
-      badge: "New" 
+      badge: "New",
+      badgeVariant: "new" 
     },
   ];
 
@@ -88,7 +91,8 @@ export default function SidebarNav() {
       href: "/faq", 
       label: "FAQ", 
       icon: HelpCircle,
-      badge: "2" 
+      badge: "2",
+      badgeVariant: "count"
     },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
@@ -110,12 +114,10 @@ export default function SidebarNav() {
           <link.icon className="h-5 w-5" />
           <span className="font-medium">{link.label}</span>
           {link.badge && (
-            <SidebarMenuBadge className={cn(
-              link.badge === "New" ? "bg-blue-500" : "bg-red-500",
-              "text-white"
-            )}>
-              {link.badge}
-            </SidebarMenuBadge>
+            <AnimatedBadge 
+              value={link.badge} 
+              variant={link.badgeVariant as "new" | "count"} 
+            />
           )}
         </Link>
       </SidebarMenuButton>
