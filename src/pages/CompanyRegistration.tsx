@@ -97,7 +97,7 @@ const CompanyRegistration = () => {
       setIsSubmitting(true);
       toast.info("Processing registration...");
 
-      // 1. First, register the user account
+      // 1. First, register the user account with email verification
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -111,18 +111,20 @@ const CompanyRegistration = () => {
       });
 
       if (authError) {
-        throw new Error(`Authentication error: ${authError.message}`);
+        if (authError.message.includes('already registered')) {
+          throw new Error('This email is already registered. Please use a different email or try logging in.');
+        }
+        throw new Error(`Registration error: ${authError.message}`);
       }
 
       if (!authData.user) {
         throw new Error("Failed to create user account");
       }
 
-      // 2. Upload documents to storage first
+      // 2. Upload documents to storage
       let commercialRegisterUrl = null;
       let taxCardUrl = null;
 
-      // Upload commercial register document
       if (uploadedFiles.commercialRegister) {
         commercialRegisterUrl = await uploadFile(uploadedFiles.commercialRegister, "cr");
         if (!commercialRegisterUrl) {
@@ -130,7 +132,6 @@ const CompanyRegistration = () => {
         }
       }
 
-      // Upload tax card document
       if (uploadedFiles.taxCard) {
         taxCardUrl = await uploadFile(uploadedFiles.taxCard, "tc");
         if (!taxCardUrl) {
@@ -138,7 +139,7 @@ const CompanyRegistration = () => {
         }
       }
 
-      // 3. Insert company data with the document URLs
+      // 3. Insert company data with the document URLs and link to user
       const { error: companyError } = await supabase
         .from('companies')
         .insert({
@@ -160,13 +161,14 @@ const CompanyRegistration = () => {
       // Registration successful
       setIsCompleted(true);
       toast.success("Registration Successful", {
-        description: "Your account has been created. Please check your email for verification.",
+        description: "Please check your email to verify your account before logging in.",
       });
 
       // Redirect to auth page with notification about email verification
       navigate("/auth", { 
         state: { 
-          justRegistered: true 
+          justRegistered: true,
+          requiresEmailVerification: true
         }
       });
 
