@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies, Company } from "@/hooks/useCompanies";
@@ -47,6 +48,7 @@ import {
 } from "lucide-react";
 import { SkeletonTable } from "@/components/ui/skeleton/SkeletonTable";
 import { format } from "date-fns";
+import { CompanyDetailsDialog } from "@/components/company-management/CompanyDetailsDialog";
 
 export default function CompanyManagement() {
   const { user } = useAuth();
@@ -308,3 +310,4 @@ export default function CompanyManagement() {
     </div>
   );
 }
+
