@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, FileText, Settings, Smartphone, Radio, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,20 @@ import { Link } from "react-router-dom";
 const About = () => {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-      {/* Registration Section - New Section */}
+      {/* Hero Section */}
+      <section className="bg-primary-50 py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">About Tashil Platform</h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Leading the way in digital transformation for administrative procedures, 
+              making government and business interactions faster, more secure, and more efficient.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Registration Section */}
       <section className="py-16 bg-gradient-to-r from-primary-500/10 to-primary-500/5">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -19,22 +31,14 @@ const About = () => {
               Join thousands of businesses that trust Tashil Platform for their administrative needs. 
               Start your digital transformation journey today.
             </p>
-            <Button asChild size="lg" className="mt-4">
-              <Link to="/register">Start Company Registration</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Hero Section */}
-      <section className="bg-primary-50 py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">About Tashil Platform</h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Leading the way in digital transformation for administrative procedures, 
-              making government and business interactions faster, more secure, and more efficient.
-            </p>
+            <div className="flex justify-center gap-4 mt-4">
+              <Button asChild size="lg">
+                <Link to="/register">Start Company Registration</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/auth">Login to Your Account</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
