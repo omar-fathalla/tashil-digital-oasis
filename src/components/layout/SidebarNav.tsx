@@ -1,9 +1,9 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { useNotifications } from "@/hooks/useNotifications";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -17,7 +17,8 @@ import {
   SidebarGroupContent,
   SidebarRail,
   SidebarTrigger,
-  SidebarSeparator
+  SidebarSeparator,
+  SidebarMenuBadge
 } from "@/components/ui/sidebar";
 import { NavLogo } from "./NavLogo";
 import { 
@@ -32,7 +33,8 @@ import {
   HelpCircle,
   Settings,
   LogOut,
-  ChartBar
+  ChartBar,
+  BellDot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -40,6 +42,7 @@ export default function SidebarNav() {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -55,21 +58,69 @@ export default function SidebarNav() {
   ];
 
   const managementLinks = [
-    { href: "/application-status", label: "Application Status", icon: CheckSquare },
+    { 
+      href: "/application-status", 
+      label: "Application Status", 
+      icon: CheckSquare,
+      badge: unreadCount > 0 ? unreadCount : null 
+    },
     { href: "/project-overview", label: "Projects", icon: FileText },
     { href: "/employee-management", label: "Employee Management", icon: Users },
     { href: "/document-management", label: "Document Management", icon: FileBox },
   ];
 
   const analyticsLinks = [
-    { href: "/document-analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/report", label: "View Reports", icon: ChartBar },
+    { 
+      href: "/document-analytics", 
+      label: "Analytics", 
+      icon: BarChart3,
+    },
+    { 
+      href: "/report", 
+      label: "View Reports", 
+      icon: ChartBar,
+      badge: "New" 
+    },
   ];
 
   const supportLinks = [
-    { href: "/faq", label: "FAQ", icon: HelpCircle },
+    { 
+      href: "/faq", 
+      label: "FAQ", 
+      icon: HelpCircle,
+      badge: "2" 
+    },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
+
+  const renderSidebarItem = (link: any) => (
+    <SidebarMenuItem key={link.href}>
+      <SidebarMenuButton 
+        asChild 
+        isActive={isActive(link.href)}
+        tooltip={link.label}
+        className={cn(
+          "transition-all duration-200 hover:scale-[1.02]",
+          "relative overflow-hidden",
+          "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
+          isActive(link.href) && "before:scale-y-100 bg-accent/50"
+        )}
+      >
+        <Link to={link.href} className="flex items-center gap-3">
+          <link.icon className="h-5 w-5" />
+          <span className="font-medium">{link.label}</span>
+          {link.badge && (
+            <SidebarMenuBadge className={cn(
+              link.badge === "New" ? "bg-blue-500" : "bg-red-500",
+              "text-white"
+            )}>
+              {link.badge}
+            </SidebarMenuBadge>
+          )}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 
   return (
     <Sidebar>
@@ -86,26 +137,7 @@ export default function SidebarNav() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationLinks.map((link) => (
-                <SidebarMenuItem key={link.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(link.href)}
-                    tooltip={link.label}
-                    className={cn(
-                      "transition-all duration-200 hover:scale-[1.02]",
-                      "relative overflow-hidden",
-                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
-                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
-                    )}
-                  >
-                    <Link to={link.href} className="flex items-center gap-3">
-                      <link.icon className="h-5 w-5" />
-                      <span className="font-medium">{link.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navigationLinks.map(renderSidebarItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -116,26 +148,7 @@ export default function SidebarNav() {
           <SidebarGroupLabel>Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {managementLinks.map((link) => (
-                <SidebarMenuItem key={link.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(link.href)}
-                    tooltip={link.label}
-                    className={cn(
-                      "transition-all duration-200 hover:scale-[1.02]",
-                      "relative overflow-hidden",
-                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
-                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
-                    )}
-                  >
-                    <Link to={link.href} className="flex items-center gap-3">
-                      <link.icon className="h-5 w-5" />
-                      <span className="font-medium">{link.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {managementLinks.map(renderSidebarItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -146,26 +159,7 @@ export default function SidebarNav() {
           <SidebarGroupLabel>Analytics</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {analyticsLinks.map((link) => (
-                <SidebarMenuItem key={link.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(link.href)}
-                    tooltip={link.label}
-                    className={cn(
-                      "transition-all duration-200 hover:scale-[1.02]",
-                      "relative overflow-hidden",
-                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
-                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
-                    )}
-                  >
-                    <Link to={link.href} className="flex items-center gap-3">
-                      <link.icon className="h-5 w-5" />
-                      <span className="font-medium">{link.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {analyticsLinks.map(renderSidebarItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -176,26 +170,7 @@ export default function SidebarNav() {
           <SidebarGroupLabel>Support</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {supportLinks.map((link) => (
-                <SidebarMenuItem key={link.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(link.href)}
-                    tooltip={link.label}
-                    className={cn(
-                      "transition-all duration-200 hover:scale-[1.02]",
-                      "relative overflow-hidden",
-                      "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-primary before:transform before:scale-y-0 before:transition-transform before:duration-200",
-                      isActive(link.href) && "before:scale-y-100 bg-accent/50"
-                    )}
-                  >
-                    <Link to={link.href} className="flex items-center gap-3">
-                      <link.icon className="h-5 w-5" />
-                      <span className="font-medium">{link.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {supportLinks.map(renderSidebarItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
