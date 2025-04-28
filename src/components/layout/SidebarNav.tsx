@@ -30,7 +30,8 @@ import {
   BarChart3,
   HelpCircle,
   Settings,
-  LogOut
+  LogOut,
+  ChartBar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -55,6 +56,7 @@ export default function SidebarNav() {
     { href: "/employee-management", label: "Employee Management", icon: Users },
     { href: "/document-management", label: "Document Management", icon: FileBox },
     { href: "/document-analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/report", label: "View Reports", icon: ChartBar },
     { href: "/faq", label: "FAQ", icon: HelpCircle },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
