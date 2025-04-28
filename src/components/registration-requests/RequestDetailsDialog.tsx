@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,22 +20,7 @@ import {
 import { format } from "date-fns";
 import { CheckCircle2, XCircle, FileText, Clock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-type RegistrationRequest = {
-  id: string;
-  full_name: string;
-  national_id: string;
-  submission_date: string;
-  status: "pending" | "approved" | "rejected";
-  employee_details: any;
-  documents: any;
-  submission_history: any[];
-  id_card?: {
-    id: string;
-    issue_date: string;
-    expiry_date: string;
-  };
-};
+import { RegistrationRequest } from "./RegistrationRequestsTable";
 
 type RequestDetailsDialogProps = {
   request: RegistrationRequest | null;
@@ -70,7 +54,6 @@ export function RequestDetailsDialog({
     try {
       setIsUpdating(true);
       
-      // Generate a unique ID for approved requests
       let idCard = null;
       if (newStatus === "approved") {
         idCard = {
@@ -93,12 +76,11 @@ export function RequestDetailsDialog({
             timestamp: new Date().toISOString(),
             reason: newStatus === "rejected" ? rejectionReason : undefined,
             rejection_type: newStatus === "rejected" ? rejectionType : undefined,
-            updated_by: "admin" // In a real app, this would be the actual user ID
+            updated_by: "admin"
           },
         ],
       };
       
-      // For approved requests, add the ID card information
       if (newStatus === "approved") {
         statusUpdate.id_card = idCard;
       }
@@ -146,7 +128,6 @@ export function RequestDetailsDialog({
         </DialogHeader>
         
         <div className="grid gap-6 py-4">
-          {/* Status Badge */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <span className="font-medium text-lg">{request.full_name}</span>
@@ -162,7 +143,6 @@ export function RequestDetailsDialog({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Employee Details Section */}
             <div className="space-y-4">
               <h3 className="font-medium text-lg border-b pb-2">Employee Information</h3>
               <div className="space-y-2">
@@ -170,7 +150,7 @@ export function RequestDetailsDialog({
                 <p><span className="font-medium">National ID:</span> {request.national_id}</p>
                 <p>
                   <span className="font-medium">Submission Date:</span>{" "}
-                  {format(new Date(request.submission_date), "PPP")}
+                  {format(new Date(request.submission_date || new Date()), "PPP")}
                 </p>
               </div>
               
@@ -186,7 +166,6 @@ export function RequestDetailsDialog({
               )}
             </div>
 
-            {/* Documents Section */}
             <div className="space-y-4">
               <h3 className="font-medium text-lg border-b pb-2">Required Documents</h3>
               <div className="grid grid-cols-1 gap-3">
@@ -214,7 +193,6 @@ export function RequestDetailsDialog({
             </div>
           </div>
 
-          {/* ID Card Section (for approved requests) */}
           {request.status === "approved" && request.id_card && (
             <div className="mt-4 border rounded-lg p-4 bg-green-50">
               <h3 className="font-medium text-lg mb-2 text-green-800 flex items-center gap-2">
@@ -228,7 +206,6 @@ export function RequestDetailsDialog({
             </div>
           )}
 
-          {/* Submission History Section */}
           <div>
             <h3 className="font-medium text-lg border-b pb-2 mb-3">Submission History</h3>
             <div className="space-y-3">
@@ -267,11 +244,9 @@ export function RequestDetailsDialog({
             </div>
           </div>
 
-          {/* Action Area */}
           {request.status === "pending" && (
             <DialogFooter className="flex flex-col sm:flex-row gap-4 sm:justify-between pt-4 border-t">
               <div className="w-full">
-                {/* Rejection Form */}
                 <div className={`space-y-3 ${isUpdating ? "opacity-50" : ""}`}>
                   <h4 className="font-medium">If rejecting, please provide feedback:</h4>
                   <Select 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,30 +25,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQueryClient } from "@tanstack/react-query";
-import { RegistrationRequest } from "@/types/registration"; // Import the shared type
+import { RegistrationRequest as SharedRegistrationRequest } from "@/types/registration";
 
-// Define the status type explicitly to match expected values
-type RequestStatus = "approved" | "rejected" | "pending";
+type RequestStatus = "pending" | "approved" | "rejected";
 
-// Use a different name for the local type to avoid conflicts
-export type LocalRegistrationRequest = {
+export type RegistrationRequest = {
   id: string;
   full_name: string | null;
   national_id: string | null;
   submission_date: string | null;
   status: RequestStatus;
   documents: any;
-  employee_details: any; // Making this explicitly required to match the imported type
+  employee_details: SharedRegistrationRequest['employee_details'];
+  created_at?: string;
   submission_history?: any[];
+  updated_at?: string;
+  notes?: string;
+  reviewer_id?: string;
+  company_id?: string;
 };
 
 export function RegistrationRequestsTable() {
-  const [requests, setRequests] = useState<LocalRegistrationRequest[]>([]);
-  const [filteredRequests, setFilteredRequests] = useState<LocalRegistrationRequest[]>([]);
+  const [requests, setRequests] = useState<RegistrationRequest[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<RegistrationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedRequest, setSelectedRequest] = useState<LocalRegistrationRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RegistrationRequest | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -91,7 +93,9 @@ export function RegistrationRequestsTable() {
 
       const typedData = (data || []).map(item => ({
         ...item,
-        status: validateStatus(item.status)
+        status: validateStatus(item.status),
+        employee_details: item.employee_details || { name: "", position: "" },
+        created_at: item.created_at || item.submission_date
       })) as RegistrationRequest[];
       
       setRequests(typedData);
