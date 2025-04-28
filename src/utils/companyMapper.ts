@@ -30,6 +30,6 @@ export const mapPartialCompanyToInsertableCompany = (
     type: partialCompany.type,
     user_id: userId,
     is_dummy: partialCompany.is_dummy || false,
-    is_archived: false
+    is_archived: false // Always set to false for new companies
   };
 };

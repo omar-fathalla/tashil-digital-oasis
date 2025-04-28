@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building2 } from "lucide-react";
 import { useRetry } from "@/hooks/useRetry";
 import { useFormDraft } from "@/hooks/useFormDraft";
+import { mapPartialCompanyToInsertableCompany } from "@/utils/companyMapper";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
@@ -47,55 +47,59 @@ const CompanyRegistration = () => {
     try {
       setIsSubmitting(true);
 
-      await retry(async () => {
-        toast.info("Processing registration...");
+      // Step 1: Create the user account first
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            username: values.username,
+            mobile_number: values.mobileNumber.replace(/[\s-]/g, ''),
+          },
+          emailRedirectTo: window.location.origin + '/auth',
+        }
+      });
 
-        // Step 1: Register the user with metadata
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            data: {
-              username: values.username,
-              mobile_number: values.mobileNumber.replace(/[\s-]/g, ''),
-            },
-            emailRedirectTo: window.location.origin + '/auth',
-          }
+      if (authError) {
+        console.error('User registration error:', authError);
+        if (authError.message.includes('already registered')) {
+          throw new Error('This email is already registered. Please use a different email or try logging in.');
+        }
+        throw new Error(`Registration error: ${authError.message}`);
+      }
+
+      if (!authData.user?.id) {
+        throw new Error("Failed to create user account");
+      }
+
+      // Step 2: Create company record only if user was created successfully
+      const companyData = {
+        company_name: values.companyName,
+        address: values.address,
+        tax_card_number: values.taxCardNumber,
+        register_number: values.registerNumber,
+        company_number: values.companyNumber,
+      };
+
+      const insertableCompany = mapPartialCompanyToInsertableCompany(companyData, authData.user.id);
+
+      const { error: companyError } = await supabase
+        .from('companies')
+        .insert(insertableCompany)
+        .select()
+        .single();
+
+      if (companyError) {
+        console.error("Company creation error:", companyError);
+        // If company creation fails, display specific error but don't throw
+        // since user account was already created
+        toast.error("Failed to create company record", {
+          description: companyError.message
         });
-
-        if (authError) {
-          if (authError.message.includes('already registered')) {
-            throw new Error('This email is already registered. Please use a different email or try logging in.');
-          }
-          throw new Error(`Registration error: ${authError.message}`);
-        }
-
-        if (!authData.user?.id) {
-          throw new Error("Failed to create user account");
-        }
-
-        // Step 2: Create the company record
-        const { data: companyData, error: companyError } = await supabase
-          .from('companies')
-          .insert({
-            company_name: values.companyName,
-            address: values.address,
-            tax_card_number: values.taxCardNumber,
-            register_number: values.registerNumber,
-            company_number: values.companyNumber,
-            user_id: authData.user.id,
-          })
-          .select()
-          .single();
-
-        if (companyError) {
-          console.error("Company creation error:", companyError);
-          throw new Error(`Failed to create company: ${companyError.message}`);
-        }
-
+      } else {
         setIsCompleted(true);
         toast.success("Registration completed successfully!");
-
+        
         // Clear the draft after successful registration
         clearDraft();
 
@@ -103,24 +107,14 @@ const CompanyRegistration = () => {
         setTimeout(() => {
           navigate("/about");
         }, 2000);
-      }, {
-        maxAttempts: 3,
-        delayMs: 2000
-      });
+      }
 
     } catch (error: any) {
-      console.error('Error during registration:', error);
+      console.error('Registration error:', error);
       
-      // Check if it was a retry failure
-      if (error.message.includes('Failed after multiple attempts')) {
-        toast.error("Registration failed after multiple attempts. Please try again manually.", {
-          description: error.message,
-        });
-      } else {
-        toast.error("Registration failed. Please try again.", {
-          description: error.message || "An unexpected error occurred.",
-        });
-      }
+      toast.error("Registration failed", {
+        description: error.message || "An unexpected error occurred. Please try again."
+      });
     } finally {
       setIsSubmitting(false);
     }
