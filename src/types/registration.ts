@@ -12,11 +12,10 @@ export interface RegistrationRequest {
   id: string;
   created_at: string;
   status: "pending" | "approved" | "rejected";
-  employee_details: EmployeeDetails;  // Making this required to match usage
+  employee_details: EmployeeDetails;  // This is required
   company_id?: string;
   reviewer_id?: string;
   notes?: string;
   updated_at?: string;
   documents?: any[];
 }
-
