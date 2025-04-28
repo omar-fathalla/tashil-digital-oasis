@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/AuthProvider";
@@ -18,6 +19,8 @@ export const MobileNav = ({ mobileMenuOpen, onSignOut }: MobileNavProps) => {
     { href: "/application-status", label: "Application Status" },
     { href: "/project-overview", label: "Projects" },
     { href: "/employee-management", label: "Employee Management" },
+    { href: "/document-management", label: "Document Management" },
+    { href: "/document-analytics", label: "Analytics" },
     { href: "/faq", label: "FAQ" },
     { href: "/settings", label: "Settings" },
   ];

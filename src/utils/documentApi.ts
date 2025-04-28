@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -61,6 +60,15 @@ export interface Role {
   id: string;
   name: string;
   description?: string;
+}
+
+export interface DocumentType {
+  id?: string;
+  name: string;
+  required?: boolean;
+  instructions?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const DocumentTypes = {

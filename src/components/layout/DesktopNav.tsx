@@ -14,6 +14,8 @@ export const DesktopNav = () => {
     { href: "/application-status", label: "Application Status" },
     { href: "/project-overview", label: "Projects" },
     { href: "/employee-management", label: "Employee Management" },
+    { href: "/document-management", label: "Document Management" },
+    { href: "/document-analytics", label: "Analytics" },
     { href: "/faq", label: "FAQ" },
   ];
 

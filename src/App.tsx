@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +22,7 @@ import PrintBatch from "./pages/PrintBatch";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import DocumentManagement from "./pages/DocumentManagement";
+import DocumentAnalytics from "./pages/DocumentAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,7 @@ const App = () => (
               <Route path="/employee-management" element={<EmployeeManagement />} />
               <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
               <Route path="/document-management" element={<DocumentManagement />} />
+              <Route path="/document-analytics" element={<DocumentAnalytics />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
