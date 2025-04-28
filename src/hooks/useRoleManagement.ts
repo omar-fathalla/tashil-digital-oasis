@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -233,6 +232,40 @@ export const useRoleManagement = () => {
     }
   });
 
+  // Assign role to user
+  const assignUserRole = useMutation({
+    mutationFn: async ({ userId, roleId }: { userId: string, roleId: string }) => {
+      // Delete existing user roles
+      const { error: deleteError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+        
+      if (deleteError) throw deleteError;
+      
+      // Assign new role
+      const { error: insertError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role_id: roleId });
+        
+      if (insertError) throw insertError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast({
+        title: "Role Assigned",
+        description: "The user's role has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to Assign Role",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   return {
     permissions,
     roles,
@@ -241,6 +274,7 @@ export const useRoleManagement = () => {
     createRole,
     updateRole,
     deleteRole,
+    assignUserRole,
     refetchRoles
   };
 };

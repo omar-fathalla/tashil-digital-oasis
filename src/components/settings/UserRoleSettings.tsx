@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Plus, Edit, Trash2, Search, Filter, Shield } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Filter, Shield, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -39,8 +39,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-// Form schema for validation
 const roleFormSchema = z.object({
   name: z.string().min(2, "Role name must be at least 2 characters"),
   description: z.string(),
@@ -49,12 +50,26 @@ const roleFormSchema = z.object({
 
 type RoleFormValues = z.infer<typeof roleFormSchema>;
 
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export const UserRoleSettings = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState<{ id: string; name: string; description: string; permissions: string[]; userCount: number } | null>(null);
+
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([
+    { id: "1", name: "Admin User", email: "admin@example.com", role: "super_admin" },
+    { id: "2", name: "Review Manager", email: "reviewer@example.com", role: "admin" },
+    { id: "3", name: "Support Agent", email: "support@example.com", role: "support" },
+    { id: "4", name: "Document Reviewer", email: "docs@example.com", role: "reviewer" },
+  ]);
 
   const { 
     permissions, 
@@ -105,7 +120,6 @@ export const UserRoleSettings = () => {
 
   const handleFormSubmit = (values: RoleFormValues) => {
     if (currentRole) {
-      // Edit existing role
       updateRole.mutate({
         id: currentRole.id,
         name: values.name,
@@ -113,7 +127,6 @@ export const UserRoleSettings = () => {
         permissions: values.permissions
       });
     } else {
-      // Add new role
       createRole.mutate({
         name: values.name,
         description: values.description,
@@ -133,6 +146,26 @@ export const UserRoleSettings = () => {
   const getPermissionName = (key: string) => {
     const permission = permissions.find(p => p.key === key);
     return permission ? permission.name : key;
+  };
+
+  const handleRoleChange = (userId: string, role: string) => {
+    setAdminUsers(
+      adminUsers.map((user) =>
+        user.id === userId ? { ...user, role } : user
+      )
+    );
+    
+    toast({
+      title: "Role Updated",
+      description: `User role has been updated to ${role.replace("_", " ")}.`,
+    });
+  };
+
+  const handleSaveChanges = () => {
+    toast({
+      title: "Settings Saved",
+      description: "User role assignments have been updated successfully.",
+    });
   };
 
   if (isLoading) {
@@ -155,9 +188,9 @@ export const UserRoleSettings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-4">User Role Management</h2>
+        <h2 className="text-xl font-semibold mb-4">Role Management</h2>
         <p className="text-muted-foreground">
-          Define user roles and assign permissions to control access to system features.
+          Define and manage roles with specific permissions to control access to system features.
         </p>
       </div>
 
@@ -182,75 +215,140 @@ export const UserRoleSettings = () => {
         </Button>
       </div>
 
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Role Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Permissions</TableHead>
-              <TableHead>Users</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredRoles.map((role) => (
-              <TableRow key={role.id}>
-                <TableCell className="font-medium">{role.name}</TableCell>
-                <TableCell>{role.description}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {role.permissions.length > 0 ? (
-                      role.permissions.slice(0, 2).map((permission) => (
-                        <Badge key={permission} variant="outline" className="bg-primary/10">
-                          {getPermissionName(permission)}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-muted-foreground text-sm">No permissions</span>
-                    )}
-                    {role.permissions.length > 2 && (
-                      <Badge variant="outline" className="bg-muted">
-                        +{role.permissions.length - 2} more
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{role.userCount}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => openEditRoleModal(role)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => openDeleteDialog(role)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredRoles.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
-                  No roles found matching your search criteria
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-medium">System Roles</h3>
+            <Button onClick={openAddRoleModal}>
+              <Plus className="mr-1 h-4 w-4" /> Add Role
+            </Button>
+          </div>
+          
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Role Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  <TableHead>Users</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRoles.map((role) => (
+                  <TableRow key={role.id}>
+                    <TableCell className="font-medium">{role.name}</TableCell>
+                    <TableCell>{role.description}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {role.permissions.length > 0 ? (
+                          role.permissions.slice(0, 2).map((permission) => (
+                            <Badge key={permission} variant="outline" className="bg-primary/10">
+                              {getPermissionName(permission)}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground text-sm">No permissions</span>
+                        )}
+                        {role.permissions.length > 2 && (
+                          <Badge variant="outline" className="bg-muted">
+                            +{role.permissions.length - 2} more
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{role.userCount}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => openEditRoleModal(role)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => openDeleteDialog(role)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredRoles.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-4">
+                      No roles found matching your search criteria
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">User Role Assignment</h2>
+        <p className="text-muted-foreground mb-6">
+          Assign or modify roles for individual users in the system.
+        </p>
       </div>
 
-      {/* Add/Edit Role Modal */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {adminUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={user.role}
+                        onValueChange={(value) => handleRoleChange(user.id, value)}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roles.map((role) => (
+                            <SelectItem key={role.id} value={role.name.toLowerCase()}>
+                              {role.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end mt-6">
+        <Button onClick={handleSaveChanges} className="gap-2">
+          <Save className="h-4 w-4" />
+          Save Role Assignments
+        </Button>
+      </div>
+
       <Dialog open={isRoleModalOpen} onOpenChange={setIsRoleModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -342,7 +440,6 @@ export const UserRoleSettings = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
