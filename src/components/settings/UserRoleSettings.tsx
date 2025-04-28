@@ -31,27 +31,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-
-// Define types
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  userCount: number;
-  permissions: string[];
-}
-
-interface Permission {
-  id: string;
-  key: string;
-  name: string;
-}
+import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Form schema for validation
 const roleFormSchema = z.object({
@@ -64,45 +51,19 @@ type RoleFormValues = z.infer<typeof roleFormSchema>;
 
 export const UserRoleSettings = () => {
   const { toast } = useToast();
-  const [roles, setRoles] = useState<Role[]>([
-    {
-      id: "1",
-      name: "System Admin",
-      description: "Full system administrator with all permissions",
-      userCount: 2,
-      permissions: ["view_users", "edit_users", "delete_users", "upload_documents", "review_requests", "send_notifications", "manage_company"]
-    },
-    {
-      id: "2",
-      name: "HR Manager",
-      description: "Can manage employees and requests",
-      userCount: 5,
-      permissions: ["view_users", "edit_users", "upload_documents", "review_requests"]
-    },
-    {
-      id: "3",
-      name: "Editor",
-      description: "Can edit and upload documents only",
-      userCount: 8,
-      permissions: ["upload_documents"]
-    }
-  ]);
-
-  // Available permissions
-  const permissions: Permission[] = [
-    { id: "1", key: "view_users", name: "View Users" },
-    { id: "2", key: "edit_users", name: "Edit Users" },
-    { id: "3", key: "delete_users", name: "Delete Users" },
-    { id: "4", key: "upload_documents", name: "Upload Documents" },
-    { id: "5", key: "review_requests", name: "Review Requests" },
-    { id: "6", key: "send_notifications", name: "Send Notifications" },
-    { id: "7", key: "manage_company", name: "Manage Company" },
-  ];
-
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentRole, setCurrentRole] = useState<Role | null>(null);
+  const [currentRole, setCurrentRole] = useState<{ id: string; name: string; description: string; permissions: string[]; userCount: number } | null>(null);
+
+  const { 
+    permissions, 
+    roles, 
+    isLoading, 
+    createRole, 
+    updateRole, 
+    deleteRole 
+  } = useRoleManagement();
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleFormSchema),
@@ -127,7 +88,7 @@ export const UserRoleSettings = () => {
     setIsRoleModalOpen(true);
   };
 
-  const openEditRoleModal = (role: Role) => {
+  const openEditRoleModal = (role: { id: string; name: string; description: string; permissions: string[]; userCount: number }) => {
     form.reset({
       name: role.name,
       description: role.description,
@@ -137,7 +98,7 @@ export const UserRoleSettings = () => {
     setIsRoleModalOpen(true);
   };
 
-  const openDeleteDialog = (role: Role) => {
+  const openDeleteDialog = (role: { id: string; name: string; description: string; permissions: string[]; userCount: number }) => {
     setCurrentRole(role);
     setIsDeleteDialogOpen(true);
   };
@@ -145,29 +106,18 @@ export const UserRoleSettings = () => {
   const handleFormSubmit = (values: RoleFormValues) => {
     if (currentRole) {
       // Edit existing role
-      const updatedRoles = roles.map(role => 
-        role.id === currentRole.id 
-          ? { ...role, ...values } 
-          : role
-      );
-      setRoles(updatedRoles);
-      toast({
-        title: "Role Updated",
-        description: `The role "${values.name}" has been updated successfully.`,
+      updateRole.mutate({
+        id: currentRole.id,
+        name: values.name,
+        description: values.description,
+        permissions: values.permissions
       });
     } else {
       // Add new role
-      const newRole: Role = {
-        id: `${Date.now()}`, // Simple ID generation for demo
+      createRole.mutate({
         name: values.name,
         description: values.description,
-        userCount: 0,
-        permissions: values.permissions,
-      };
-      setRoles([...roles, newRole]);
-      toast({
-        title: "Role Created",
-        description: `The role "${values.name}" has been created successfully.`,
+        permissions: values.permissions
       });
     }
     setIsRoleModalOpen(false);
@@ -175,12 +125,7 @@ export const UserRoleSettings = () => {
 
   const handleDeleteRole = () => {
     if (currentRole) {
-      const updatedRoles = roles.filter(role => role.id !== currentRole.id);
-      setRoles(updatedRoles);
-      toast({
-        title: "Role Deleted",
-        description: `The role "${currentRole.name}" has been deleted successfully.`,
-      });
+      deleteRole.mutate(currentRole.id);
       setIsDeleteDialogOpen(false);
     }
   };
@@ -189,6 +134,23 @@ export const UserRoleSettings = () => {
     const permission = permissions.find(p => p.key === key);
     return permission ? permission.name : key;
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-16 w-full" />
+        <div className="flex justify-between items-center">
+          <div className="flex space-x-2">
+            <Skeleton className="h-10 w-[250px]" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+          <Skeleton className="h-10 w-28" />
+        </div>
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -368,7 +330,10 @@ export const UserRoleSettings = () => {
               </div>
               
               <DialogFooter>
-                <Button type="submit">
+                <Button 
+                  type="submit" 
+                  disabled={createRole.isPending || updateRole.isPending}
+                >
                   {currentRole ? "Update Role" : "Create Role"}
                 </Button>
               </DialogFooter>
@@ -393,7 +358,11 @@ export const UserRoleSettings = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteRole} className="bg-destructive">
+            <AlertDialogAction 
+              onClick={handleDeleteRole} 
+              className="bg-destructive"
+              disabled={deleteRole.isPending}
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
