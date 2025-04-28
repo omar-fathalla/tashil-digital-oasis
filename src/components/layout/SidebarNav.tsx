@@ -25,11 +25,7 @@ export default function SidebarNav() {
   // Update the management links with unread count if needed
   const updatedManagementLinks = managementLinks.map(link => {
     if (link.href === "/application-status" && unreadCount > 0) {
-      return { 
-        ...link, 
-        badge: unreadCount.toString(), 
-        badgeVariant: "count" as const
-      };
+      return { ...link, badge: unreadCount.toString(), badgeVariant: "count" as const };
     }
     return link;
   });

@@ -29,7 +29,7 @@ export const analyticsLinks = [
     label: "View Reports", 
     icon: ChartBar,
     badge: "New",
-    badgeVariant: "new" as const
+    badgeVariant: "new" 
   },
 ];
 
@@ -39,7 +39,7 @@ export const supportLinks = [
     label: "FAQ", 
     icon: HelpCircle,
     badge: "2",
-    badgeVariant: "count" as const
+    badgeVariant: "count"
   },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
