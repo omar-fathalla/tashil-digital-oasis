@@ -16,9 +16,9 @@ export async function callApi<T = any>(
   body?: Record<string, any>
 ): Promise<ApiResponse<T>> {
   try {
-    const session = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!session.data.session) {
+    if (!session) {
       return {
         success: false,
         data: null,
@@ -30,7 +30,7 @@ export async function callApi<T = any>(
       method,
       body,
       headers: {
-        Authorization: `Bearer ${session.data.session.access_token}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
     });
     
@@ -85,5 +85,11 @@ export const api = {
     update: (id: string, data: any) => callApi<any>(`notifications/${id}`, 'PUT', data),
     delete: (id: string) => callApi<void>(`notifications/${id}`, 'DELETE'),
     markAsRead: (id: string) => callApi<any>(`notifications/${id}`, 'PUT', { read: true })
+  },
+  
+  // User API
+  user: {
+    getMetadata: () => callApi<any>('user/metadata'),
+    updateMetadata: (data: any) => callApi<any>('user/metadata', 'PUT', data)
   }
 };

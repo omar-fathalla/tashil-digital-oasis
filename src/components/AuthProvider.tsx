@@ -29,6 +29,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check for active session on initial load
     const initializeAuth = async () => {
       try {
+        // Set up auth state listener first (important for catching events during init)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (event, currentSession) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              setSession(currentSession);
+              setUser(currentSession?.user || null);
+              
+              // Update email verification status when auth state changes
+              if (currentSession?.user) {
+                setIsEmailVerified(currentSession.user.email_confirmed_at !== null);
+              } else {
+                setIsEmailVerified(false);
+              }
+            }
+            
+            if (event === 'SIGNED_OUT') {
+              setSession(null);
+              setUser(null);
+              setIsEmailVerified(false);
+            }
+            
+            setIsLoading(false);
+          }
+        );
+
+        // Then check for existing session
         const { data: { session: activeSession } } = await supabase.auth.getSession();
         
         if (activeSession) {
@@ -40,36 +66,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsEmailVerified(activeSession.user.email_confirmed_at !== null);
           }
         }
+        
+        setIsLoading(false);
+        
+        // Clean up subscription on unmount
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error("Error initializing auth:", error);
-      } finally {
         setIsLoading(false);
       }
     };
 
     initializeAuth();
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
-        
-        // Update email verification status when auth state changes
-        if (currentSession?.user) {
-          setIsEmailVerified(currentSession.user.email_confirmed_at !== null);
-        } else {
-          setIsEmailVerified(false);
-        }
-        
-        setIsLoading(false);
-      }
-    );
-
-    // Clean up subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   // Function to resend verification email

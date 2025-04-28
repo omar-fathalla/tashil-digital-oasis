@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -91,6 +92,7 @@ const CompanyRegistration = () => {
       setIsSubmitting(true);
       toast.info("Processing registration...");
 
+      // Step 1: Register the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -114,6 +116,7 @@ const CompanyRegistration = () => {
         throw new Error("Failed to create user account");
       }
 
+      // Step 2: Upload the documents
       const commercialRegisterUrl = uploadedFiles.commercialRegister 
         ? await uploadFile(uploadedFiles.commercialRegister, "cr")
         : null;
@@ -128,6 +131,7 @@ const CompanyRegistration = () => {
         throw new Error("Failed to upload Tax Card document");
       }
 
+      // Step 3: Create the company record with the user_id from auth
       const { error: companyError } = await supabase
         .from('companies')
         .insert({

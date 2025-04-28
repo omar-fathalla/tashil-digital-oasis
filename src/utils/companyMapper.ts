@@ -10,13 +10,14 @@ export type InsertableCompany = {
   commercial_register_url: string;
   tax_card_url: string;
   type?: string;
-  user_id: string; // Now required
+  user_id: string; // Required field
   is_dummy?: boolean;
+  is_archived?: boolean;
 };
 
 export const mapPartialCompanyToInsertableCompany = (
   partialCompany: Partial<Company>,
-  userId: string // Add userId parameter
+  userId: string // Required parameter
 ): InsertableCompany => {
   if (!userId) {
     throw new Error('User ID is required to create a company');
@@ -32,6 +33,7 @@ export const mapPartialCompanyToInsertableCompany = (
     tax_card_url: partialCompany.tax_card_url || "",
     type: partialCompany.type,
     user_id: userId,
-    is_dummy: partialCompany.is_dummy || false
+    is_dummy: partialCompany.is_dummy || false,
+    is_archived: false
   };
 };

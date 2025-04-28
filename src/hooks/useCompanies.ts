@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,7 @@ export interface Company {
   type: string | null;
   user_id: string;
   is_dummy?: boolean;
+  is_archived?: boolean;
 }
 
 const validateCompany = (company: Partial<Company>): string | null => {
@@ -49,13 +51,18 @@ export function useCompanies() {
   const { data: companies = [], isLoading } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
+      if (!user?.id) {
+        return [];
+      }
+
       if (user?.email) {
         await ensureDemoCompanyForUser(user.email);
       }
 
       const { data, error } = await supabase
         .from('companies')
-        .select('id, company_name, address, tax_card_number, register_number, company_number, commercial_register_url, tax_card_url, created_at, updated_at, type, user_id')
+        .select('id, company_name, address, tax_card_number, register_number, company_number, commercial_register_url, tax_card_url, created_at, updated_at, type, user_id, is_dummy, is_archived')
+        .eq('is_archived', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -72,9 +79,12 @@ export function useCompanies() {
         created_at: company.created_at || new Date().toISOString(),
         updated_at: company.updated_at,
         type: company.type,
-        user_id: company.user_id || ''
+        user_id: company.user_id || '',
+        is_dummy: company.is_dummy || false,
+        is_archived: company.is_archived || false
       })) as Company[];
-    }
+    },
+    enabled: !!user?.id // Only run the query if user is authenticated
   });
 
   const deleteCompany = useMutation({

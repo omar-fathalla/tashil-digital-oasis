@@ -34,6 +34,7 @@ serve(async (req: Request) => {
             .from('companies')
             .select('*')
             .eq('id', companyId)
+            .eq('is_archived', false)
             .maybeSingle();
 
           if (error) throw error;
@@ -50,10 +51,12 @@ serve(async (req: Request) => {
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         } else {
-          // Get all companies
+          // Get all companies for the current user (RLS will filter by user_id)
           const { data, error } = await supabase
             .from('companies')
-            .select('*');
+            .select('*')
+            .eq('is_archived', false)
+            .order('created_at', { ascending: false });
 
           if (error) throw error;
 
@@ -95,6 +98,12 @@ serve(async (req: Request) => {
         }
 
         const updateData = await req.json();
+        
+        // Remove user_id if present to prevent ownership transfer
+        if (updateData.user_id) {
+          delete updateData.user_id;
+        }
+        
         const { data: updatedData, error: updateError } = await supabase
           .from('companies')
           .update(updateData)
@@ -106,7 +115,7 @@ serve(async (req: Request) => {
 
         if (!updatedData) {
           return new Response(
-            JSON.stringify(createApiResponse(false, null, 'Company not found')),
+            JSON.stringify(createApiResponse(false, null, 'Company not found or you do not have permission to update it')),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -117,7 +126,7 @@ serve(async (req: Request) => {
         );
 
       case 'DELETE':
-        // Delete a company
+        // Delete a company (soft delete by setting is_archived to true)
         if (!companyId) {
           return new Response(
             JSON.stringify(createApiResponse(false, null, 'Company ID is required')),
@@ -127,7 +136,7 @@ serve(async (req: Request) => {
 
         const { error: deleteError } = await supabase
           .from('companies')
-          .delete()
+          .update({ is_archived: true })
           .eq('id', companyId);
 
         if (deleteError) throw deleteError;
