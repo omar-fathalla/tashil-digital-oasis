@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies, Company } from "@/hooks/useCompanies";
@@ -280,97 +279,11 @@ export default function CompanyManagement() {
       </Card>
 
       {/* Company Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Company Details</DialogTitle>
-          </DialogHeader>
-          {selectedCompany && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Company Name</label>
-                    <p className="text-lg font-medium">{selectedCompany.company_name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Address</label>
-                    <p>{selectedCompany.address}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Tax Card Number</label>
-                    <p>{selectedCompany.tax_card_number}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Register Number</label>
-                    <p>{selectedCompany.register_number}</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Company Number</label>
-                    <p>{selectedCompany.company_number}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Created Date</label>
-                    <p>{formatDate(selectedCompany.created_at)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
-                    <p>{formatDate(selectedCompany.updated_at)}</p>
-                  </div>
-                  {selectedCompany.is_dummy && (
-                    <div className="mt-2">
-                      <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded">Demo Company</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="font-medium">Documents</h3>
-                <div className="flex flex-wrap gap-4">
-                  {selectedCompany.commercial_register_url && (
-                    <a 
-                      href={selectedCompany.commercial_register_url} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="flex items-center gap-2 bg-accent p-3 rounded-md hover:bg-accent/80 transition-colors"
-                    >
-                      <FileText className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Commercial Register</div>
-                        <div className="text-xs text-muted-foreground">View document</div>
-                      </div>
-                      <Download className="h-4 w-4 ml-2" />
-                    </a>
-                  )}
-                  
-                  {selectedCompany.tax_card_url && (
-                    <a 
-                      href={selectedCompany.tax_card_url} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="flex items-center gap-2 bg-accent p-3 rounded-md hover:bg-accent/80 transition-colors"
-                    >
-                      <FileText className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Tax Card</div>
-                        <div className="text-xs text-muted-foreground">View document</div>
-                      </div>
-                      <Download className="h-4 w-4 ml-2" />
-                    </a>
-                  )}
-                  
-                  {!selectedCompany.commercial_register_url && !selectedCompany.tax_card_url && (
-                    <p className="text-muted-foreground">No documents available</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <CompanyDetailsDialog 
+        company={selectedCompany} 
+        open={detailsOpen} 
+        onOpenChange={setDetailsOpen}
+      />
       
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
