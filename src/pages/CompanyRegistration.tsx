@@ -12,6 +12,7 @@ import { CompanyRegistrationSuccess } from "@/components/company-registration/Co
 import { RegistrationFormWrapper } from "@/components/company-registration/RegistrationFormWrapper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
+import { useRetry } from "@/hooks/useRetry";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
@@ -22,6 +23,7 @@ const CompanyRegistration = () => {
     taxCard: null as File | null,
   });
   const navigate = useNavigate();
+  const { retry } = useRetry();
   
   const form = useForm<CompanyRegistrationFormData>({
     resolver: zodResolver(companyRegistrationSchema),
@@ -126,67 +128,81 @@ const CompanyRegistration = () => {
       }
 
       setIsSubmitting(true);
-      toast.info("Processing registration...");
 
-      // Step 1: Register the user with metadata
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            username: values.username,
-            mobile_number: values.mobileNumber.replace(/[\s-]/g, ''),
-          },
-          emailRedirectTo: window.location.origin + '/auth',
+      await retry(async () => {
+        toast.info("Processing registration...");
+
+        // Step 1: Register the user with metadata
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            data: {
+              username: values.username,
+              mobile_number: values.mobileNumber.replace(/[\s-]/g, ''),
+            },
+            emailRedirectTo: window.location.origin + '/auth',
+          }
+        });
+
+        if (authError) {
+          if (authError.message.includes('already registered')) {
+            throw new Error('This email is already registered. Please use a different email or try logging in.');
+          }
+          throw new Error(`Registration error: ${authError.message}`);
         }
+
+        if (!authData.user?.id) {
+          throw new Error("Failed to create user account");
+        }
+
+        // Step 2: Create the company record
+        const { data: companyData, error: companyError } = await supabase
+          .from('companies')
+          .insert({
+            company_name: values.companyName,
+            address: values.address,
+            tax_card_number: values.taxCardNumber,
+            register_number: values.registerNumber,
+            company_number: values.companyNumber,
+            user_id: authData.user.id,
+          })
+          .select()
+          .single();
+
+        if (companyError) {
+          console.error("Company creation error:", companyError);
+          throw new Error(`Failed to create company: ${companyError.message}`);
+        }
+
+        // Step 3: Upload and store documents
+        await uploadDocumentsForCompany(companyData.id, uploadedFiles);
+
+        setIsCompleted(true);
+        toast.success("Registration completed successfully!");
+
+        // Redirect to About page after a short delay
+        setTimeout(() => {
+          navigate("/about");
+        }, 2000);
+      }, {
+        maxAttempts: 3,
+        delayMs: 2000
       });
-
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          throw new Error('This email is already registered. Please use a different email or try logging in.');
-        }
-        throw new Error(`Registration error: ${authError.message}`);
-      }
-
-      if (!authData.user?.id) {
-        throw new Error("Failed to create user account");
-      }
-
-      // Step 2: Create the company record
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .insert({
-          company_name: values.companyName,
-          address: values.address,
-          tax_card_number: values.taxCardNumber,
-          register_number: values.registerNumber,
-          company_number: values.companyNumber,
-          user_id: authData.user.id,
-        })
-        .select()
-        .single();
-
-      if (companyError) {
-        console.error("Company creation error:", companyError);
-        throw new Error(`Failed to create company: ${companyError.message}`);
-      }
-
-      // Step 3: Upload and store documents
-      await uploadDocumentsForCompany(companyData.id, uploadedFiles);
-
-      setIsCompleted(true);
-      toast.success("Registration completed successfully!");
-
-      // Redirect to About page after a short delay
-      setTimeout(() => {
-        navigate("/about");
-      }, 2000);
 
     } catch (error: any) {
       console.error('Error during registration:', error);
-      toast.error("Registration failed. Please try again.", {
-        description: error.message || "An unexpected error occurred.",
-      });
+      
+      // Check if it was a retry failure
+      if (error.message.includes('Failed after multiple attempts')) {
+        toast.error("Registration failed after multiple attempts. Please try again manually.", {
+          description: error.message,
+        });
+      } else {
+        toast.error("Registration failed. Please try again.", {
+          description: error.message || "An unexpected error occurred.",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
