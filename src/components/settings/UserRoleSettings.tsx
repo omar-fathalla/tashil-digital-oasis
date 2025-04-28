@@ -74,10 +74,12 @@ export const UserRoleSettings = () => {
   const { 
     permissions, 
     roles, 
+    users,
     isLoading, 
     createRole, 
     updateRole, 
-    deleteRole 
+    deleteRole,
+    assignUserRole 
   } = useRoleManagement();
 
   const form = useForm<RoleFormValues>({
@@ -148,17 +150,8 @@ export const UserRoleSettings = () => {
     return permission ? permission.name : key;
   };
 
-  const handleRoleChange = (userId: string, role: string) => {
-    setAdminUsers(
-      adminUsers.map((user) =>
-        user.id === userId ? { ...user, role } : user
-      )
-    );
-    
-    toast({
-      title: "Role Updated",
-      description: `User role has been updated to ${role.replace("_", " ")}.`,
-    });
+  const handleRoleChange = (userId: string, roleId: string) => {
+    assignUserRole.mutate({ userId, roleId });
   };
 
   const handleSaveChanges = () => {
@@ -307,27 +300,25 @@ export const UserRoleSettings = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {adminUsers.map((user) => (
+                {users.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Select
-                        value={user.role}
+                        value={user.user_roles?.[0]?.role_id || ""}
                         onValueChange={(value) => handleRoleChange(user.id, value)}
                       >
                         <SelectTrigger className="w-40">
-                          <SelectValue />
+                          <SelectValue placeholder="Select role" />
                         </SelectTrigger>
                         <SelectContent>
                           {roles.map((role) => (
-                            <SelectItem key={role.id} value={role.name.toLowerCase()}>
+                            <SelectItem key={role.id} value={role.id}>
                               {role.name}
                             </SelectItem>
                           ))}
@@ -336,6 +327,13 @@ export const UserRoleSettings = () => {
                     </TableCell>
                   </TableRow>
                 ))}
+                {users.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center py-4">
+                      No users found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>

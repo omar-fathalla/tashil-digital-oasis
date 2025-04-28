@@ -91,6 +91,23 @@ export const useRoleManagement = () => {
     }
   });
 
+  // Fetch all users from auth system
+  const {
+    data: users = [],
+    isLoading: usersLoading,
+    error: usersError
+  } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('id, email, user_roles(role_id)');
+
+      if (error) throw error;
+      return users;
+    }
+  });
+
   // Create new role
   const createRole = useMutation({
     mutationFn: async ({ name, description, permissions }: { name: string, description: string, permissions: string[] }) => {
@@ -251,7 +268,7 @@ export const useRoleManagement = () => {
       if (insertError) throw insertError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "Role Assigned",
         description: "The user's role has been updated successfully.",
@@ -269,8 +286,9 @@ export const useRoleManagement = () => {
   return {
     permissions,
     roles,
-    isLoading: permissionsLoading || rolesLoading,
-    error: permissionsError || rolesError,
+    users,
+    isLoading: permissionsLoading || rolesLoading || usersLoading,
+    error: permissionsError || rolesError || usersError,
     createRole,
     updateRole,
     deleteRole,
