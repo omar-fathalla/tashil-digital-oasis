@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -23,7 +22,7 @@ const CompanyRegistration = () => {
     taxCard: null as File | null,
   });
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get current authenticated user
+  const { user } = useAuth();
   
   const form = useForm<CompanyRegistrationFormData>({
     resolver: zodResolver(companyRegistrationSchema),
@@ -33,7 +32,6 @@ const CompanyRegistration = () => {
       taxCardNumber: "",
       registerNumber: "",
       companyNumber: "",
-      // Username and password fields removed
     },
   });
 
@@ -48,7 +46,7 @@ const CompanyRegistration = () => {
         return;
       }
 
-      // 1. Upload documents to storage first
+      // Upload documents to storage first
       let commercialRegisterUrl = null;
       let taxCardUrl = null;
 
@@ -82,7 +80,6 @@ const CompanyRegistration = () => {
         taxCardUrl = publicUrl;
       }
 
-      // 2. Create company record directly linked to current authenticated user
       const { error: companyError } = await supabase
         .from('companies')
         .insert({
@@ -96,20 +93,17 @@ const CompanyRegistration = () => {
           tax_card_url: taxCardUrl,
         });
 
-      if (companyError) {
-        console.error('Error inserting company record:', companyError);
-        throw companyError;
-      }
+      if (companyError) throw companyError;
 
       setIsCompleted(true);
       toast.success("Registration Successful", {
-        description: "Your company account has been created successfully.",
+        description: "Your company has been registered successfully.",
       });
 
     } catch (error) {
       console.error('Error during registration:', error);
       toast.error("Registration Error", {
-        description: "An error occurred while registering the company. Please try again.",
+        description: "An error occurred while registering your company. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
