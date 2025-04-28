@@ -122,7 +122,6 @@ export type Database = {
       companies: {
         Row: {
           address: string
-          commercial_register_url: string
           company_name: string
           company_number: string
           created_at: string | null
@@ -131,14 +130,12 @@ export type Database = {
           is_dummy: boolean | null
           register_number: string
           tax_card_number: string
-          tax_card_url: string
           type: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           address?: string
-          commercial_register_url?: string
           company_name: string
           company_number?: string
           created_at?: string | null
@@ -147,14 +144,12 @@ export type Database = {
           is_dummy?: boolean | null
           register_number?: string
           tax_card_number?: string
-          tax_card_url?: string
           type?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           address?: string
-          commercial_register_url?: string
           company_name?: string
           company_number?: string
           created_at?: string | null
@@ -163,7 +158,6 @@ export type Database = {
           is_dummy?: boolean | null
           register_number?: string
           tax_card_number?: string
-          tax_card_url?: string
           type?: string | null
           updated_at?: string | null
           user_id?: string

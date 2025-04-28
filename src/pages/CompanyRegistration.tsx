@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -7,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { companyRegistrationSchema, type CompanyRegistrationFormData } from "@/schemas/companyRegistration";
 import { CompanyInformationForm } from "@/components/company-registration/CompanyInformationForm";
 import { UserAccountForm } from "@/components/company-registration/UserAccountForm";
-import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 import { CompanyRegistrationSuccess } from "@/components/company-registration/CompanyRegistrationSteps";
 import { RegistrationFormWrapper } from "@/components/company-registration/RegistrationFormWrapper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,10 +19,6 @@ const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState({
-    commercialRegister: null as File | null,
-    taxCard: null as File | null,
-  });
   const navigate = useNavigate();
   const { retry } = useRetry();
   
@@ -47,92 +43,8 @@ const CompanyRegistration = () => {
     saveInterval: 2000,
   });
 
-  const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
-    try {
-      const timestamp = Date.now();
-      const filePath = `company-documents/${prefix}-${timestamp}-${file.name}`;
-      
-      const { error } = await supabase.storage
-        .from('company-documents')
-        .upload(filePath, file);
-
-      if (error) {
-        console.error(`Error uploading ${prefix} file:`, error);
-        throw error;
-      }
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('company-documents')
-        .getPublicUrl(filePath);
-        
-      return publicUrl;
-    } catch (error) {
-      console.error(`Failed to upload ${prefix} file:`, error);
-      return null;
-    }
-  };
-
-  const validateFiles = (): boolean => {
-    if (!uploadedFiles.commercialRegister) {
-      toast.error("Missing Commercial Register Document", {
-        description: "Please upload a copy of your Commercial Register."
-      });
-      return false;
-    }
-    
-    if (!uploadedFiles.taxCard) {
-      toast.error("Missing Tax Card Document", {
-        description: "Please upload a copy of your Tax Card."
-      });
-      return false;
-    }
-    
-    return true;
-  };
-
-  const uploadDocumentsForCompany = async (companyId: string, documents: {
-    commercialRegister: File | null;
-    taxCard: File | null;
-  }) => {
-    const documentsToUpload = [];
-    
-    if (documents.commercialRegister) {
-      const commercialRegisterUrl = await uploadFile(documents.commercialRegister, "cr");
-      if (commercialRegisterUrl) {
-        documentsToUpload.push({
-          company_id: companyId,
-          document_type: 'Commercial Register',
-          document_url: commercialRegisterUrl
-        });
-      }
-    }
-    
-    if (documents.taxCard) {
-      const taxCardUrl = await uploadFile(documents.taxCard, "tc");
-      if (taxCardUrl) {
-        documentsToUpload.push({
-          company_id: companyId,
-          document_type: 'Tax Card',
-          document_url: taxCardUrl
-        });
-      }
-    }
-
-    if (documentsToUpload.length > 0) {
-      const { error: documentsError } = await supabase
-        .from('company_documents')
-        .insert(documentsToUpload);
-
-      if (documentsError) throw documentsError;
-    }
-  };
-
   const onSubmit = async (values: CompanyRegistrationFormData) => {
     try {
-      if (!validateFiles()) {
-        return;
-      }
-
       setIsSubmitting(true);
 
       await retry(async () => {
@@ -181,9 +93,6 @@ const CompanyRegistration = () => {
           throw new Error(`Failed to create company: ${companyError.message}`);
         }
 
-        // Step 3: Upload and store documents
-        await uploadDocumentsForCompany(companyData.id, uploadedFiles);
-
         setIsCompleted(true);
         toast.success("Registration completed successfully!");
 
@@ -215,13 +124,6 @@ const CompanyRegistration = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleFileUpload = (type: 'commercialRegister' | 'taxCard', file: File) => {
-    setUploadedFiles(prev => ({
-      ...prev,
-      [type]: file
-    }));
   };
 
   if (isCompleted) {
@@ -263,17 +165,6 @@ const CompanyRegistration = () => {
           description: "Enter your company's basic information",
           content: <CompanyInformationForm form={form} />
         };
-      case 2:
-        return {
-          title: "Required Documents",
-          description: "Upload the required documents",
-          content: (
-            <DocumentUploadsForm
-              uploadedFiles={uploadedFiles}
-              onFileUpload={handleFileUpload}
-            />
-          )
-        };
       default:
         return {
           title: "",
@@ -312,8 +203,7 @@ const CompanyRegistration = () => {
             onPrevious={() => setFormStep(formStep - 1)}
             onNext={() => validateStep(formStep)}
             onSubmit={onSubmit}
-            showSubmit={formStep === 2}
-            disableSubmit={!uploadedFiles.commercialRegister || !uploadedFiles.taxCard}
+            showSubmit={formStep === 1}
           >
             {content}
           </RegistrationFormWrapper>
