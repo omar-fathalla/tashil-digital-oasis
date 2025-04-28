@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -14,7 +13,6 @@ import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
 import { BackupSettings } from "@/components/settings/BackupSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { UserRoleSettings } from "@/components/settings/UserRoleSettings";
-import { RepresentativeAccounting } from "@/components/settings/RepresentativeAccounting";
 import { EmailPreferences } from "@/components/settings/EmailPreferences";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
@@ -49,7 +47,6 @@ const settingsGroups = [
       { id: "regions", label: "Regions", component: RegionSettings },
       { id: "backup", label: "Backup", component: BackupSettings },
       { id: "roles", label: "User Roles", component: UserRoleSettings },
-      { id: "accounting", label: "Accounting", component: RepresentativeAccounting },
     ]
   }
 ];

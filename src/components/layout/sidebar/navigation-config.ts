@@ -1,5 +1,4 @@
-
-import { Home, Info, LayoutDashboard, FileText, CheckSquare, Users, FileBox, BarChart3, HelpCircle, Settings, ChartBar } from "lucide-react";
+import { Home, Info, LayoutDashboard, FileText, CheckSquare, Users, FileBox, BarChart3, HelpCircle, Settings, ChartBar, Wallet } from "lucide-react";
 
 export const navigationLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -16,6 +15,7 @@ export const managementLinks = [
   { href: "/project-overview", label: "Projects", icon: FileText },
   { href: "/employee-management", label: "Employee Management", icon: Users },
   { href: "/document-management", label: "Document Management", icon: FileBox },
+  { href: "/accounting", label: "Accounting", icon: Wallet },
 ];
 
 export const analyticsLinks = [

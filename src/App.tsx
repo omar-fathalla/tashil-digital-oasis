@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import EmployeeManagement from "./pages/EmployeeManagement";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import DocumentManagement from "./pages/DocumentManagement";
 import DocumentAnalytics from "./pages/DocumentAnalytics";
+import Accounting from "./pages/Accounting";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +51,7 @@ const App = () => (
               <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
               <Route path="/document-management" element={<DocumentManagement />} />
               <Route path="/document-analytics" element={<DocumentAnalytics />} />
+              <Route path="/accounting" element={<Accounting />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
