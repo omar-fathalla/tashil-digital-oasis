@@ -53,6 +53,39 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDownloading, setIsDownloading] = useState<string | null>(null);
 
+  // Initialize form with default empty values - will be updated when company changes
+  const form = useForm<CompanyFormValues>({
+    resolver: zodResolver(companyFormSchema),
+    defaultValues: {
+      company_name: "",
+      address: "",
+      company_number: "",
+      tax_card_number: "",
+      register_number: "",
+    },
+  });
+
+  // Update form values when company changes
+  if (company && form) {
+    // Only reset if form is already initialized and values are different
+    const currentValues = form.getValues();
+    if (
+      currentValues.company_name !== company.company_name ||
+      currentValues.address !== company.address ||
+      currentValues.company_number !== company.company_number ||
+      currentValues.tax_card_number !== company.tax_card_number ||
+      currentValues.register_number !== company.register_number
+    ) {
+      form.reset({
+        company_name: company.company_name,
+        address: company.address,
+        company_number: company.company_number,
+        tax_card_number: company.tax_card_number,
+        register_number: company.register_number,
+      });
+    }
+  }
+
   if (!company) return null;
 
   const formatDate = (dateString: string | null) => {
@@ -61,18 +94,6 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
   };
 
   const canManageCompany = user?.role === 'admin' || user?.role === 'manager';
-
-  // Initialize form with company data
-  const form = useForm<CompanyFormValues>({
-    resolver: zodResolver(companyFormSchema),
-    defaultValues: {
-      company_name: company.company_name,
-      address: company.address,
-      company_number: company.company_number,
-      tax_card_number: company.tax_card_number,
-      register_number: company.register_number,
-    },
-  });
 
   const onSubmit = async (values: CompanyFormValues) => {
     try {
