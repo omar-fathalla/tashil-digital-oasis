@@ -47,11 +47,18 @@ export function useUserMetadata() {
       if (!user?.id) {
         throw new Error('You must be logged in to update your profile');
       }
+
+      // Ensure required fields are present
+      if (!updates.username || !updates.mobile_number) {
+        throw new Error('Username and mobile number are required');
+      }
       
       const { data, error } = await supabase
         .from('users_metadata')
         .upsert({
           user_id: user.id,
+          username: updates.username,
+          mobile_number: updates.mobile_number.replace(/[\s-]/g, ''), // Normalize format
           ...updates
         })
         .select()

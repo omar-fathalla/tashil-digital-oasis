@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -92,14 +91,14 @@ const CompanyRegistration = () => {
       setIsSubmitting(true);
       toast.info("Processing registration...");
 
-      // Step 1: Register the user
+      // Step 1: Register the user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
             username: values.username,
-            mobile_number: values.mobileNumber,
+            mobile_number: values.mobileNumber.replace(/[\s-]/g, ''), // Normalize before saving
           },
           emailRedirectTo: window.location.origin + '/auth',
         }
