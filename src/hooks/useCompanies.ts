@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 
 export interface Company {
   id: string;
@@ -31,10 +33,27 @@ const validateCompany = (company: Partial<Company>): string | null => {
 export function useCompanies() {
   const queryClient = useQueryClient();
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const { user } = useAuth();
+
+  const ensureDemoCompanyForUser = async (email: string) => {
+    if (email !== 'omar.ahmed.hassan.fathalla@gmail.com') return;
+    
+    try {
+      // Call the database function that ensures the user has demo data
+      await supabase.rpc('ensure_demo_company_data', { user_email: email });
+    } catch (error) {
+      console.error("Failed to ensure demo company data:", error);
+    }
+  };
 
   const { data: companies = [], isLoading } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
+      // If user is the target email, ensure they have demo data
+      if (user?.email) {
+        await ensureDemoCompanyForUser(user.email);
+      }
+
       const { data, error } = await supabase
         .from('companies')
         .select('id, company_name, address, tax_card_number, register_number, company_number, commercial_register_url, tax_card_url, created_at, updated_at, type, user_id')
@@ -127,6 +146,7 @@ export function useCompanies() {
     selectedCompany,
     setSelectedCompany,
     deleteCompany,
-    createCompany
+    createCompany,
+    ensureDemoCompanyForUser
   };
 }

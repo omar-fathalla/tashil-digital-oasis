@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies } from "@/hooks/useCompanies";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +15,15 @@ import { SkeletonTable } from "@/components/ui/skeleton/SkeletonTable";
 
 export default function CompanyManagement() {
   const { user } = useAuth();
-  const { companies, isLoading, selectedCompany, setSelectedCompany, deleteCompany } = useCompanies();
+  const { companies, isLoading, selectedCompany, setSelectedCompany, deleteCompany, ensureDemoCompanyForUser } = useCompanies();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const isAdmin = user?.role === 'admin';
+  
+  useEffect(() => {
+    if (user?.email) {
+      ensureDemoCompanyForUser(user.email);
+    }
+  }, [user?.email, ensureDemoCompanyForUser]);
 
   if (isLoading) {
     return (

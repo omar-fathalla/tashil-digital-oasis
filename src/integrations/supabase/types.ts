@@ -1234,6 +1234,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_demo_company_data: {
+        Args: { user_email: string }
+        Returns: undefined
+      }
       get_approved_requests: {
         Args: { limit_count?: number }
         Returns: {
