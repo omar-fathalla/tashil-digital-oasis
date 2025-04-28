@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies, Company } from "@/hooks/useCompanies";
@@ -64,8 +65,8 @@ export default function CompanyManagement() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField<"company_name" | "created_at">("created_at");
-  const [sortDirection, setSortDirection<"asc" | "desc">("desc");
+  const [sortField, setSortField] = useState<"company_name" | "created_at">("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isEditMode, setIsEditMode] = useState(false);
