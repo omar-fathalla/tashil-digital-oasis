@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -46,6 +47,7 @@ const CompanyRegistration = () => {
   const onSubmit = async (values: CompanyRegistrationFormData) => {
     try {
       setIsSubmitting(true);
+      console.log("Starting registration transaction simulation...");
 
       // Step 1: Create the user account first
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -72,31 +74,51 @@ const CompanyRegistration = () => {
         throw new Error("Failed to create user account");
       }
 
-      // Step 2: Create company record only if user was created successfully
-      const companyData = {
-        company_name: values.companyName,
-        address: values.address,
-        tax_card_number: values.taxCardNumber,
-        register_number: values.registerNumber,
-        company_number: values.companyNumber,
-      };
+      // Log successful user creation
+      console.log(`User created successfully with ID: ${authData.user.id}`);
 
-      const insertableCompany = mapPartialCompanyToInsertableCompany(companyData, authData.user.id);
+      try {
+        // Step 2: Create company record with the newly created user ID
+        const companyData = {
+          company_name: values.companyName,
+          address: values.address,
+          tax_card_number: values.taxCardNumber,
+          register_number: values.registerNumber,
+          company_number: values.companyNumber,
+        };
 
-      const { error: companyError } = await supabase
-        .from('companies')
-        .insert(insertableCompany)
-        .select()
-        .single();
+        const insertableCompany = mapPartialCompanyToInsertableCompany(companyData, authData.user.id);
 
-      if (companyError) {
-        console.error("Company creation error:", companyError);
-        // If company creation fails, display specific error but don't throw
-        // since user account was already created
-        toast.error("Failed to create company record", {
-          description: companyError.message
-        });
-      } else {
+        const { error: companyError } = await supabase
+          .from('companies')
+          .insert(insertableCompany)
+          .select()
+          .single();
+
+        if (companyError) {
+          // Log company creation failure
+          console.error("Company creation error:", companyError);
+          
+          // If company creation fails, we need to delete the user to maintain consistency
+          console.log(`Attempting to delete user ${authData.user.id} due to company creation failure`);
+          
+          // Delete the user as company creation failed
+          const { error: deleteError } = await supabase.auth.admin.deleteUser(authData.user.id);
+          
+          if (deleteError) {
+            console.error("Failed to delete user after company creation failure:", deleteError);
+            // Log this critical error but don't expose to user - this is an inconsistent state
+            // A background job or admin should handle this orphaned user
+          } else {
+            console.log(`User ${authData.user.id} successfully deleted after company creation failure`);
+          }
+          
+          // Throw an error to stop the process and show a relevant message to the user
+          throw new Error("Registration failed and changes were reverted. Please try again.");
+        }
+
+        // Registration successful
+        console.log("Company created successfully, registration complete!");
         setIsCompleted(true);
         toast.success("Registration completed successfully!");
         
@@ -107,6 +129,13 @@ const CompanyRegistration = () => {
         setTimeout(() => {
           navigate("/about");
         }, 2000);
+      } catch (companyError: any) {
+        // This catch block handles both company creation errors and user deletion errors
+        console.error('Company creation process error:', companyError);
+        
+        toast.error("Registration failed", {
+          description: companyError.message || "An error occurred during company registration. All changes were reverted."
+        });
       }
 
     } catch (error: any) {
@@ -169,6 +198,14 @@ const CompanyRegistration = () => {
   };
 
   const { title, description, content } = getStepContent();
+
+  if (isCompleted) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <CompanyRegistrationSuccess onNavigateToDashboard={() => navigate('/auth')} />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
