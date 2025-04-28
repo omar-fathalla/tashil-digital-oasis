@@ -13,8 +13,6 @@ export interface Company {
   tax_card_number: string;
   register_number: string;
   company_number: string;
-  commercial_register_url: string | null;
-  tax_card_url: string | null;
   created_at: string;
   updated_at: string | null;
   type: string | null;
@@ -61,7 +59,7 @@ export function useCompanies() {
 
       const { data, error } = await supabase
         .from('companies')
-        .select('id, company_name, address, tax_card_number, register_number, company_number, commercial_register_url, tax_card_url, created_at, updated_at, type, user_id, is_dummy, is_archived')
+        .select('id, company_name, address, tax_card_number, register_number, company_number, created_at, updated_at, type, user_id, is_dummy, is_archived')
         .eq('is_archived', false)
         .order('created_at', { ascending: false });
 
@@ -74,8 +72,6 @@ export function useCompanies() {
         tax_card_number: company.tax_card_number || '',
         register_number: company.register_number || '',
         company_number: company.company_number || '',
-        commercial_register_url: company.commercial_register_url,
-        tax_card_url: company.tax_card_url,
         created_at: company.created_at || new Date().toISOString(),
         updated_at: company.updated_at,
         type: company.type,
