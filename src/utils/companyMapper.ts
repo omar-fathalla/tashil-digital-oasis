@@ -1,0 +1,32 @@
+
+import { Company } from "@/hooks/useCompanies";
+
+export type InsertableCompany = {
+  company_name: string;
+  address: string;
+  tax_card_number: string;
+  register_number: string;
+  company_number: string;
+  commercial_register_url: string;
+  tax_card_url: string;
+  type?: string;
+  user_id?: string;
+  is_dummy?: boolean;
+};
+
+export const mapPartialCompanyToInsertableCompany = (
+  partialCompany: Partial<Company>
+): InsertableCompany => {
+  return {
+    company_name: partialCompany.company_name || "",
+    address: partialCompany.address || "",
+    tax_card_number: partialCompany.tax_card_number || "",
+    register_number: partialCompany.register_number || "",
+    company_number: partialCompany.company_number || "",
+    commercial_register_url: partialCompany.commercial_register_url || "",
+    tax_card_url: partialCompany.tax_card_url || "",
+    type: partialCompany.type,
+    user_id: partialCompany.user_id,
+    is_dummy: partialCompany.is_dummy || false
+  };
+};

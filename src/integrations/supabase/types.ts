@@ -127,6 +127,7 @@ export type Database = {
           company_number: string
           created_at: string | null
           id: string
+          is_dummy: boolean | null
           register_number: string
           tax_card_number: string
           tax_card_url: string
@@ -141,6 +142,7 @@ export type Database = {
           company_number?: string
           created_at?: string | null
           id?: string
+          is_dummy?: boolean | null
           register_number?: string
           tax_card_number?: string
           tax_card_url?: string
@@ -155,6 +157,7 @@ export type Database = {
           company_number?: string
           created_at?: string | null
           id?: string
+          is_dummy?: boolean | null
           register_number?: string
           tax_card_number?: string
           tax_card_url?: string

@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { mapPartialCompanyToInsertableCompany } from "@/utils/companyMapper";
 
 export interface Company {
   id: string;
@@ -18,6 +18,7 @@ export interface Company {
   updated_at: string | null;
   type: string | null;
   user_id: string;
+  is_dummy?: boolean;
 }
 
 const validateCompany = (company: Partial<Company>): string | null => {
@@ -39,7 +40,6 @@ export function useCompanies() {
     if (email !== 'omar.ahmed.hassan.fathalla@gmail.com') return;
     
     try {
-      // Call the database function that ensures the user has demo data
       await supabase.rpc('ensure_demo_company_data', { user_email: email });
     } catch (error) {
       console.error("Failed to ensure demo company data:", error);
@@ -49,7 +49,6 @@ export function useCompanies() {
   const { data: companies = [], isLoading } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
-      // If user is the target email, ensure they have demo data
       if (user?.email) {
         await ensureDemoCompanyForUser(user.email);
       }
@@ -116,9 +115,11 @@ export function useCompanies() {
         throw new Error(validationError);
       }
 
+      const insertableCompany = mapPartialCompanyToInsertableCompany(company);
+
       const { data, error } = await supabase
         .from('companies')
-        .insert(company)
+        .insert(insertableCompany)
         .select()
         .single();
 
