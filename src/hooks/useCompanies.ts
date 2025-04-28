@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +32,6 @@ export function useCompanies() {
 
       if (error) throw error;
       
-      // Map the response to ensure all fields are present with fallbacks for nulls
       return (data || []).map(company => ({
         id: company.id,
         company_name: company.company_name || '',
@@ -71,11 +69,49 @@ export function useCompanies() {
     }
   });
 
+  const handleUniqueConstraintError = (error: any) => {
+    const message = error.message || '';
+    if (message.includes('companies_company_number_key')) {
+      return "This company number is already in use.";
+    }
+    if (message.includes('companies_register_number_key')) {
+      return "This commercial register number is already in use.";
+    }
+    return message;
+  };
+
+  const createCompany = useMutation({
+    mutationFn: async (company: Partial<Company>) => {
+      const { data, error } = await supabase
+        .from('companies')
+        .insert([company])
+        .select()
+        .single();
+
+      if (error) {
+        const errorMessage = handleUniqueConstraintError(error);
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      toast.success("Company created successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to create company", {
+        description: error.message
+      });
+    }
+  });
+
   return {
     companies,
     isLoading,
     selectedCompany,
     setSelectedCompany,
-    deleteCompany
+    deleteCompany,
+    createCompany
   };
 }
