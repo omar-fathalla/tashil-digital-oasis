@@ -296,7 +296,7 @@ export const UserRoleSettings = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Select
-                        value={user.user_roles && user.user_roles.length > 0 ? user.user_roles[0].role_id : ""}
+                        value={user.role_id || ""}
                         onValueChange={(value) => handleRoleChange(user.id, value)}
                       >
                         <SelectTrigger className="w-40">
