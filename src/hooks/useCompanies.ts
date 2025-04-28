@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,7 +79,6 @@ export function useCompanies() {
 
   const deleteCompany = useMutation({
     mutationFn: async (id: string) => {
-      // Perform soft delete by setting is_archived to true
       const { error } = await supabase
         .from('companies')
         .update({ is_archived: true })
@@ -131,7 +129,6 @@ export function useCompanies() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['companies'] });
       
-      // Update the selected company with the new data if it's currently selected
       if (selectedCompany && selectedCompany.id === data.id) {
         setSelectedCompany(data as Company);
       }
@@ -150,7 +147,12 @@ export function useCompanies() {
         throw new Error(validationError);
       }
 
-      const insertableCompany = mapPartialCompanyToInsertableCompany(company);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) {
+        throw new Error('You must be logged in to create a company');
+      }
+
+      const insertableCompany = mapPartialCompanyToInsertableCompany(company, user.id);
 
       const { data, error } = await supabase
         .from('companies')

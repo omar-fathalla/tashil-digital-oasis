@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -40,7 +39,6 @@ const CompanyRegistration = () => {
     },
   });
 
-  // Upload a single file to Supabase Storage
   const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
     try {
       const timestamp = Date.now();
@@ -55,7 +53,6 @@ const CompanyRegistration = () => {
         throw error;
       }
       
-      // Get the public URL for the file
       const { data: { publicUrl } } = supabase.storage
         .from('company-documents')
         .getPublicUrl(filePath);
@@ -67,7 +64,6 @@ const CompanyRegistration = () => {
     }
   };
 
-  // Validate that required files are present
   const validateFiles = (): boolean => {
     if (!uploadedFiles.commercialRegister) {
       toast.error("Missing Commercial Register Document", {
@@ -86,10 +82,8 @@ const CompanyRegistration = () => {
     return true;
   };
 
-  // Main submission handler
   const onSubmit = async (values: CompanyRegistrationFormData) => {
     try {
-      // First validate that all required files are uploaded
       if (!validateFiles()) {
         return;
       }
@@ -97,7 +91,6 @@ const CompanyRegistration = () => {
       setIsSubmitting(true);
       toast.info("Processing registration...");
 
-      // 1. First, register the user account with email verification
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -117,29 +110,24 @@ const CompanyRegistration = () => {
         throw new Error(`Registration error: ${authError.message}`);
       }
 
-      if (!authData.user) {
+      if (!authData.user?.id) {
         throw new Error("Failed to create user account");
       }
 
-      // 2. Upload documents to storage
-      let commercialRegisterUrl = null;
-      let taxCardUrl = null;
-
-      if (uploadedFiles.commercialRegister) {
-        commercialRegisterUrl = await uploadFile(uploadedFiles.commercialRegister, "cr");
-        if (!commercialRegisterUrl) {
-          throw new Error("Failed to upload Commercial Register document");
-        }
+      const commercialRegisterUrl = uploadedFiles.commercialRegister 
+        ? await uploadFile(uploadedFiles.commercialRegister, "cr")
+        : null;
+      if (!commercialRegisterUrl) {
+        throw new Error("Failed to upload Commercial Register document");
       }
 
-      if (uploadedFiles.taxCard) {
-        taxCardUrl = await uploadFile(uploadedFiles.taxCard, "tc");
-        if (!taxCardUrl) {
-          throw new Error("Failed to upload Tax Card document");
-        }
+      const taxCardUrl = uploadedFiles.taxCard 
+        ? await uploadFile(uploadedFiles.taxCard, "tc")
+        : null;
+      if (!taxCardUrl) {
+        throw new Error("Failed to upload Tax Card document");
       }
 
-      // 3. Insert company data with the document URLs and link to user
       const { error: companyError } = await supabase
         .from('companies')
         .insert({
@@ -158,13 +146,11 @@ const CompanyRegistration = () => {
         throw new Error(`Failed to create company: ${companyError.message}`);
       }
 
-      // Registration successful
       setIsCompleted(true);
       toast.success("Registration Successful", {
         description: "Please check your email to verify your account before logging in.",
       });
 
-      // Redirect to auth page with notification about email verification
       navigate("/auth", { 
         state: { 
           justRegistered: true,
