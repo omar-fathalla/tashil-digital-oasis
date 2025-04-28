@@ -83,14 +83,22 @@
     --ring: 212.7 26.8% 83.9%;
     
     /* Dark mode sidebar colors */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 210 40% 98%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 212.7 26.8% 83.9%;
+
+    /* Success color in dark mode */
+    --success: 142 70.6% 45.3%;
+    --success-foreground: 144 70% 10%;
+    
+    /* Warning color in dark mode */
+    --warning: 48 96.5% 58.8%;
+    --warning-foreground: 38 92% 10%;
   }
 }
 
@@ -101,6 +109,14 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: color 0.3s ease, background-color 0.3s ease;
+  }
+  
+  /* Apply transitions to all elements for smooth theme switching */
+  body * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
   }
 }
 
