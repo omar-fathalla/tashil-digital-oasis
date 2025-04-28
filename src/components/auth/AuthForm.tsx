@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { useAuthForm } from "@/hooks/useAuthForm";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(4, "Password must be at least 4 characters"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 export const AuthForm = () => {
   const {
@@ -27,6 +39,31 @@ export const AuthForm = () => {
     handleSignOut,
   } = useAuthForm();
 
+  const [step, setStep] = useState(1);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const validateStep1 = () => {
+    try {
+      authSchema.parse({ email, password, confirmPassword });
+      setValidationError(null);
+      setStep(2);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        setValidationError(err.errors[0].message);
+      }
+    }
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 1) {
+      validateStep1();
+    } else {
+      await handleSubmit(e);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -36,12 +73,18 @@ export const AuthForm = () => {
             ? "Create a new account to access Tashil Platform"
             : "Welcome back! Please log in to your account"}
         </CardDescription>
+        {isSignUp && (
+          <Progress 
+            value={step === 1 ? 50 : 100} 
+            className="mt-2"
+          />
+        )}
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleFormSubmit}>
         <CardContent className="space-y-4">
-          {error && (
+          {(error || validationError) && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{error || validationError}</AlertDescription>
             </Alert>
           )}
           <div className="space-y-2">
@@ -51,7 +94,10 @@ export const AuthForm = () => {
               type="email"
               placeholder="Enter your email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setValidationError(null);
+              }}
               required
             />
           </div>
@@ -62,36 +108,64 @@ export const AuthForm = () => {
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setValidationError(null);
+              }}
               required
             />
           </div>
+          {isSignUp && step === 1 && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter your password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setValidationError(null);
+                }}
+                required
+              />
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading
               ? "Loading..."
               : isSignUp
-              ? "Create Account"
+              ? step === 1
+                ? "Next Step"
+                : "Create Account"
               : "Login"}
           </Button>
-          <Button
-            type="button"
-            variant="link"
-            onClick={() => setIsSignUp(!isSignUp)}
-          >
-            {isSignUp
-              ? "Already have an account? Log in"
-              : "Don't have an account? Sign up now"}
-          </Button>
-          <Button 
-            type="button" 
-            variant="destructive" 
-            className="w-full mt-4"
-            onClick={handleSignOut}
-          >
-            Logout
-          </Button>
+          {step === 1 && (
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setValidationError(null);
+              }}
+            >
+              {isSignUp
+                ? "Already have an account? Log in"
+                : "Don't have an account? Sign up now"}
+            </Button>
+          )}
+          {!isSignUp && (
+            <Button 
+              type="button" 
+              variant="destructive" 
+              className="w-full"
+              onClick={handleSignOut}
+            >
+              Logout
+            </Button>
+          )}
         </CardFooter>
       </form>
     </Card>

@@ -46,6 +46,9 @@ export const useAuthForm = () => {
           title: "Account Created Successfully",
           description: "Please check your email for activation",
         });
+        
+        // Redirect to company registration after successful signup
+        navigate("/company-registration");
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
