@@ -15,12 +15,10 @@ export const companyRegistrationSchema = z.object({
   }),
   companyNumber: z.string().optional(),
 
-  // We're removing the Account Access fields since authentication happens earlier
-  // username, password, confirmPassword fields are removed
-
   // File validation remains optional here as we'll handle it separately
   commercialRegisterFile: z.any().optional(),
   taxCardImage: z.any().optional()
 });
 
 export type CompanyRegistrationFormData = z.infer<typeof companyRegistrationSchema>;
+
