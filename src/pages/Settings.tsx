@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocumentSettings } from "@/components/settings/DocumentSettings";
@@ -13,6 +12,7 @@ import { BackupSettings } from "@/components/settings/BackupSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { UserRoleSettings } from "@/components/settings/UserRoleSettings";
 import { RepresentativeAccounting } from "@/components/settings/RepresentativeAccounting";
+import { EmailPreferences } from "@/components/settings/EmailPreferences";
 import { useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +55,7 @@ const Settings = () => {
                 <TabsTrigger value="security">Security</TabsTrigger>
                 <TabsTrigger value="interface">Interface</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <TabsTrigger value="email">Email</TabsTrigger>
                 <TabsTrigger value="companies">Companies</TabsTrigger>
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="more">More Settings</TabsTrigger>
@@ -70,6 +71,10 @@ const Settings = () => {
               
               <TabsContent value="notifications" className="space-y-4">
                 <NotificationSettings />
+              </TabsContent>
+              
+              <TabsContent value="email" className="space-y-4">
+                <EmailPreferences />
               </TabsContent>
               
               <TabsContent value="companies" className="space-y-4">
