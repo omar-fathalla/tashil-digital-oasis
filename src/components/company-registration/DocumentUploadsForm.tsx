@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Image } from "lucide-react";
+import { FileText, Image, AlertCircle } from "lucide-react";
 import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DocumentUploadsFormProps {
   uploadedFiles: {
@@ -47,6 +48,15 @@ export function DocumentUploadsForm({ uploadedFiles, onFileUpload }: DocumentUpl
 
   return (
     <div className="space-y-6">
+      {(!uploadedFiles.commercialRegister && !uploadedFiles.taxCard) && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          <AlertDescription>
+            Both Commercial Register and Tax Card documents are required to complete registration.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div>
         <h3 className="text-lg font-medium mb-2">Commercial Register File</h3>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">

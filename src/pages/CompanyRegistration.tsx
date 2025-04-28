@@ -40,11 +40,64 @@ const CompanyRegistration = () => {
     },
   });
 
+  // Upload a single file to Supabase Storage
+  const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
+    try {
+      const timestamp = Date.now();
+      const filePath = `company-documents/${prefix}-${timestamp}-${file.name}`;
+      
+      const { error } = await supabase.storage
+        .from('company-documents')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error(`Error uploading ${prefix} file:`, error);
+        throw error;
+      }
+      
+      // Get the public URL for the file
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-documents')
+        .getPublicUrl(filePath);
+        
+      return publicUrl;
+    } catch (error) {
+      console.error(`Failed to upload ${prefix} file:`, error);
+      return null;
+    }
+  };
+
+  // Validate that required files are present
+  const validateFiles = (): boolean => {
+    if (!uploadedFiles.commercialRegister) {
+      toast.error("Missing Commercial Register Document", {
+        description: "Please upload a copy of your Commercial Register."
+      });
+      return false;
+    }
+    
+    if (!uploadedFiles.taxCard) {
+      toast.error("Missing Tax Card Document", {
+        description: "Please upload a copy of your Tax Card."
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Main submission handler
   const onSubmit = async (values: CompanyRegistrationFormData) => {
     try {
-      setIsSubmitting(true);
+      // First validate that all required files are uploaded
+      if (!validateFiles()) {
+        return;
+      }
 
-      // First, register the user account
+      setIsSubmitting(true);
+      toast.info("Processing registration...");
+
+      // 1. First, register the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -57,47 +110,35 @@ const CompanyRegistration = () => {
         }
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        throw new Error(`Authentication error: ${authError.message}`);
+      }
 
       if (!authData.user) {
         throw new Error("Failed to create user account");
       }
 
-      // Upload documents to storage first
+      // 2. Upload documents to storage first
       let commercialRegisterUrl = null;
       let taxCardUrl = null;
 
+      // Upload commercial register document
       if (uploadedFiles.commercialRegister) {
-        const timestamp = Date.now();
-        const filePath = `company-documents/${timestamp}-${uploadedFiles.commercialRegister.name}`;
-        const { error: commercialRegisterError } = await supabase.storage
-          .from('company-documents')
-          .upload(filePath, uploadedFiles.commercialRegister);
-
-        if (commercialRegisterError) throw commercialRegisterError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('company-documents')
-          .getPublicUrl(filePath);
-        commercialRegisterUrl = publicUrl;
+        commercialRegisterUrl = await uploadFile(uploadedFiles.commercialRegister, "cr");
+        if (!commercialRegisterUrl) {
+          throw new Error("Failed to upload Commercial Register document");
+        }
       }
 
+      // Upload tax card document
       if (uploadedFiles.taxCard) {
-        const timestamp = Date.now();
-        const filePath = `company-documents/${timestamp}-${uploadedFiles.taxCard.name}`;
-        const { error: taxCardError } = await supabase.storage
-          .from('company-documents')
-          .upload(filePath, uploadedFiles.taxCard);
-
-        if (taxCardError) throw taxCardError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('company-documents')
-          .getPublicUrl(filePath);
-        taxCardUrl = publicUrl;
+        taxCardUrl = await uploadFile(uploadedFiles.taxCard, "tc");
+        if (!taxCardUrl) {
+          throw new Error("Failed to upload Tax Card document");
+        }
       }
 
-      // Then create the company profile
+      // 3. Insert company data with the document URLs
       const { error: companyError } = await supabase
         .from('companies')
         .insert({
@@ -111,8 +152,12 @@ const CompanyRegistration = () => {
           tax_card_url: taxCardUrl,
         });
 
-      if (companyError) throw companyError;
+      if (companyError) {
+        console.error("Company creation error:", companyError);
+        throw new Error(`Failed to create company: ${companyError.message}`);
+      }
 
+      // Registration successful
       setIsCompleted(true);
       toast.success("Registration Successful", {
         description: "Your account has been created. Please check your email for verification.",
@@ -125,10 +170,10 @@ const CompanyRegistration = () => {
         }
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during registration:', error);
-      toast.error("Registration Error", {
-        description: "An error occurred while registering. Please try again.",
+      toast.error("Registration Failed", {
+        description: error.message || "An error occurred while registering. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
