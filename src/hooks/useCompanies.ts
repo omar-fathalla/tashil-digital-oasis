@@ -80,9 +80,10 @@ export function useCompanies() {
 
   const deleteCompany = useMutation({
     mutationFn: async (id: string) => {
+      // Perform soft delete by setting is_archived to true
       const { error } = await supabase
         .from('companies')
-        .delete()
+        .update({ is_archived: true })
         .eq('id', id);
 
       if (error) throw error;

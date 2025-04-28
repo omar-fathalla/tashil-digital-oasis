@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies, Company } from "@/hooks/useCompanies";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,10 +64,11 @@ export default function CompanyManagement() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<"company_name" | "created_at">("created_at");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [sortField, setSortField<"company_name" | "created_at">("created_at");
+  const [sortDirection, setSortDirection<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isEditMode, setIsEditMode] = useState(false);
   
   // User permissions
   const isAdmin = user?.role === 'admin';
@@ -223,16 +223,33 @@ export default function CompanyManagement() {
                           </Button>
                           
                           {canManageCompanies && (
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedCompany(company);
-                                setDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedCompany(company);
+                                  setDetailsOpen(true);
+                                  // Set edit mode to true after dialog is opened
+                                  setTimeout(() => setIsEditMode(true), 100);
+                                }}
+                                className="bg-blue-50 text-blue-600 hover:bg-blue-100"
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedCompany(company);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                className="bg-red-50 text-red-600 hover:bg-red-100"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -310,4 +327,3 @@ export default function CompanyManagement() {
     </div>
   );
 }
-
