@@ -23,7 +23,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
@@ -53,7 +53,7 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDownloading, setIsDownloading] = useState<string | null>(null);
 
-  // Initialize form with default empty values - will be updated when company changes
+  // Initialize form with default empty values
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
@@ -64,18 +64,10 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
       register_number: "",
     },
   });
-
+  
   // Update form values when company changes
-  if (company && form) {
-    // Only reset if form is already initialized and values are different
-    const currentValues = form.getValues();
-    if (
-      currentValues.company_name !== company.company_name ||
-      currentValues.address !== company.address ||
-      currentValues.company_number !== company.company_number ||
-      currentValues.tax_card_number !== company.tax_card_number ||
-      currentValues.register_number !== company.register_number
-    ) {
+  useEffect(() => {
+    if (company) {
       form.reset({
         company_name: company.company_name,
         address: company.address,
@@ -84,7 +76,7 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
         register_number: company.register_number,
       });
     }
-  }
+  }, [company, form]);
 
   if (!company) return null;
 
