@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +16,16 @@ export interface Role {
   description: string;
   permissions: string[];
   userCount: number;
+}
+
+interface UserRole {
+  role_id: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+  user_roles: UserRole[] | null;
 }
 
 export const useRoleManagement = () => {
@@ -96,7 +107,7 @@ export const useRoleManagement = () => {
     data: users = [],
     isLoading: usersLoading,
     error: usersError
-  } = useQuery({
+  } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => {
       const { data: users, error } = await supabase
@@ -104,7 +115,7 @@ export const useRoleManagement = () => {
         .select('id, email, user_roles(role_id)');
 
       if (error) throw error;
-      return users;
+      return users as User[];
     }
   });
 

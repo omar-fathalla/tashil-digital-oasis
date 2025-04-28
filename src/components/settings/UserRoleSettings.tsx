@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus, Edit, Trash2, Search, Filter, Shield, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,26 +51,12 @@ const roleFormSchema = z.object({
 
 type RoleFormValues = z.infer<typeof roleFormSchema>;
 
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
 export const UserRoleSettings = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState<{ id: string; name: string; description: string; permissions: string[]; userCount: number } | null>(null);
-
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([
-    { id: "1", name: "Admin User", email: "admin@example.com", role: "super_admin" },
-    { id: "2", name: "Review Manager", email: "reviewer@example.com", role: "admin" },
-    { id: "3", name: "Support Agent", email: "support@example.com", role: "support" },
-    { id: "4", name: "Document Reviewer", email: "docs@example.com", role: "reviewer" },
-  ]);
 
   const { 
     permissions, 
@@ -310,7 +297,7 @@ export const UserRoleSettings = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Select
-                        value={user.user_roles?.[0]?.role_id || ""}
+                        value={user.user_roles && user.user_roles.length > 0 ? user.user_roles[0].role_id : ""}
                         onValueChange={(value) => handleRoleChange(user.id, value)}
                       >
                         <SelectTrigger className="w-40">
