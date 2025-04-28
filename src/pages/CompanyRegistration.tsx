@@ -175,21 +175,17 @@ const CompanyRegistration = () => {
       await uploadDocumentsForCompany(companyData.id, uploadedFiles);
 
       setIsCompleted(true);
-      toast.success("Registration Successful", {
-        description: "Please check your email to verify your account before logging in.",
-      });
+      toast.success("Registration completed successfully!");
 
-      navigate("/auth", { 
-        state: { 
-          justRegistered: true,
-          requiresEmailVerification: true
-        }
-      });
+      // Redirect to About page after a short delay
+      setTimeout(() => {
+        navigate("/about");
+      }, 2000);
 
     } catch (error: any) {
       console.error('Error during registration:', error);
-      toast.error("Registration Failed", {
-        description: error.message || "An error occurred while registering. Please try again.",
+      toast.error("Registration failed. Please try again.", {
+        description: error.message || "An unexpected error occurred.",
       });
     } finally {
       setIsSubmitting(false);
