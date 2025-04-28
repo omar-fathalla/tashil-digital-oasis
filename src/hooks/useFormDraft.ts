@@ -58,9 +58,7 @@ export function useFormDraft<T extends Record<string, any>>(
   useEffect(() => {
     const hasDraft = loadDraft();
     if (hasDraft) {
-      toast({
-        title: "Draft Found",
-        description: "Your previous form data has been restored.",
+      toast("Draft Found - Your previous form data has been restored.", {
         duration: 4000,
       });
     }
