@@ -121,25 +121,43 @@ export type Database = {
       }
       companies: {
         Row: {
+          address: string
+          commercial_register_url: string | null
           company_name: string
+          company_number: string
           created_at: string | null
           id: string
+          register_number: string
+          tax_card_number: string
+          tax_card_url: string | null
           type: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          address?: string
+          commercial_register_url?: string | null
           company_name: string
+          company_number?: string
           created_at?: string | null
           id?: string
+          register_number?: string
+          tax_card_number?: string
+          tax_card_url?: string | null
           type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          address?: string
+          commercial_register_url?: string | null
           company_name?: string
+          company_number?: string
           created_at?: string | null
           id?: string
+          register_number?: string
+          tax_card_number?: string
+          tax_card_url?: string | null
           type?: string | null
           updated_at?: string | null
           user_id?: string | null
