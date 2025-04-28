@@ -1,6 +1,6 @@
 
 import { ReactNode } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { BaseCard } from "@/components/ui/card-layout/BaseCard";
 
 interface FormCardProps {
   title: string;
@@ -16,13 +16,15 @@ export const FormCard = ({
   footer,
 }: FormCardProps) => {
   return (
-    <Card className="border-none shadow-lg">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-      <CardFooter>{footer}</CardFooter>
-    </Card>
+    <BaseCard
+      title={title}
+      description={description}
+      className="max-w-2xl mx-auto"
+    >
+      <div className="space-y-6">
+        {children}
+        <div className="flex justify-end">{footer}</div>
+      </div>
+    </BaseCard>
   );
 };
