@@ -23,6 +23,7 @@ import EmployeeProfile from "./pages/EmployeeProfile";
 import DocumentManagement from "./pages/DocumentManagement";
 import DocumentAnalytics from "./pages/DocumentAnalytics";
 import Accounting from "./pages/Accounting";
+import CompanyManagement from "./pages/CompanyManagement";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/document-management" element={<DocumentManagement />} />
               <Route path="/document-analytics" element={<DocumentAnalytics />} />
               <Route path="/accounting" element={<Accounting />} />
+              <Route path="/company-management" element={<CompanyManagement />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
