@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { SkeletonTable } from "@/components/ui/skeleton/SkeletonTable";
 import { format } from "date-fns";
+import { CompanyDetailsDialog } from "@/components/company-management/CompanyDetailsDialog";
 
 export default function CompanyManagement() {
   const { user } = useAuth();
@@ -59,7 +60,6 @@ export default function CompanyManagement() {
     ensureDemoCompanyForUser 
   } = useCompanies();
   
-  // UI state
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,7 +68,6 @@ export default function CompanyManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
-  // User permissions
   const isAdmin = user?.role === 'admin';
   const canManageCompanies = isAdmin || user?.role === 'manager';
   
@@ -78,7 +77,6 @@ export default function CompanyManagement() {
     }
   }, [user?.email, ensureDemoCompanyForUser]);
 
-  // Filter and sort companies
   const filteredCompanies = companies.filter(company => {
     const searchLower = searchQuery.toLowerCase();
     return company.company_name.toLowerCase().includes(searchLower) || 
@@ -96,7 +94,6 @@ export default function CompanyManagement() {
     }
   });
 
-  // Pagination
   const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
   const paginatedCompanies = sortedCompanies.slice(
     (currentPage - 1) * itemsPerPage,
@@ -278,14 +275,12 @@ export default function CompanyManagement() {
         </CardContent>
       </Card>
 
-      {/* Company Details Dialog */}
       <CompanyDetailsDialog 
         company={selectedCompany} 
         open={detailsOpen} 
         onOpenChange={setDetailsOpen}
       />
       
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
