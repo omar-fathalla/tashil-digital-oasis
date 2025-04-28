@@ -18,11 +18,12 @@ export interface Role {
   userCount: number;
 }
 
-interface UserRole {
+// Define a more flexible type for user_roles that can handle potential errors
+export interface UserRole {
   role_id: string;
 }
 
-interface User {
+export interface User {
   id: string;
   email: string;
   user_roles: UserRole[] | null;
@@ -107,7 +108,7 @@ export const useRoleManagement = () => {
     data: users = [],
     isLoading: usersLoading,
     error: usersError
-  } = useQuery<User[]>({
+  } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const { data: users, error } = await supabase
@@ -115,7 +116,14 @@ export const useRoleManagement = () => {
         .select('id, email, user_roles(role_id)');
 
       if (error) throw error;
-      return users as User[];
+
+      // Handle the data to ensure it matches our User type
+      return users.map(user => ({
+        id: user.id,
+        email: user.email,
+        // Check if user_roles is an array (valid relation) or something else (error)
+        user_roles: Array.isArray(user.user_roles) ? user.user_roles : null
+      })) as User[];
     }
   });
 
