@@ -21,7 +21,7 @@ export function BaseCard({
 }: BaseCardProps) {
   if (error) {
     return (
-      <Card className="border-none bg-destructive/10 shadow-lg">
+      <Card className="border-none bg-destructive/10 shadow-lg transition-all duration-200 ease-in-out will-change-transform">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
@@ -36,7 +36,17 @@ export function BaseCard({
   }
 
   return (
-    <Card className={`border-none shadow-lg transition-shadow hover:shadow-xl ${className}`}>
+    <Card 
+      className={`
+        border-none shadow-lg 
+        transition-all duration-200 ease-in-out 
+        will-change-transform
+        hover:shadow-xl hover:scale-[1.02]
+        hover:bg-accent/5
+        active:scale-[0.98]
+        ${className}
+      `}
+    >
       {(title || description) && (
         <CardHeader>
           {title && <CardTitle>{title}</CardTitle>}

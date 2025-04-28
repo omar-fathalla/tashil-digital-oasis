@@ -14,7 +14,14 @@ export function CardGrid({ children, columns = 3, className = "" }: CardGridProp
   };
 
   return (
-    <div className={`grid gap-4 ${gridCols[columns]} ${className}`}>
+    <div 
+      className={`
+        grid gap-6 
+        ${gridCols[columns]} 
+        ${className}
+        [perspective:1000px]
+      `}
+    >
       {children}
     </div>
   );
