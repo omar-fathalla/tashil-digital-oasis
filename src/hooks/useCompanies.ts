@@ -18,6 +18,16 @@ export interface Company {
   user_id: string;
 }
 
+const validateCompany = (company: Partial<Company>): string | null => {
+  if (!company.company_name) {
+    return "Company name is required";
+  }
+  if (company.company_name.trim().length === 0) {
+    return "Company name cannot be empty";
+  }
+  return null;
+};
+
 export function useCompanies() {
   const queryClient = useQueryClient();
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -82,9 +92,14 @@ export function useCompanies() {
 
   const createCompany = useMutation({
     mutationFn: async (company: Partial<Company>) => {
+      const validationError = validateCompany(company);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+
       const { data, error } = await supabase
         .from('companies')
-        .insert([company])
+        .insert(company)
         .select()
         .single();
 
