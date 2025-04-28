@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,22 +17,16 @@ export interface Role {
   userCount: number;
 }
 
-// Define a more flexible type for user_roles that can handle potential errors
-export interface UserRole {
-  role_id: string;
-}
-
 export interface User {
   id: string;
   email: string;
-  user_roles: UserRole[] | null;
+  role_id: string | null;
 }
 
 export const useRoleManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all permissions
   const {
     data: permissions = [],
     isLoading: permissionsLoading,
@@ -54,7 +47,6 @@ export const useRoleManagement = () => {
     }
   });
 
-  // Fetch roles with user counts
   const {
     data: roles = [],
     isLoading: rolesLoading,
@@ -63,17 +55,14 @@ export const useRoleManagement = () => {
   } = useQuery({
     queryKey: ['roles'],
     queryFn: async () => {
-      // Get all roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('roles')
         .select('*');
       
       if (rolesError) throw rolesError;
       
-      // For each role, get its permissions
       const rolesWithPermissions = await Promise.all(
         rolesData.map(async (role) => {
-          // Get role permissions
           const { data: rolePermissions, error: permissionsError } = await supabase
             .from('role_permissions')
             .select('permission_id, permissions!inner(key)')
@@ -81,7 +70,6 @@ export const useRoleManagement = () => {
             
           if (permissionsError) throw permissionsError;
           
-          // Count users with this role
           const { count, error: countError } = await supabase
             .from('user_roles')
             .select('*', { count: 'exact', head: true })
@@ -103,7 +91,6 @@ export const useRoleManagement = () => {
     }
   });
 
-  // Fetch all users from auth system
   const {
     data: users = [],
     isLoading: usersLoading,
@@ -113,24 +100,16 @@ export const useRoleManagement = () => {
     queryFn: async () => {
       const { data: users, error } = await supabase
         .from('users')
-        .select('id, email, user_roles(role_id)');
+        .select('id, email, role_id');
 
       if (error) throw error;
 
-      // Handle the data to ensure it matches our User type
-      return users.map(user => ({
-        id: user.id,
-        email: user.email,
-        // Check if user_roles is an array (valid relation) or something else (error)
-        user_roles: Array.isArray(user.user_roles) ? user.user_roles : null
-      })) as User[];
+      return users as User[];
     }
   });
 
-  // Create new role
   const createRole = useMutation({
     mutationFn: async ({ name, description, permissions }: { name: string, description: string, permissions: string[] }) => {
-      // Insert new role
       const { data: roleData, error: roleError } = await supabase
         .from('roles')
         .insert({ name, description })
@@ -139,7 +118,6 @@ export const useRoleManagement = () => {
       
       if (roleError) throw roleError;
       
-      // Get the permission IDs for the selected permission keys
       const { data: permissionData, error: permissionError } = await supabase
         .from('permissions')
         .select('id, key')
@@ -147,7 +125,6 @@ export const useRoleManagement = () => {
         
       if (permissionError) throw permissionError;
       
-      // Link role with permissions
       if (permissionData.length > 0) {
         const rolePermissions = permissionData.map(permission => ({
           role_id: roleData.id,
@@ -185,10 +162,8 @@ export const useRoleManagement = () => {
     }
   });
 
-  // Update existing role
   const updateRole = useMutation({
     mutationFn: async ({ id, name, description, permissions }: { id: string, name: string, description: string, permissions: string[] }) => {
-      // Update role
       const { error: roleError } = await supabase
         .from('roles')
         .update({ name, description })
@@ -196,7 +171,6 @@ export const useRoleManagement = () => {
       
       if (roleError) throw roleError;
       
-      // Get the permission IDs for the selected permission keys
       const { data: permissionData, error: permissionError } = await supabase
         .from('permissions')
         .select('id, key')
@@ -204,7 +178,6 @@ export const useRoleManagement = () => {
         
       if (permissionError) throw permissionError;
       
-      // Delete existing role permissions
       const { error: deleteError } = await supabase
         .from('role_permissions')
         .delete()
@@ -212,7 +185,6 @@ export const useRoleManagement = () => {
         
       if (deleteError) throw deleteError;
       
-      // Link role with new permissions
       if (permissionData.length > 0) {
         const rolePermissions = permissionData.map(permission => ({
           role_id: id,
@@ -242,7 +214,6 @@ export const useRoleManagement = () => {
     }
   });
 
-  // Delete role
   const deleteRole = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -268,23 +239,14 @@ export const useRoleManagement = () => {
     }
   });
 
-  // Assign role to user
   const assignUserRole = useMutation({
     mutationFn: async ({ userId, roleId }: { userId: string, roleId: string }) => {
-      // Delete existing user roles
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-        
-      if (deleteError) throw deleteError;
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ role_id: roleId })
+        .eq('id', userId);
       
-      // Assign new role
-      const { error: insertError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role_id: roleId });
-        
-      if (insertError) throw insertError;
+      if (updateError) throw updateError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
