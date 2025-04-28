@@ -100,21 +100,12 @@ const CompanyRegistration = () => {
           console.error("Company creation error:", companyError);
           
           // If company creation fails, we need to delete the user to maintain consistency
-          console.log(`Attempting to delete user ${authData.user.id} due to company creation failure`);
-          
-          // Delete the user as company creation failed
-          const { error: deleteError } = await supabase.auth.admin.deleteUser(authData.user.id);
-          
-          if (deleteError) {
-            console.error("Failed to delete user after company creation failure:", deleteError);
-            // Log this critical error but don't expose to user - this is an inconsistent state
-            // A background job or admin should handle this orphaned user
-          } else {
-            console.log(`User ${authData.user.id} successfully deleted after company creation failure`);
-          }
+          // Note: This would typically be done with a server-side function as admin.deleteUser 
+          // requires admin privileges. For now, we'll flag this in the UI.
+          console.log(`Unable to automatically delete user ${authData.user.id} due to company creation failure - this requires server-side handling`);
           
           // Throw an error to stop the process and show a relevant message to the user
-          throw new Error("Registration failed and changes were reverted. Please try again.");
+          throw new Error("Registration failed while creating company. Please contact support to complete your registration.");
         }
 
         // Registration successful
@@ -130,11 +121,11 @@ const CompanyRegistration = () => {
           navigate("/about");
         }, 2000);
       } catch (companyError: any) {
-        // This catch block handles both company creation errors and user deletion errors
+        // This catch block handles company creation errors
         console.error('Company creation process error:', companyError);
         
         toast.error("Registration failed", {
-          description: companyError.message || "An error occurred during company registration. All changes were reverted."
+          description: companyError.message || "An error occurred during company registration."
         });
       }
 
@@ -148,14 +139,6 @@ const CompanyRegistration = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (isCompleted) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <CompanyRegistrationSuccess onNavigateToDashboard={() => navigate('/auth')} />
-      </div>
-    );
-  }
 
   const validateStep = (step: number) => {
     switch (step) {
