@@ -38,17 +38,20 @@ export const useAuthForm = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: window.location.origin + '/auth',
+          }
         });
 
         if (error) throw error;
         
         toast({
           title: "Account Created Successfully",
-          description: "Please check your email for activation",
+          description: "Please check your email for verification link",
         });
         
-        // Redirect to company registration after successful signup
-        navigate("/company-registration");
+        // Redirect to verification notice page
+        navigate("/auth", { state: { justRegistered: true } });
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,

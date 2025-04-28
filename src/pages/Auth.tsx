@@ -7,14 +7,14 @@ import { useAuth } from "@/components/AuthProvider";
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isEmailVerified } = useAuth();
   
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user && isEmailVerified && !isLoading) {
       const from = location.state?.from?.pathname || "/";
       navigate(from, { replace: true });
     }
-  }, [user, isLoading, navigate, location]);
+  }, [user, isLoading, isEmailVerified, navigate, location]);
 
   if (isLoading) {
     return (

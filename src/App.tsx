@@ -37,6 +37,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/verify-email" element={<Navigate to="/" replace />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<RootLayout />}>
                 <Route path="/" element={<Home />} />

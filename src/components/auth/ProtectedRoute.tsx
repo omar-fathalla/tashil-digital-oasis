@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import { useNavigate, useLocation, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { Spinner } from "@/components/ui/spinner";
+import { VerifyEmail } from "@/pages/VerifyEmail";
 
 export const ProtectedRoute = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isEmailVerified } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,6 +22,11 @@ export const ProtectedRoute = () => {
         <Spinner className="h-8 w-8" />
       </div>
     );
+  }
+
+  // If user is logged in but email is not verified, show the verify email page
+  if (user && !isEmailVerified) {
+    return <VerifyEmail />;
   }
 
   return user ? <Outlet /> : <Navigate to="/auth" state={{ from: location }} replace />;

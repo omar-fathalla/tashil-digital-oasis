@@ -7,18 +7,23 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isEmailVerified: boolean;
+  resendVerificationEmail: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({ 
   user: null, 
   session: null,
-  isLoading: true
+  isLoading: true,
+  isEmailVerified: false,
+  resendVerificationEmail: async () => {}
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   useEffect(() => {
     // Check for active session on initial load
@@ -29,6 +34,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (activeSession) {
           setSession(activeSession);
           setUser(activeSession.user);
+          
+          // Check if email is verified
+          if (activeSession.user) {
+            setIsEmailVerified(activeSession.user.email_confirmed_at !== null);
+          }
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
@@ -44,6 +54,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (_event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user || null);
+        
+        // Update email verification status when auth state changes
+        if (currentSession?.user) {
+          setIsEmailVerified(currentSession.user.email_confirmed_at !== null);
+        } else {
+          setIsEmailVerified(false);
+        }
+        
         setIsLoading(false);
       }
     );
@@ -54,8 +72,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  // Function to resend verification email
+  const resendVerificationEmail = async () => {
+    if (!user?.email) return;
+    
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: user.email,
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      isLoading, 
+      isEmailVerified,
+      resendVerificationEmail
+    }}>
       {children}
     </AuthContext.Provider>
   );

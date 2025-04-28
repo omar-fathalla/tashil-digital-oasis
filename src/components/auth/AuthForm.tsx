@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useAuthForm } from "@/hooks/useAuthForm";
 import { z } from "zod";
+import { Mail, AlertTriangle } from "lucide-react";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -26,6 +28,9 @@ const authSchema = z.object({
 });
 
 export const AuthForm = () => {
+  const location = useLocation();
+  const justRegistered = location.state?.justRegistered;
+
   const {
     isLoading,
     isSignUp,
@@ -80,10 +85,27 @@ export const AuthForm = () => {
           />
         )}
       </CardHeader>
+
+      {justRegistered && (
+        <div className="px-6">
+          <Alert className="mb-4 bg-blue-50 border-blue-200">
+            <Mail className="h-5 w-5 text-blue-500 mr-2" />
+            <AlertDescription className="text-blue-700">
+              <p className="font-medium">Please check your email</p>
+              <p className="text-sm mt-1">
+                We've sent a verification link to your email address. 
+                Please verify your email to get full access to the platform.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+      
       <form onSubmit={handleFormSubmit}>
         <CardContent className="space-y-4">
           {(error || validationError) && (
             <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4 mr-2" />
               <AlertDescription>{error || validationError}</AlertDescription>
             </Alert>
           )}
@@ -170,4 +192,3 @@ export const AuthForm = () => {
       </form>
     </Card>
   );
-};
