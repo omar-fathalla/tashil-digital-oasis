@@ -6,7 +6,7 @@ import Footer from "./Footer";
 
 export default function RootLayout() {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background">
         <SidebarNav />
         <main className="flex-1">
