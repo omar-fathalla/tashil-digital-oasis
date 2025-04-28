@@ -1,10 +1,31 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, FileText, Settings, Smartphone, Radio } from "lucide-react";
+import { CheckCircle, FileText, Settings, Smartphone, Radio, Building } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const About = () => {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+      {/* Registration Section - New Section */}
+      <section className="py-16 bg-gradient-to-r from-primary-500/10 to-primary-500/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <div className="inline-block p-3 bg-primary-100 rounded-full">
+              <Building className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-3xl font-bold text-primary">Register Your Company</h2>
+            <p className="text-lg text-gray-600">
+              Join thousands of businesses that trust Tashil Platform for their administrative needs. 
+              Start your digital transformation journey today.
+            </p>
+            <Button asChild size="lg" className="mt-4">
+              <Link to="/register">Start Company Registration</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Hero Section */}
       <section className="bg-primary-50 py-16">
         <div className="container mx-auto px-4">
