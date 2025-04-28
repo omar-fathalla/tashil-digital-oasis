@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useState } from "react";
-import { BaseCard } from "@/components/ui/card-layout/BaseCard";
 import { useCompanies } from "@/hooks/useCompanies";
 
 interface CompanyDetailsDialogProps {
@@ -202,3 +201,4 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
     </>
   );
 }
+
