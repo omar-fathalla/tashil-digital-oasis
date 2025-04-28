@@ -178,6 +178,41 @@ export type Database = {
           },
         ]
       }
+      company_documents: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          description: string | null
+          document_type: string
+          document_url: string
+          id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          document_type: string
+          document_url: string
+          id?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          document_type?: string
+          document_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_registrations: {
         Row: {
           address: string | null

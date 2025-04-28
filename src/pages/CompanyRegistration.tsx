@@ -82,6 +82,43 @@ const CompanyRegistration = () => {
     return true;
   };
 
+  const uploadDocumentsForCompany = async (companyId: string, documents: {
+    commercialRegister: File | null;
+    taxCard: File | null;
+  }) => {
+    const documentsToUpload = [];
+    
+    if (documents.commercialRegister) {
+      const commercialRegisterUrl = await uploadFile(documents.commercialRegister, "cr");
+      if (commercialRegisterUrl) {
+        documentsToUpload.push({
+          company_id: companyId,
+          document_type: 'Commercial Register',
+          document_url: commercialRegisterUrl
+        });
+      }
+    }
+    
+    if (documents.taxCard) {
+      const taxCardUrl = await uploadFile(documents.taxCard, "tc");
+      if (taxCardUrl) {
+        documentsToUpload.push({
+          company_id: companyId,
+          document_type: 'Tax Card',
+          document_url: taxCardUrl
+        });
+      }
+    }
+
+    if (documentsToUpload.length > 0) {
+      const { error: documentsError } = await supabase
+        .from('company_documents')
+        .insert(documentsToUpload);
+
+      if (documentsError) throw documentsError;
+    }
+  };
+
   const onSubmit = async (values: CompanyRegistrationFormData) => {
     try {
       if (!validateFiles()) {
@@ -98,7 +135,7 @@ const CompanyRegistration = () => {
         options: {
           data: {
             username: values.username,
-            mobile_number: values.mobileNumber.replace(/[\s-]/g, ''), // Normalize before saving
+            mobile_number: values.mobileNumber.replace(/[\s-]/g, ''),
           },
           emailRedirectTo: window.location.origin + '/auth',
         }
@@ -115,23 +152,8 @@ const CompanyRegistration = () => {
         throw new Error("Failed to create user account");
       }
 
-      // Step 2: Upload the documents
-      const commercialRegisterUrl = uploadedFiles.commercialRegister 
-        ? await uploadFile(uploadedFiles.commercialRegister, "cr")
-        : null;
-      if (!commercialRegisterUrl) {
-        throw new Error("Failed to upload Commercial Register document");
-      }
-
-      const taxCardUrl = uploadedFiles.taxCard 
-        ? await uploadFile(uploadedFiles.taxCard, "tc")
-        : null;
-      if (!taxCardUrl) {
-        throw new Error("Failed to upload Tax Card document");
-      }
-
-      // Step 3: Create the company record with the user_id from auth
-      const { error: companyError } = await supabase
+      // Step 2: Create the company record
+      const { data: companyData, error: companyError } = await supabase
         .from('companies')
         .insert({
           company_name: values.companyName,
@@ -140,14 +162,17 @@ const CompanyRegistration = () => {
           register_number: values.registerNumber,
           company_number: values.companyNumber,
           user_id: authData.user.id,
-          commercial_register_url: commercialRegisterUrl,
-          tax_card_url: taxCardUrl,
-        });
+        })
+        .select()
+        .single();
 
       if (companyError) {
         console.error("Company creation error:", companyError);
         throw new Error(`Failed to create company: ${companyError.message}`);
       }
+
+      // Step 3: Upload and store documents
+      await uploadDocumentsForCompany(companyData.id, uploadedFiles);
 
       setIsCompleted(true);
       toast.success("Registration Successful", {
