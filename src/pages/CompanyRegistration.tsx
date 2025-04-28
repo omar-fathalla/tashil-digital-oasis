@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -6,10 +7,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { companyRegistrationSchema, type CompanyRegistrationFormData } from "@/schemas/companyRegistration";
 import { CompanyInformationForm } from "@/components/company-registration/CompanyInformationForm";
-import { AccountAccessForm } from "@/components/company-registration/AccountAccessForm";
 import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 import { CompanyRegistrationSuccess } from "@/components/company-registration/CompanyRegistrationSteps";
 import { RegistrationFormWrapper } from "@/components/company-registration/RegistrationFormWrapper";
+import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 
@@ -22,6 +23,7 @@ const CompanyRegistration = () => {
     taxCard: null as File | null,
   });
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get current authenticated user
   
   const form = useForm<CompanyRegistrationFormData>({
     resolver: zodResolver(companyRegistrationSchema),
@@ -31,15 +33,20 @@ const CompanyRegistration = () => {
       taxCardNumber: "",
       registerNumber: "",
       companyNumber: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
+      // Username and password fields removed
     },
   });
 
   const onSubmit = async (values: CompanyRegistrationFormData) => {
     try {
       setIsSubmitting(true);
+
+      if (!user) {
+        toast.error("Authentication Error", {
+          description: "You must be logged in to register a company.",
+        });
+        return;
+      }
 
       // 1. Upload documents to storage first
       let commercialRegisterUrl = null;
@@ -75,37 +82,23 @@ const CompanyRegistration = () => {
         taxCardUrl = publicUrl;
       }
 
-      // 2. Create user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: `${values.username}@tashil.com`,
-        password: values.password,
-      });
+      // 2. Create company record directly linked to current authenticated user
+      const { error: companyError } = await supabase
+        .from('companies')
+        .insert({
+          company_name: values.companyName,
+          address: values.address,
+          tax_card_number: values.taxCardNumber,
+          register_number: values.registerNumber,
+          company_number: values.companyNumber,
+          user_id: user.id,
+          commercial_register_url: commercialRegisterUrl,
+          tax_card_url: taxCardUrl,
+        });
 
-      if (authError) throw authError;
-
-      // 3. Create company record after successful signup
-      if (authData?.user) {
-        // Wait a moment for the auth session to be established
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Create company record
-        const { error: companyError } = await supabase
-          .from('companies')
-          .insert({
-            company_name: values.companyName,
-            address: values.address,
-            tax_card_number: values.taxCardNumber,
-            register_number: values.registerNumber,
-            company_number: values.companyNumber,
-            user_id: authData.user.id,
-            commercial_register_url: commercialRegisterUrl,
-            tax_card_url: taxCardUrl,
-          });
-
-        if (companyError) {
-          console.error('Error inserting company record:', companyError);
-          throw companyError;
-        }
+      if (companyError) {
+        console.error('Error inserting company record:', companyError);
+        throw companyError;
       }
 
       setIsCompleted(true);
@@ -145,11 +138,6 @@ const CompanyRegistration = () => {
           .then(isValid => {
             if (isValid) setFormStep(1);
           });
-      case 1:
-        return form.trigger(['username', 'password', 'confirmPassword'])
-          .then(isValid => {
-            if (isValid) setFormStep(2);
-          });
       default:
         return Promise.resolve();
     }
@@ -164,12 +152,6 @@ const CompanyRegistration = () => {
           content: <CompanyInformationForm form={form} />
         };
       case 1:
-        return {
-          title: "Account Access",
-          description: "Set up your company's account credentials",
-          content: <AccountAccessForm form={form} />
-        };
-      case 2:
         return {
           title: "Required Documents",
           description: "Upload the required documents",
@@ -218,7 +200,7 @@ const CompanyRegistration = () => {
             onPrevious={() => setFormStep(formStep - 1)}
             onNext={() => validateStep(formStep)}
             onSubmit={onSubmit}
-            showSubmit={formStep === 2}
+            showSubmit={formStep === 1}
             disableSubmit={!uploadedFiles.commercialRegister || !uploadedFiles.taxCard}
           >
             {content}

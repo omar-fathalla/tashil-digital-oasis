@@ -15,36 +15,12 @@ export const companyRegistrationSchema = z.object({
   }),
   companyNumber: z.string().optional(),
 
-  // Account Access
-  username: z.string()
-    .min(4, { message: "Username must be at least 4 characters." })
-    .max(50, { message: "Username must not exceed 50 characters." })
-    .regex(/^[a-zA-Z0-9_]+$/, { 
-      message: "Username can only contain letters, numbers, and underscores." 
-    }),
-  password: z.string()
-    .min(4, "Password must be at least 4 characters")
-    .max(12, "Password must not exceed 12 characters"),
-  confirmPassword: z.string(),
+  // We're removing the Account Access fields since authentication happens earlier
+  // username, password, confirmPassword fields are removed
 
-  // File Uploads
-  commercialRegisterFile: z.instanceof(File).refine(file => {
-    const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    return file.size <= maxSize && validTypes.includes(file.type);
-  }, {
-    message: "Commercial Register File must be PDF, JPG, or PNG, and less than 5MB."
-  }),
-  taxCardImage: z.instanceof(File).refine(file => {
-    const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    return file.size <= maxSize && validTypes.includes(file.type);
-  }, {
-    message: "Tax Card Image must be PDF, JPG, or PNG, and less than 5MB."
-  })
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  // File validation remains optional here as we'll handle it separately
+  commercialRegisterFile: z.any().optional(),
+  taxCardImage: z.any().optional()
 });
 
 export type CompanyRegistrationFormData = z.infer<typeof companyRegistrationSchema>;
