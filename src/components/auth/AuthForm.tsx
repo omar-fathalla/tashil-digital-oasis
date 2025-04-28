@@ -192,3 +192,5 @@ export const AuthForm = () => {
       </form>
     </Card>
   );
+};
+
