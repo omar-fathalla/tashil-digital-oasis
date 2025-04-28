@@ -134,7 +134,7 @@ export type Database = {
           tax_card_url: string
           type: string | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           address?: string
@@ -150,7 +150,7 @@ export type Database = {
           tax_card_url?: string
           type?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           address?: string
@@ -166,7 +166,7 @@ export type Database = {
           tax_card_url?: string
           type?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
