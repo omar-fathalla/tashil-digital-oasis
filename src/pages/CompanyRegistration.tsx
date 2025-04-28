@@ -13,6 +13,7 @@ import { RegistrationFormWrapper } from "@/components/company-registration/Regis
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 import { useRetry } from "@/hooks/useRetry";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
@@ -39,6 +40,11 @@ const CompanyRegistration = () => {
       registerNumber: "",
       companyNumber: "",
     },
+  });
+
+  const { clearDraft } = useFormDraft(form, 'company-registration', {
+    excludeFields: ['password', 'confirmPassword'],
+    saveInterval: 2000,
   });
 
   const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
@@ -180,6 +186,9 @@ const CompanyRegistration = () => {
 
         setIsCompleted(true);
         toast.success("Registration completed successfully!");
+
+        // Clear the draft after successful registration
+        clearDraft();
 
         // Redirect to About page after a short delay
         setTimeout(() => {
