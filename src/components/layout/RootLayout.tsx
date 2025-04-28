@@ -1,17 +1,21 @@
 
 import { Outlet } from "react-router-dom";
-import Navbar from "./Navbar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import SidebarNav from "./SidebarNav";
 import Footer from "./Footer";
 
 export default function RootLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Navbar />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <SidebarNav />
+        <main className="flex-1">
+          <div className="container py-4">
+            <Outlet />
+          </div>
+          <Footer />
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
-

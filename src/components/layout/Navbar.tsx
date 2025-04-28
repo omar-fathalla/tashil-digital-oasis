@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,8 @@ import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
 import { UserMenu } from "./UserMenu";
 
+// We're keeping this component for reference, but it won't be rendered
+// in the app anymore. All functionality has been moved to SidebarNav.tsx
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
