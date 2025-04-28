@@ -230,6 +230,119 @@ export type Database = {
           },
         ]
       }
+      document_access_logs: {
+        Row: {
+          action: string
+          details: Json | null
+          document_id: string
+          id: string
+          ip_address: string | null
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          document_id: string
+          id?: string
+          ip_address?: string | null
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          document_id?: string
+          id?: string
+          ip_address?: string | null
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      document_permissions: {
+        Row: {
+          can_delete: boolean
+          can_edit: boolean
+          can_share: boolean
+          can_view: boolean
+          created_at: string
+          document_id: string
+          id: string
+          role_id: string
+          updated_at: string
+        }
+        Insert: {
+          can_delete?: boolean
+          can_edit?: boolean
+          can_share?: boolean
+          can_view?: boolean
+          created_at?: string
+          document_id: string
+          id?: string
+          role_id: string
+          updated_at?: string
+        }
+        Update: {
+          can_delete?: boolean
+          can_edit?: boolean
+          can_share?: boolean
+          can_view?: boolean
+          created_at?: string
+          document_id?: string
+          id?: string
+          role_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_permissions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_templates: {
         Row: {
           description: string | null
@@ -274,6 +387,103 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      document_versions: {
+        Row: {
+          change_summary: string | null
+          created_at: string
+          created_by: string
+          document_id: string
+          file_size: number
+          file_url: string
+          id: string
+          version_number: number
+        }
+        Insert: {
+          change_summary?: string | null
+          created_at?: string
+          created_by: string
+          document_id: string
+          file_size: number
+          file_url: string
+          id?: string
+          version_number: number
+        }
+        Update: {
+          change_summary?: string | null
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          file_size?: number
+          file_url?: string
+          id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+          is_encrypted: boolean
+          keywords: string[] | null
+          metadata: Json
+          name: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+          is_encrypted?: boolean
+          keywords?: string[] | null
+          metadata?: Json
+          name: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+          is_encrypted?: boolean
+          keywords?: string[] | null
+          metadata?: Json
+          name?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "document_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employee_registrations: {
         Row: {
