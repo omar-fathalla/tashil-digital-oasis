@@ -19,9 +19,9 @@ export const UserMenu = ({ userEmail, onSignOut }: UserMenuProps) => {
   if (!userEmail) {
     return (
       <div className="hidden md:flex items-center gap-2">
-        <Button size="sm" asChild className="hidden md:flex">
-          <Link to="/auth">Continue as Guest</Link>
-        </Button>
+        <div className="text-sm text-muted-foreground">
+          Anonymous login disabled
+        </div>
       </div>
     );
   }

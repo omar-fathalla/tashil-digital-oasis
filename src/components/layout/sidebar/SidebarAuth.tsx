@@ -35,9 +35,9 @@ export function SidebarAuth() {
 
   return (
     <div className="space-y-2">
-      <Button variant="default" size="sm" className="w-full transition-all duration-200 hover:scale-[1.02]" asChild>
-        <Link to="/auth">Continue as Guest</Link>
-      </Button>
+      <div className="text-sm text-gray-500 text-center px-2">
+        Anonymous sign-ins are currently disabled
+      </div>
     </div>
   );
 }

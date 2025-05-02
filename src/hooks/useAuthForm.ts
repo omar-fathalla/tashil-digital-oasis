@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,36 @@ export const useAuthForm = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // Check if anonymous sign-in is available on component mount
+  useEffect(() => {
+    // An async function to test if anonymous auth is enabled
+    const checkAnonymousAuth = async () => {
+      try {
+        // We'll make a test call and catch the error
+        const { data, error } = await supabase.auth.signInAnonymously();
+        
+        if (error) {
+          if (error.message.includes("disabled")) {
+            setError("Anonymous sign-ins are disabled");
+          } else {
+            setError(error.message);
+          }
+        }
+        
+        // If there was no error but we somehow got a session, sign out
+        if (data.session) {
+          await supabase.auth.signOut();
+        }
+      } catch (err: any) {
+        console.error("Error checking anonymous auth:", err);
+        setError("Error checking authentication status");
+      }
+    };
+
+    // Only run this check if anonymous login is the primary auth method
+    checkAnonymousAuth();
+  }, []);
+
   // Anonymous login handler
   const handleAnonymousLogin = async () => {
     setIsLoading(true);
@@ -20,7 +50,13 @@ export const useAuthForm = () => {
     try {
       const { data, error } = await supabase.auth.signInAnonymously();
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("disabled")) {
+          throw new Error("Anonymous sign-ins are disabled");
+        } else {
+          throw error;
+        }
+      }
       
       toast({
         title: "Login Successful",
@@ -32,7 +68,7 @@ export const useAuthForm = () => {
       console.error("Anonymous login error:", error);
       setError(error.message);
       toast({
-        title: "Error",
+        title: "Authentication Error",
         description: error.message,
         variant: "destructive",
       });

@@ -7,40 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
+import { useAuthForm } from "@/hooks/useAuthForm";
 
 export const AuthForm = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleAnonymousLogin = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Login Successful",
-        description: "Welcome to Tashil Platform",
-      });
-      
-      navigate("/");
-    } catch (error: any) {
-      console.error("Anonymous login error:", error);
-      setError(error.message);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { isLoading, handleAnonymousLogin } = useAuthForm();
+  const [error, setError] = useState<string | null>("Anonymous sign-ins are disabled");
 
   return (
     <Card className="w-full max-w-md">
@@ -63,7 +34,7 @@ export const AuthForm = () => {
           <Button 
             onClick={handleAnonymousLogin} 
             className="w-full" 
-            disabled={isLoading}
+            disabled={isLoading || error === "Anonymous sign-ins are disabled"}
           >
             {isLoading ? "Loading..." : "Continue as Guest"}
           </Button>
