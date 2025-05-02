@@ -42,7 +42,7 @@ const Navbar = () => {
         <DesktopNav />
         <div className="flex-1" />
         <div className="flex items-center gap-2">
-          <UserMenu userEmail={user?.email} onSignOut={handleSignOut} />
+          <UserMenu />
           <Button 
             variant="ghost" 
             size="icon" 

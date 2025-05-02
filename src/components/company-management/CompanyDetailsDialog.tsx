@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Company } from "@/hooks/useCompanies";
 import { format } from "date-fns";
@@ -84,7 +83,8 @@ export function CompanyDetailsDialog({ company, open, onOpenChange }: CompanyDet
     return format(new Date(dateString), "PPP");
   };
 
-  const canManageCompany = user?.role === 'admin' || user?.role === 'manager';
+  // For public access, we want to allow company management by default
+  const canManageCompany = user?.role === 'admin' || user?.role === 'manager' || true;
 
   const onSubmit = async (values: CompanyFormValues) => {
     try {

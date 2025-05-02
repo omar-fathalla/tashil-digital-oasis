@@ -51,7 +51,7 @@ export const VerifyEmail = () => {
           <Alert>
             <AlertTriangle className="h-4 w-4 mr-2" />
             <AlertDescription>
-              We've sent a verification email to <strong>{user?.email}</strong>.
+              We've sent a verification email to <strong>{user?.email || "your email address"}</strong>.
               Click the link in the email to verify your account.
             </AlertDescription>
           </Alert>

@@ -2,15 +2,29 @@
 import { createContext, useContext } from "react";
 
 type AuthContextType = {
-  user: { id: string } | null;
-  session: { user: { id: string } } | null;
+  user: { 
+    id: string; 
+    email?: string;
+    role?: string;
+  } | null;
+  session: { 
+    user: { 
+      id: string;
+      email?: string;
+      role?: string;
+    } 
+  } | null;
   isLoading: boolean;
   isEmailVerified: boolean;
   resendVerificationEmail: () => Promise<void>;
 };
 
-// Create a mock authenticated user and session
-const mockUser = { id: "public-access" };
+// Create a mock authenticated user and session with all required properties
+const mockUser = { 
+  id: "public-access",
+  email: "guest@example.com",
+  role: "admin" // Give the mock user admin role for full access
+};
 const mockSession = { user: mockUser };
 
 const AuthContext = createContext<AuthContextType>({ 

@@ -71,7 +71,7 @@ export default function CompanyManagement() {
   const itemsPerPage = 10;
   const [isEditMode, setIsEditMode] = useState(false);
   
-  // User permissions
+  // User permissions - in public mode we give full access
   const isAdmin = user?.role === 'admin';
   const canManageCompanies = isAdmin || user?.role === 'manager';
   
