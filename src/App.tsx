@@ -3,9 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/components/AuthProvider";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RootLayout from "./components/layout/RootLayout";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -17,7 +15,6 @@ import Report from "./pages/Report";
 import ProjectOverview from "./pages/ProjectOverview";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import PrintBatch from "./pages/PrintBatch";
 import EmployeeManagement from "./pages/EmployeeManagement";
@@ -31,41 +28,34 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/register" element={<CompanyRegistration />} />
-            <Route path="/verify-email" element={<Navigate to="/" replace />} />
-            <Route element={<ProtectedRoute />}>
-              <Route element={<RootLayout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/company-registration" element={<CompanyRegistration />} />
-                <Route path="/request-submission" element={<RequestSubmission />} />
-                <Route path="/application-status" element={<ApplicationStatus />} />
-                <Route path="/report" element={<Report />} />
-                <Route path="/project-overview" element={<ProjectOverview />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/print-batch" element={<PrintBatch />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/employee-management" element={<EmployeeManagement />} />
-                <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
-                <Route path="/document-management" element={<DocumentManagement />} />
-                <Route path="/document-analytics" element={<DocumentAnalytics />} />
-                <Route path="/accounting" element={<Accounting />} />
-                <Route path="/company-management" element={<CompanyManagement />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route element={<RootLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/company-registration" element={<CompanyRegistration />} />
+            <Route path="/request-submission" element={<RequestSubmission />} />
+            <Route path="/application-status" element={<ApplicationStatus />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/project-overview" element={<ProjectOverview />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/print-batch" element={<PrintBatch />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/employee-management" element={<EmployeeManagement />} />
+            <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
+            <Route path="/document-management" element={<DocumentManagement />} />
+            <Route path="/document-analytics" element={<DocumentAnalytics />} />
+            <Route path="/accounting" element={<Accounting />} />
+            <Route path="/company-management" element={<CompanyManagement />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

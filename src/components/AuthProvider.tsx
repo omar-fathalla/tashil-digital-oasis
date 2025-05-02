@@ -1,111 +1,34 @@
 
-import { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
+import { createContext, useContext } from "react";
 
 type AuthContextType = {
-  user: User | null;
-  session: Session | null;
+  user: { id: string } | null;
+  session: { user: { id: string } } | null;
   isLoading: boolean;
   isEmailVerified: boolean;
   resendVerificationEmail: () => Promise<void>;
 };
 
+// Create a mock authenticated user and session
+const mockUser = { id: "public-access" };
+const mockSession = { user: mockUser };
+
 const AuthContext = createContext<AuthContextType>({ 
-  user: null, 
-  session: null,
-  isLoading: true,
-  isEmailVerified: false,
+  user: mockUser,
+  session: mockSession,
+  isLoading: false,
+  isEmailVerified: true,
   resendVerificationEmail: async () => {}
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-
-  useEffect(() => {
-    // Check for active session on initial load
-    const initializeAuth = async () => {
-      try {
-        // Set up auth state listener first (important for catching events during init)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event, currentSession) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-              setSession(currentSession);
-              setUser(currentSession?.user || null);
-              
-              // Update email verification status when auth state changes
-              if (currentSession?.user) {
-                setIsEmailVerified(currentSession.user.email_confirmed_at !== null);
-              } else {
-                setIsEmailVerified(false);
-              }
-            }
-            
-            if (event === 'SIGNED_OUT') {
-              setSession(null);
-              setUser(null);
-              setIsEmailVerified(false);
-            }
-            
-            setIsLoading(false);
-          }
-        );
-
-        // Then check for existing session
-        const { data: { session: activeSession } } = await supabase.auth.getSession();
-        
-        if (activeSession) {
-          setSession(activeSession);
-          setUser(activeSession.user);
-          
-          // Check if email is verified
-          if (activeSession.user) {
-            setIsEmailVerified(activeSession.user.email_confirmed_at !== null);
-          }
-        }
-        
-        setIsLoading(false);
-        
-        // Clean up subscription on unmount
-        return () => {
-          subscription.unsubscribe();
-        };
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-  }, []);
-
-  // Function to resend verification email
-  const resendVerificationEmail = async () => {
-    if (!user?.email) return;
-    
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: user.email,
-      });
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error resending verification email:", error);
-      throw error;
-    }
-  };
-
   return (
     <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      isLoading, 
-      isEmailVerified,
-      resendVerificationEmail
+      user: mockUser,
+      session: mockSession,
+      isLoading: false,
+      isEmailVerified: true,
+      resendVerificationEmail: async () => {}
     }}>
       {children}
     </AuthContext.Provider>

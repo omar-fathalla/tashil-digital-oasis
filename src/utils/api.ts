@@ -16,22 +16,11 @@ export async function callApi<T = any>(
   body?: Record<string, any>
 ): Promise<ApiResponse<T>> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      return {
-        success: false,
-        data: null,
-        message: 'Authentication required'
-      };
-    }
-    
+    // For public access, we'll use the anon key without requiring a session
     const { data, error } = await supabase.functions.invoke(`api-${endpoint}`, {
       method,
       body,
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
+      // No authentication headers needed for public access
     });
     
     if (error) {

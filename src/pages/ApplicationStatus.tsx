@@ -2,25 +2,16 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApplications } from "@/hooks/useApplications";
-import { useAuth } from "@/components/AuthProvider";
-import { useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import StatusHero from "@/components/application-status/StatusHero";
 import { RequestsManagement } from "@/components/requests/RequestsManagement";
 import GroupedNotifications from "@/components/application-status/GroupedNotifications";
 
 const ApplicationStatus = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState("all");
   
   const { data: applications = [], isLoading: isLoadingApps } = useApplications(activeFilter);
   const { notifications, markAsRead, isLoading: isLoadingNotifs } = useNotifications();
-  
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">

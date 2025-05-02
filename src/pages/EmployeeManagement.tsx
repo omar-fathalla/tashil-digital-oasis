@@ -1,24 +1,15 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/components/AuthProvider";
-import { useNavigate } from "react-router-dom";
 import EmployeeDataTable from "@/components/employee-management/EmployeeDataTable";
 import EmployeeFilters from "@/components/employee-management/EmployeeFilters";
 import EmployeeExport from "@/components/employee-management/EmployeeExport";
 
 const EmployeeManagement = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
-  
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
