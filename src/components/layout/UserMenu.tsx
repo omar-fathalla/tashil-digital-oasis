@@ -19,11 +19,8 @@ export const UserMenu = ({ userEmail, onSignOut }: UserMenuProps) => {
   if (!userEmail) {
     return (
       <div className="hidden md:flex items-center gap-2">
-        <Button size="sm" variant="outline" asChild className="hidden md:flex">
-          <Link to="/auth">Sign In</Link>
-        </Button>
         <Button size="sm" asChild className="hidden md:flex">
-          <Link to="/auth">Register</Link>
+          <Link to="/auth">Continue as Guest</Link>
         </Button>
       </div>
     );
@@ -38,7 +35,7 @@ export const UserMenu = ({ userEmail, onSignOut }: UserMenuProps) => {
           className="hidden md:flex"
         >
           <User className="h-4 w-4 mr-2" />
-          {userEmail}
+          Guest User
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

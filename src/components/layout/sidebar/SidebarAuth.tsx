@@ -19,7 +19,7 @@ export function SidebarAuth() {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-2 py-1 text-sm text-sidebar-foreground">
-          <span className="truncate font-medium">{user.email}</span>
+          <span className="truncate font-medium">Guest User</span>
         </div>
         <Button 
           variant="destructive" 
@@ -27,7 +27,7 @@ export function SidebarAuth() {
           className="w-full transition-all duration-200 hover:scale-[1.02]" 
           onClick={handleSignOut}
         >
-          <LogOut className="h-5 w-5 mr-2" /> Logout
+          <LogOut className="h-5 w-5 mr-2" /> Sign Out
         </Button>
       </div>
     );
@@ -35,11 +35,8 @@ export function SidebarAuth() {
 
   return (
     <div className="space-y-2">
-      <Button variant="outline" size="sm" className="w-full transition-all duration-200 hover:scale-[1.02]" asChild>
-        <Link to="/auth">Sign In</Link>
-      </Button>
       <Button variant="default" size="sm" className="w-full transition-all duration-200 hover:scale-[1.02]" asChild>
-        <Link to="/auth">Register</Link>
+        <Link to="/auth">Continue as Guest</Link>
       </Button>
     </div>
   );
