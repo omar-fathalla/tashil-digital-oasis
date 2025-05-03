@@ -1,93 +1,104 @@
 
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-export interface Notification {
+export type Notification = {
   id: string;
   title: string;
   message: string | null;
+  read: boolean;
   created_at: string;
   user_id: string | null;
-  read: boolean | null;
   type?: string;
-  metadata?: any;
-}
+};
 
 export const useNotifications = () => {
-  const fetchNotifications = async (): Promise<Notification[]> => {
-    // Get the current user
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return [];
-    
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .order("created_at", { ascending: false });
-      
-    if (error) {
-      console.error("Error fetching notifications:", error);
-      throw error;
-    }
-    
-    // Cast data to our Notification type
-    return (data || []) as Notification[];
-  };
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  const {
-    data: notifications = [],
+  // Fetch notifications
+  const { 
+    data: notifications, 
     isLoading,
-    error,
-    refetch,
+    error, 
+    refetch 
   } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: fetchNotifications,
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data as Notification[];
+    },
   });
 
+  // Count unread notifications
+  const unreadCount = notifications?.filter(n => !n.read).length || 0;
+  
+  // Mark notification as read
   const markAsRead = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("notifications")
+    mutationFn: async (notificationId: string) => {
+      const { data, error } = await supabase
+        .from('notifications')
         .update({ read: true })
-        .eq("id", id);
-
-      if (error) {
-        console.error("Error marking notification as read:", error);
-        throw error;
-      }
+        .eq('id', notificationId)
+        .select();
+        
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to mark notification as read: ${error}`,
+        variant: "destructive"
+      });
+    }
   });
-
+  
+  // Delete notification
   const deleteNotification = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("notifications")
+    mutationFn: async (notificationId: string) => {
+      const { data, error } = await supabase
+        .from('notifications')
         .delete()
-        .eq("id", id);
-
-      if (error) {
-        console.error("Error deleting notification:", error);
-        throw error;
-      }
+        .eq('id', notificationId)
+        .select();
+        
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      toast({
+        title: "Success",
+        description: "Notification deleted successfully"
+      });
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete notification: ${error}`,
+        variant: "destructive"
+      });
+    }
   });
-
-  // Calculate unread count
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  return {
-    notifications,
+  
+  return { 
+    notifications, 
     isLoading,
     error,
-    refetch,
+    unreadCount,
     markAsRead,
     deleteNotification,
-    unreadCount,
+    refetch
   };
 };

@@ -23,40 +23,49 @@ import DocumentManagement from "./pages/DocumentManagement";
 import DocumentAnalytics from "./pages/DocumentAnalytics";
 import Accounting from "./pages/Accounting";
 import CompanyManagement from "./pages/CompanyManagement";
+import { useEffect } from "react";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<RootLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/company-registration" element={<CompanyRegistration />} />
-            <Route path="/request-submission" element={<RequestSubmission />} />
-            <Route path="/application-status" element={<ApplicationStatus />} />
-            <Route path="/report" element={<Report />} />
-            <Route path="/project-overview" element={<ProjectOverview />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/print-batch" element={<PrintBatch />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/employee-management" element={<EmployeeManagement />} />
-            <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
-            <Route path="/document-management" element={<DocumentManagement />} />
-            <Route path="/document-analytics" element={<DocumentAnalytics />} />
-            <Route path="/accounting" element={<Accounting />} />
-            <Route path="/company-management" element={<CompanyManagement />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Ensure we have demo data when the app starts
+  useEffect(() => {
+    ensureDemoData().catch(console.error);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route element={<RootLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/company-registration" element={<CompanyRegistration />} />
+              <Route path="/request-submission" element={<RequestSubmission />} />
+              <Route path="/application-status" element={<ApplicationStatus />} />
+              <Route path="/report" element={<Report />} />
+              <Route path="/project-overview" element={<ProjectOverview />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/print-batch" element={<PrintBatch />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/employee-management" element={<EmployeeManagement />} />
+              <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
+              <Route path="/document-management" element={<DocumentManagement />} />
+              <Route path="/document-analytics" element={<DocumentAnalytics />} />
+              <Route path="/accounting" element={<Accounting />} />
+              <Route path="/company-management" element={<CompanyManagement />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

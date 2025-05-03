@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CountUp from "react-countup";
 
 export const StatsCards = () => {
-  const { totalEmployees, totalCompanies, isLoading } = useStats();
+  const { totalEmployees, totalCompanies, pendingRequests, isLoading } = useStats();
 
   if (isLoading) {
     return (
@@ -62,9 +62,9 @@ export const StatsCards = () => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            <CountUp end={87} duration={2} separator="," />
+            <CountUp end={pendingRequests || 0} duration={2} separator="," />
           </div>
-          <p className="text-xs text-muted-foreground">+5 new requests today</p>
+          <p className="text-xs text-muted-foreground">{pendingRequests === 1 ? '1 new request today' : `${pendingRequests} new requests today`}</p>
         </CardContent>
       </Card>
     </>
