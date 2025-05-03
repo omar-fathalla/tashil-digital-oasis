@@ -11,7 +11,7 @@ export type Notification = {
   read: boolean;
   created_at: string;
   user_id: string | null;
-  type?: string;
+  type: string;
 };
 
 export const useNotifications = () => {

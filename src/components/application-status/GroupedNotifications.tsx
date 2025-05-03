@@ -20,19 +20,23 @@ interface GroupedNotificationsProps {
 const GroupedNotifications = ({ notifications, onMarkAsRead }: GroupedNotificationsProps) => {
   const groupNotifications = () => {
     return {
-      approvals: notifications.filter(n => n.type.includes('approved')),
-      rejections: notifications.filter(n => n.type.includes('rejected')),
-      documents: notifications.filter(n => n.type.includes('document') || n.type.includes('missing')),
-      other: notifications.filter(n => 
-        !n.type.includes('approved') && 
-        !n.type.includes('rejected') && 
-        !n.type.includes('document') && 
-        !n.type.includes('missing')
-      )
+      approvals: notifications.filter(n => (n.type || '').includes('approved')),
+      rejections: notifications.filter(n => (n.type || '').includes('rejected')),
+      documents: notifications.filter(n => 
+        (n.type || '').includes('document') || 
+        (n.type || '').includes('missing')
+      ),
+      other: notifications.filter(n => {
+        const type = n.type || '';
+        return !type.includes('approved') && 
+              !type.includes('rejected') && 
+              !type.includes('document') && 
+              !type.includes('missing');
+      })
     };
   };
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: string = '') => {
     if (type.includes('approved')) return <FileCheck className="h-5 w-5 text-green-600" />;
     if (type.includes('rejected')) return <FileX className="h-5 w-5 text-red-600" />;
     if (type.includes('document') || type.includes('missing')) return <FileMinus className="h-5 w-5 text-yellow-600" />;

@@ -1,17 +1,37 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApplications } from "@/hooks/useApplications";
 import { useNotifications } from "@/hooks/useNotifications";
 import StatusHero from "@/components/application-status/StatusHero";
 import { RequestsManagement } from "@/components/requests/RequestsManagement";
 import GroupedNotifications from "@/components/application-status/GroupedNotifications";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
 const ApplicationStatus = () => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [isDataLoading, setIsDataLoading] = useState(false);
   
   const { data: applications = [], isLoading: isLoadingApps } = useApplications(activeFilter);
   const { notifications, markAsRead, isLoading: isLoadingNotifs } = useNotifications();
+
+  // Ensure we have demo data on page load
+  useEffect(() => {
+    const loadDemoData = async () => {
+      setIsDataLoading(true);
+      try {
+        await ensureDemoData();
+      } catch (error) {
+        console.error("Failed to load demo data:", error);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+    
+    loadDemoData();
+  }, []);
+
+  const isLoading = isDataLoading || isLoadingApps || isLoadingNotifs;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
@@ -24,7 +44,7 @@ const ApplicationStatus = () => {
               <CardHeader className="pb-0">
                 <CardTitle>Registration Requests</CardTitle>
                 <CardDescription>
-                  {isLoadingApps ? "Loading..." : 
+                  {isLoading ? "Loading..." : 
                    `Showing ${applications.length} requests`}
                 </CardDescription>
               </CardHeader>
@@ -37,7 +57,7 @@ const ApplicationStatus = () => {
               <CardHeader>
                 <CardTitle>Notifications</CardTitle>
                 <CardDescription>
-                  {isLoadingNotifs ? "Loading..." : 
+                  {isLoading ? "Loading..." : 
                    `${notifications?.filter(n => !n.read).length || 0} unread notifications`}
                 </CardDescription>
               </CardHeader>
