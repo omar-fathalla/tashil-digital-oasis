@@ -20,7 +20,7 @@ export const useNotifications = () => {
   
   // Fetch notifications
   const { 
-    data: notifications, 
+    data: notifications = [], 
     isLoading,
     error, 
     refetch 
@@ -92,13 +92,22 @@ export const useNotifications = () => {
     }
   });
   
+  // Create wrapper functions that return void promises
+  const handleMarkAsRead = async (notificationId: string): Promise<void> => {
+    await markAsRead.mutateAsync(notificationId);
+  };
+  
+  const handleDeleteNotification = async (notificationId: string): Promise<void> => {
+    await deleteNotification.mutateAsync(notificationId);
+  };
+  
   return { 
     notifications, 
     isLoading,
     error,
     unreadCount,
-    markAsRead,
-    deleteNotification,
+    markAsRead: handleMarkAsRead,
+    deleteNotification: handleDeleteNotification,
     refetch
   };
 };

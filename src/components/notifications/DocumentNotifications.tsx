@@ -43,8 +43,8 @@ export const DocumentNotifications = () => {
           <NotificationList 
             notifications={notifications} 
             isLoading={isLoading}
-            onMarkAsRead={markAsRead.mutateAsync}
-            onDelete={deleteNotification.mutateAsync}
+            onMarkAsRead={markAsRead}
+            onDelete={deleteNotification}
           />
         </TabsContent>
         
@@ -52,8 +52,8 @@ export const DocumentNotifications = () => {
           <NotificationList 
             notifications={notifications.filter(n => !n.read)} 
             isLoading={isLoading}
-            onMarkAsRead={markAsRead.mutateAsync}
-            onDelete={deleteNotification.mutateAsync}
+            onMarkAsRead={markAsRead}
+            onDelete={deleteNotification}
             emptyMessage="No unread notifications"
           />
         </TabsContent>

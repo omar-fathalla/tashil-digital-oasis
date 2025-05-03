@@ -2,6 +2,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface DashboardStats {
+  totalEmployees: number;
+  totalCompanies: number;
+}
+
 export const useStats = () => {
   const [totalEmployees, setTotalEmployees] = useState<number>(0);
   const [totalCompanies, setTotalCompanies] = useState<number>(0);
@@ -48,8 +53,10 @@ export const useStats = () => {
           setPendingRequests(requestCount || 0);
         } else {
           // Use the stats from the RPC function
-          setTotalEmployees(statsData.totalEmployees || 0);
-          setTotalCompanies(statsData.totalCompanies || 0);
+          // Parse the JSON data properly to access properties
+          const stats = statsData as unknown as DashboardStats;
+          setTotalEmployees(stats.totalEmployees || 0);
+          setTotalCompanies(stats.totalCompanies || 0);
           
           // Fetch pending requests count separately if not provided by RPC
           const { count: requestCount, error: requestError } = await supabase
