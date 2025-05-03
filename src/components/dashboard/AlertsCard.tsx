@@ -110,7 +110,7 @@ export const AlertsCard = () => {
                       variant="ghost"
                       size="sm"
                       className="h-8 px-2"
-                      onClick={() => markAsRead.mutate(notification.id)}
+                      onClick={() => markAsRead(notification.id)}
                     >
                       Mark as read
                     </Button>
@@ -119,7 +119,7 @@ export const AlertsCard = () => {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => deleteNotification.mutate(notification.id)}
+                    onClick={() => deleteNotification(notification.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

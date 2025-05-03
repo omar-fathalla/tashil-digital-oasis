@@ -44,7 +44,7 @@ const ApplicationStatus = () => {
               <CardContent>
                 <GroupedNotifications 
                   notifications={notifications || []}
-                  onMarkAsRead={(id) => markAsRead.mutate(id)}
+                  onMarkAsRead={(id) => markAsRead(id)}
                 />
               </CardContent>
             </Card>
