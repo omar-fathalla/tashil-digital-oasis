@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { faker } from '@faker-js/faker';
 
@@ -24,9 +23,22 @@ export const ensureDemoData = async () => {
       return;
     }
     
-    // If we already have data, don't seed
+    // If we already have data, don't seed companies but check if we need digital ID employees
     if (companyCount && companyCount > 0 && employeeCount && employeeCount > 0) {
-      console.log("Demo data already exists, skipping seeding");
+      console.log("Demo data already exists, checking for digital ID data");
+      
+      // Check for approved employees (which are candidates for digital IDs)
+      const { count: approvedCount, error: approvedError } = await supabase
+        .from('employee_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved');
+        
+      if (approvedError) {
+        console.error("Error checking approved employees:", approvedError);
+      } else if (!approvedCount || approvedCount < 15) {
+        console.log("Seeding digital ID employee data");
+        await seedDigitalIDData();
+      }
       
       // Check notifications and seed more if needed
       const { count: notificationCount, error: notificationError } = await supabase
@@ -117,6 +129,9 @@ export const ensureDemoData = async () => {
     
     // Add notifications and application status data
     await seedApplicationStatusData();
+    
+    // Add digital ID data
+    await seedDigitalIDData();
     
     console.log("Demo data seeded successfully");
     
@@ -292,5 +307,114 @@ const seedApplicationStatusData = async () => {
     
   } catch (error) {
     console.error("Error seeding application status data:", error);
+  }
+};
+
+// Function to seed data specifically for Digital ID Management
+const seedDigitalIDData = async () => {
+  try {
+    console.log("Seeding digital ID data for employee management...");
+    
+    // Check how many approved employees we already have
+    const { count: existingCount, error: countError } = await supabase
+      .from('employee_registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved');
+      
+    if (countError) {
+      console.error("Error checking existing approved employees:", countError);
+      return;
+    }
+    
+    // Calculate how many more employees we need to add to get to 15
+    const employeesToAdd = Math.max(0, 15 - (existingCount || 0));
+    
+    if (employeesToAdd <= 0) {
+      console.log("Already have at least 15 approved employees, skipping seeding");
+      return;
+    }
+    
+    console.log(`Adding ${employeesToAdd} approved employees for digital ID management`);
+    
+    // Array of departments/areas
+    const departments = [
+      'Engineering', 'Finance', 'Human Resources', 'Marketing', 
+      'Operations', 'Sales', 'Customer Support', 'Research', 
+      'Legal', 'Product', 'Design', 'Administration'
+    ];
+    
+    // Array of positions
+    const positions = [
+      'Manager', 'Specialist', 'Director', 'Coordinator', 
+      'Analyst', 'Associate', 'Lead', 'Executive', 
+      'Representative', 'Developer', 'Assistant', 'Supervisor'
+    ];
+    
+    const statuses = ['approved', 'id_generated', 'id_printed', 'id_collected'];
+    const sexOptions = ['male', 'female'];
+    
+    // Create new employees with diverse attributes
+    const employees = [];
+    
+    for (let i = 0; i < employeesToAdd; i++) {
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
+      const fullName = `${firstName} ${lastName}`;
+      const sex = sexOptions[Math.floor(Math.random() * sexOptions.length)];
+      const area = departments[Math.floor(Math.random() * departments.length)];
+      const position = positions[Math.floor(Math.random() * positions.length)] + ' - ' + area;
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      const employeeId = `EMP${faker.string.numeric(4)}`;
+      
+      // Different dates for different operations based on status
+      const submissionDate = faker.date.recent({ days: 30 }).toISOString();
+      let generatedAt = null;
+      let printedAt = null;
+      let collectedAt = null;
+      let collectorName = null;
+      let printed = false;
+      
+      if (status === 'id_generated' || status === 'id_printed' || status === 'id_collected') {
+        generatedAt = faker.date.recent({ days: 25 }).toISOString();
+      }
+      
+      if (status === 'id_printed' || status === 'id_collected') {
+        printedAt = faker.date.recent({ days: 20 }).toISOString();
+        printed = true;
+      }
+      
+      if (status === 'id_collected') {
+        collectedAt = faker.date.recent({ days: 15 }).toISOString();
+        collectorName = faker.person.fullName();
+      }
+      
+      employees.push({
+        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
+        employee_id: employeeId,
+        position,
+        sex,
+        status,
+        area,
+        submission_date: submissionDate,
+        request_type: Math.random() > 0.7 ? 'New Registration' : 'Registration Update',
+        printed,
+        printed_at: printedAt,
+        collected_at: collectedAt,
+        collector_name: collectorName,
+        photo_url: Math.random() > 0.4 ? faker.image.avatar() : null
+      });
+    }
+    
+    // Insert the employees with batch insert
+    for (const employee of employees) {
+      const { error } = await supabase.from('employee_registrations').insert(employee);
+      if (error) console.error("Error inserting employee for digital ID:", error);
+    }
+    
+    console.log(`Successfully added ${employeesToAdd} employees for digital ID management`);
+  } catch (error) {
+    console.error("Error seeding digital ID data:", error);
   }
 };

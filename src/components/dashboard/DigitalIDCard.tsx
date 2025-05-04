@@ -1,14 +1,38 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Printer, Download } from "lucide-react";
 import { useApprovedRequests } from "@/hooks/useApprovedRequests";
+import { useDigitalIDCards } from "@/hooks/useDigitalIDCards";
 import DigitalIDEntry from "./DigitalIDEntry";
 import { Link } from "react-router-dom";
 import RepresentativePreview from "../print/RepresentativePreview";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
 const DigitalIDCard = () => {
-  const { data: approvedRequests, isLoading } = useApprovedRequests();
+  const { data: approvedRequests, isLoading: isLoadingRequests } = useApprovedRequests();
+  const { idCards, isLoading: isLoadingCards } = useDigitalIDCards();
+  const [isLoadingDemoData, setIsLoadingDemoData] = useState(false);
+
+  // Ensure we have demo data when the component loads
+  useEffect(() => {
+    const loadDemoData = async () => {
+      setIsLoadingDemoData(true);
+      try {
+        await ensureDemoData();
+      } catch (error) {
+        console.error("Failed to load demo data:", error);
+      } finally {
+        setIsLoadingDemoData(false);
+      }
+    };
+    
+    loadDemoData();
+  }, []);
+
+  const isLoading = isLoadingRequests || isLoadingCards || isLoadingDemoData;
+  const displayCards = idCards?.slice(0, 5) || [];
 
   return (
     <div className="space-y-6">
@@ -28,11 +52,11 @@ const DigitalIDCard = () => {
         <CardContent>
           <div className="space-y-4">
             {isLoading ? (
-              <p>Loading approved requests...</p>
-            ) : approvedRequests && approvedRequests.length > 0 ? (
+              <p>Loading employee data...</p>
+            ) : displayCards.length > 0 ? (
               <div className="space-y-4">
-                {approvedRequests.map((request: any) => (
-                  <DigitalIDEntry key={request.id} request={request} />
+                {displayCards.map((card) => (
+                  <DigitalIDEntry key={card.id} request={card} />
                 ))}
                 <div className="flex justify-end pt-2">
                   <Link to="/print-batch">
@@ -44,7 +68,7 @@ const DigitalIDCard = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">No approved requests found.</p>
+              <p className="text-muted-foreground">No approved employees found.</p>
             )}
           </div>
         </CardContent>

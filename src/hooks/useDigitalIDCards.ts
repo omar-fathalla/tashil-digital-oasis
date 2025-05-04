@@ -21,10 +21,11 @@ export const useDigitalIDCards = () => {
   const { data: idCards = [], isLoading } = useQuery({
     queryKey: ["digital-id-cards"],
     queryFn: async () => {
+      // Get all employees with status approved or higher (id_generated, id_printed, id_collected)
       const { data, error } = await supabase
         .from("employee_registrations")
         .select("*")
-        .eq("status", "approved")
+        .in("status", ["approved", "id_generated", "id_printed", "id_collected"])
         .order("full_name");
       
       if (error) throw error;

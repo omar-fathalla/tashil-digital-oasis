@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,30 @@ import { Printer, Download, Search, Check, User } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
 const IDCardManager = () => {
-  const { idCards, isLoading } = useDigitalIDCards();
+  const { idCards, isLoading: isLoadingCards } = useDigitalIDCards();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoadingDemoData, setIsLoadingDemoData] = useState(false);
+
+  // Ensure we have demo data when the component loads
+  useEffect(() => {
+    const loadDemoData = async () => {
+      setIsLoadingDemoData(true);
+      try {
+        await ensureDemoData();
+      } catch (error) {
+        console.error("Failed to load demo data:", error);
+      } finally {
+        setIsLoadingDemoData(false);
+      }
+    };
+    
+    loadDemoData();
+  }, []);
+
+  const isLoading = isLoadingCards || isLoadingDemoData;
 
   const filteredCards = idCards?.filter((card) => 
     card.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
