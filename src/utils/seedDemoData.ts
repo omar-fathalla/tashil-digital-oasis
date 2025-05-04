@@ -40,6 +40,19 @@ export const ensureDemoData = async () => {
         await seedDigitalIDData();
       }
       
+      // Check if we have at least 15 employees with detailed profiles
+      const { count: detailedCount, error: detailedError } = await supabase
+        .from('employee_registrations')
+        .select('*', { count: 'exact', head: true })
+        .not('email', 'is', null); // Check for a field that should be in detailed records
+        
+      if (detailedError) {
+        console.error("Error checking detailed employees:", detailedError);
+      } else if (!detailedCount || detailedCount < 15) {
+        console.log("Seeding detailed employee data");
+        await seedDetailedEmployeeData();
+      }
+      
       // Check notifications and seed more if needed
       const { count: notificationCount, error: notificationError } = await supabase
         .from('notifications')
@@ -126,6 +139,9 @@ export const ensureDemoData = async () => {
         if (error) console.error("Error inserting request:", error);
       }
     }
+    
+    // Add detailed employee data
+    await seedDetailedEmployeeData();
     
     // Add notifications and application status data
     await seedApplicationStatusData();
@@ -416,5 +432,135 @@ const seedDigitalIDData = async () => {
     console.log(`Successfully added ${employeesToAdd} employees for digital ID management`);
   } catch (error) {
     console.error("Error seeding digital ID data:", error);
+  }
+};
+
+// Function to seed detailed employee data for Employee Management
+const seedDetailedEmployeeData = async () => {
+  try {
+    console.log("Seeding detailed employee data for Employee Management...");
+    
+    // Check how many employees with detailed profiles we already have
+    const { count: existingCount, error: countError } = await supabase
+      .from('employee_registrations')
+      .select('*', { count: 'exact', head: true })
+      .not('email', 'is', null); // Check for a field that should be in detailed records
+      
+    if (countError) {
+      console.error("Error checking existing detailed employees:", countError);
+      return;
+    }
+    
+    // Calculate how many more employees we need to add to get to 15
+    const employeesToAdd = Math.max(0, 15 - (existingCount || 0));
+    
+    if (employeesToAdd <= 0) {
+      console.log("Already have at least 15 detailed employees, skipping seeding");
+      return;
+    }
+    
+    console.log(`Adding ${employeesToAdd} detailed employee profiles`);
+    
+    // Array of departments/areas
+    const departments = [
+      'Engineering', 'Finance', 'Human Resources', 'Marketing', 
+      'Operations', 'Sales', 'Customer Support', 'Research', 
+      'Legal', 'Product', 'Design', 'Administration'
+    ];
+    
+    // Array of positions by department
+    const positionsByDepartment = {
+      'Engineering': ['Software Engineer', 'DevOps Engineer', 'QA Engineer', 'CTO', 'Frontend Developer', 'Backend Developer'],
+      'Finance': ['Financial Analyst', 'Accountant', 'CFO', 'Payroll Specialist', 'Financial Controller'],
+      'Human Resources': ['HR Manager', 'Recruiter', 'Talent Acquisition Specialist', 'HR Director', 'Benefits Coordinator'],
+      'Marketing': ['Marketing Manager', 'Content Strategist', 'Digital Marketing Specialist', 'Brand Manager', 'CMO'],
+      'Operations': ['Operations Manager', 'Project Manager', 'Business Analyst', 'COO', 'Process Improvement Specialist'],
+      'Sales': ['Sales Representative', 'Account Executive', 'Sales Manager', 'Business Development Manager', 'Sales Director'],
+      'Customer Support': ['Customer Support Representative', 'Technical Support Specialist', 'Support Manager', 'Customer Success Manager'],
+      'Research': ['Research Scientist', 'Data Analyst', 'Research Director', 'Lab Technician', 'Clinical Trial Manager'],
+      'Legal': ['Legal Counsel', 'Compliance Officer', 'Patent Attorney', 'Legal Assistant', 'General Counsel'],
+      'Product': ['Product Manager', 'Product Owner', 'UX Researcher', 'Product Director', 'Product Marketing Manager'],
+      'Design': ['UX Designer', 'Graphic Designer', 'UI Designer', 'Creative Director', 'Visual Designer'],
+      'Administration': ['Administrative Assistant', 'Office Manager', 'Executive Assistant', 'Receptionist', 'Facilities Manager']
+    };
+    
+    const statuses = ['active', 'on leave', 'probation', 'inactive', 'suspended'];
+    const sexOptions = ['male', 'female'];
+    
+    // Profile photo placeholders
+    const profilePlaceholders = [
+      'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
+      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
+      'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952',
+      'https://randomuser.me/api/portraits/men/1.jpg',
+      'https://randomuser.me/api/portraits/women/1.jpg',
+      'https://randomuser.me/api/portraits/men/2.jpg',
+      'https://randomuser.me/api/portraits/women/2.jpg'
+    ];
+    
+    // Create new employees with diverse attributes
+    const employees = [];
+    
+    for (let i = 0; i < employeesToAdd; i++) {
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
+      const fullName = `${firstName} ${lastName}`;
+      const sex = sexOptions[Math.floor(Math.random() * sexOptions.length)];
+      const area = departments[Math.floor(Math.random() * departments.length)];
+      const position = positionsByDepartment[area][Math.floor(Math.random() * positionsByDepartment[area].length)];
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      const employeeId = `EMP${faker.string.numeric(4)}`;
+      
+      // Generate random dates
+      const hireDate = faker.date.past({ years: 5 }).toISOString();
+      const submissionDate = faker.date.recent({ days: 30 }).toISOString();
+      
+      // Generate contact information
+      const email = faker.internet.email({ firstName, lastName, provider: 'company.com' }).toLowerCase();
+      const phoneNumber = faker.phone.number();
+      const address = faker.location.streetAddress();
+      const city = faker.location.city();
+      const state = faker.location.state();
+      const zipCode = faker.location.zipCode();
+      
+      // Select a random profile photo placeholder
+      const photoUrl = profilePlaceholders[Math.floor(Math.random() * profilePlaceholders.length)];
+      
+      employees.push({
+        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
+        employee_id: employeeId,
+        position,
+        sex,
+        status,
+        area,
+        submission_date: submissionDate,
+        hire_date: hireDate,
+        request_type: Math.random() > 0.7 ? 'New Registration' : 'Registration Update',
+        email,
+        phone: phoneNumber,
+        address,
+        city,
+        state,
+        zip_code: zipCode,
+        photo_url: photoUrl,
+        national_id: faker.string.numeric(9),
+        insurance_number: faker.string.numeric(10),
+        emergency_contact: faker.person.fullName(),
+        emergency_phone: faker.phone.number()
+      });
+    }
+    
+    // Insert the employees with batch insert
+    for (const employee of employees) {
+      const { error } = await supabase.from('employee_registrations').insert(employee);
+      if (error) console.error("Error inserting detailed employee:", error);
+    }
+    
+    console.log(`Successfully added ${employeesToAdd} detailed employee profiles`);
+  } catch (error) {
+    console.error("Error seeding detailed employee data:", error);
   }
 };

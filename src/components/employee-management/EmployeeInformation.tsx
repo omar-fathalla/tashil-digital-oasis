@@ -94,6 +94,18 @@ const EmployeeInformation = ({ employee, isLoading }: EmployeeInformationProps) 
                 <dd className="text-lg">{employee.national_id}</dd>
               </div>
             )}
+            {employee.email && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Email</dt>
+                <dd className="text-lg">{employee.email}</dd>
+              </div>
+            )}
+            {employee.phone && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Phone</dt>
+                <dd className="text-lg">{employee.phone}</dd>
+              </div>
+            )}
           </dl>
         </CardContent>
       </Card>
@@ -108,6 +120,12 @@ const EmployeeInformation = ({ employee, isLoading }: EmployeeInformationProps) 
               <dt className="text-sm font-medium text-muted-foreground">Employee ID</dt>
               <dd className="text-lg">{employee.employee_id}</dd>
             </div>
+            {employee.hire_date && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Hire Date</dt>
+                <dd className="text-lg">{new Date(employee.hire_date).toLocaleDateString()}</dd>
+              </div>
+            )}
             {employee.position && (
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Position</dt>
@@ -118,6 +136,12 @@ const EmployeeInformation = ({ employee, isLoading }: EmployeeInformationProps) 
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Department/Area</dt>
                 <dd className="text-lg">{employee.area}</dd>
+              </div>
+            )}
+            {employee.status && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Status</dt>
+                <dd className="text-lg">{employee.status}</dd>
               </div>
             )}
             {employee.insurance_number && (
@@ -141,6 +165,55 @@ const EmployeeInformation = ({ employee, isLoading }: EmployeeInformationProps) 
           </dl>
         </CardContent>
       </Card>
+
+      {(employee.address || employee.city || employee.state || employee.zip_code || employee.emergency_contact) && (
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Additional Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Contact Information</h3>
+                <dl className="space-y-4">
+                  {employee.address && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Address</dt>
+                      <dd className="text-lg">{employee.address}</dd>
+                    </div>
+                  )}
+                  {(employee.city || employee.state || employee.zip_code) && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">City/State/Zip</dt>
+                      <dd className="text-lg">
+                        {[employee.city, employee.state, employee.zip_code].filter(Boolean).join(', ')}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium mb-2">Emergency Contact</h3>
+                <dl className="space-y-4">
+                  {employee.emergency_contact && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Contact Name</dt>
+                      <dd className="text-lg">{employee.emergency_contact}</dd>
+                    </div>
+                  )}
+                  {employee.emergency_phone && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Contact Phone</dt>
+                      <dd className="text-lg">{employee.emergency_phone}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

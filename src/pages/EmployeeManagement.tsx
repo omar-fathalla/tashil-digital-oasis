@@ -1,15 +1,33 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import EmployeeDataTable from "@/components/employee-management/EmployeeDataTable";
 import EmployeeFilters from "@/components/employee-management/EmployeeFilters";
 import EmployeeExport from "@/components/employee-management/EmployeeExport";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
 const EmployeeManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [isLoadingDemoData, setIsLoadingDemoData] = useState(false);
+
+  // Ensure we have demo data when the component loads
+  useEffect(() => {
+    const loadDemoData = async () => {
+      setIsLoadingDemoData(true);
+      try {
+        await ensureDemoData();
+      } catch (error) {
+        console.error("Failed to load demo data:", error);
+      } finally {
+        setIsLoadingDemoData(false);
+      }
+    };
+    
+    loadDemoData();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -51,6 +69,7 @@ const EmployeeManagement = () => {
             statusFilter={statusFilter}
             departmentFilter={departmentFilter}
             roleFilter={roleFilter}
+            isLoadingDemoData={isLoadingDemoData}
           />
         </CardContent>
       </Card>

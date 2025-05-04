@@ -29,6 +29,7 @@ interface EmployeeDataTableProps {
   statusFilter: string;
   departmentFilter: string;
   roleFilter: string;
+  isLoadingDemoData?: boolean;
 }
 
 const EmployeeDataTable = ({
@@ -36,20 +37,27 @@ const EmployeeDataTable = ({
   statusFilter,
   departmentFilter,
   roleFilter,
+  isLoadingDemoData = false,
 }: EmployeeDataTableProps) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   
   // Use our existing hook to fetch employees
-  const { employees, isLoading } = useEmployees();
+  const { employees, isLoading: isLoadingEmployees } = useEmployees();
+  
+  // Combined loading state
+  const isLoading = isLoadingEmployees || isLoadingDemoData;
   
   // Filter employees based on search and filters
   const filteredEmployees = employees
     ? employees.filter((employee) => {
         const matchesSearch = 
-          employee.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          employee.employee_id.toLowerCase().includes(searchQuery.toLowerCase());
+          employee.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          employee.employee_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          employee.email?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          employee.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          false;
         
         const matchesStatus = statusFilter === "all" || employee.status === statusFilter;
         
@@ -150,6 +158,10 @@ const EmployeeDataTable = ({
         return <Badge className="bg-green-500">Approved</Badge>;
       case 'rejected':
         return <Badge className="bg-red-500">Rejected</Badge>;
+      case 'on leave':
+        return <Badge className="bg-blue-500">On Leave</Badge>;
+      case 'probation':
+        return <Badge className="bg-orange-500">Probation</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -182,7 +194,7 @@ const EmployeeDataTable = ({
               <TableHead>Position</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Submission Date</TableHead>
+              <TableHead>Hire Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -211,9 +223,11 @@ const EmployeeDataTable = ({
                   <TableCell>{employee.area || 'Not specified'}</TableCell>
                   <TableCell>{getStatusBadge(employee.status)}</TableCell>
                   <TableCell>
-                    {employee.submission_date 
-                      ? format(new Date(employee.submission_date), "MMM d, yyyy") 
-                      : 'Not available'}
+                    {employee.hire_date 
+                      ? format(new Date(employee.hire_date), "MMM d, yyyy") 
+                      : employee.submission_date 
+                        ? format(new Date(employee.submission_date), "MMM d, yyyy")
+                        : 'Not available'}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button 
