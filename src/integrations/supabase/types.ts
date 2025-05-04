@@ -540,70 +540,103 @@ export type Database = {
       }
       employee_registrations: {
         Row: {
+          address: string | null
           area: string | null
+          city: string | null
           collected_at: string | null
           collector_name: string | null
           company_id: string | null
+          company_name: string | null
+          email: string | null
+          emergency_contact: string | null
+          emergency_phone: string | null
           employee_id: string
           first_name: string
           full_name: string
+          hire_date: string | null
           id: string
           insurance_number: string | null
           last_name: string
           mid_name: string | null
+          national_id: string | null
+          phone: string | null
           photo_url: string | null
           position: string | null
           printed: boolean | null
           printed_at: string | null
           request_type: string | null
           sex: string | null
+          state: string | null
           status: string | null
           submission_date: string | null
           user_id: string | null
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
           area?: string | null
+          city?: string | null
           collected_at?: string | null
           collector_name?: string | null
           company_id?: string | null
+          company_name?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
           employee_id: string
           first_name: string
           full_name: string
+          hire_date?: string | null
           id?: string
           insurance_number?: string | null
           last_name: string
           mid_name?: string | null
+          national_id?: string | null
+          phone?: string | null
           photo_url?: string | null
           position?: string | null
           printed?: boolean | null
           printed_at?: string | null
           request_type?: string | null
           sex?: string | null
+          state?: string | null
           status?: string | null
           submission_date?: string | null
           user_id?: string | null
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
           area?: string | null
+          city?: string | null
           collected_at?: string | null
           collector_name?: string | null
           company_id?: string | null
+          company_name?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
           employee_id?: string
           first_name?: string
           full_name?: string
+          hire_date?: string | null
           id?: string
           insurance_number?: string | null
           last_name?: string
           mid_name?: string | null
+          national_id?: string | null
+          phone?: string | null
           photo_url?: string | null
           position?: string | null
           printed?: boolean | null
           printed_at?: string | null
           request_type?: string | null
           sex?: string | null
+          state?: string | null
           status?: string | null
           submission_date?: string | null
           user_id?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }

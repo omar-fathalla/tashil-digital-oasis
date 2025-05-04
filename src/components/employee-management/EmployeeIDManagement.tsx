@@ -1,226 +1,161 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Download, FileText, Printer } from "lucide-react";
-import { Employee } from "@/hooks/useEmployee";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Employee, DigitalID } from "@/hooks/useEmployee";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { CircleCheck, Printer, Download, RefreshCw } from "lucide-react";
 
 interface EmployeeIDManagementProps {
-  employee?: Employee;
-  digitalId: any | null;
+  employee?: Employee | null;
+  digitalId?: DigitalID | null;
   isLoading: boolean;
 }
 
 const EmployeeIDManagement = ({ employee, digitalId, isLoading }: EmployeeIDManagementProps) => {
-  const handlePrint = () => {
-    toast.info("Preparing ID for printing...");
-    
-    // In a real implementation, this would prepare the ID for printing
-    setTimeout(() => {
-      toast.success("ID sent to printer");
-    }, 1500);
-  };
-  
-  const handleDownload = () => {
-    toast.info("Preparing digital ID for download...");
-    
-    // In a real implementation, this would download the digital ID
-    setTimeout(() => {
-      toast.success("Digital ID ready for download");
-    }, 1500);
-  };
-  
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-40" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Skeleton className="h-48 w-full" />
-              <div className="flex justify-center space-x-3">
-                <Skeleton className="h-9 w-32" />
-                <Skeleton className="h-9 w-32" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-40" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array(3).fill(null).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-8 w-full" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // If no digital ID exists yet
-  if (!digitalId) {
-    return (
       <Card>
         <CardHeader>
-          <CardTitle>ID Management</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <FileText className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
-          <p className="mt-4 text-lg font-medium">No Digital ID Available</p>
-          <p className="text-muted-foreground">
-            This employee doesn't have a digital ID issued yet.
-          </p>
-          {employee?.status === 'approved' && (
-            <Button className="mt-6">Issue Digital ID</Button>
-          )}
-          {employee?.status !== 'approved' && (
-            <p className="text-sm text-muted-foreground mt-6">
-              The employee must be approved before issuing a digital ID.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Digital ID Preview</CardTitle>
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-4 w-72" />
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center">
-            <div className="border rounded-lg w-full max-w-md p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex flex-col items-center">
-                <div className="bg-muted/20 h-24 w-24 rounded-full flex items-center justify-center mb-4">
-                  {employee?.photo_url ? (
-                    <img 
-                      src={employee.photo_url} 
-                      alt={employee.full_name}
-                      className="h-24 w-24 rounded-full object-cover"
-                    />
-                  ) : (
-                    <FileText className="h-12 w-12 text-muted-foreground" />
-                  )}
-                </div>
-                
-                <h3 className="text-lg font-bold">{employee?.full_name}</h3>
-                <p className="text-muted-foreground">{employee?.position || 'Employee'}</p>
-                
-                <div className="w-full mt-4 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">ID Number:</span>
-                    <span className="text-sm font-medium">{digitalId.id_number}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Employee ID:</span>
-                    <span className="text-sm font-medium">{employee?.employee_id}</span>
-                  </div>
-                  {employee?.area && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Department:</span>
-                      <span className="text-sm font-medium">{employee.area}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Valid Until:</span>
-                    <span className="text-sm font-medium">
-                      {format(new Date(digitalId.expiry_date), "MMM dd, yyyy")}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="mt-4 w-full">
-                  <Badge 
-                    className={`w-full justify-center ${
-                      digitalId.status === 'active' 
-                        ? 'bg-green-500' 
-                        : 'bg-yellow-500'
-                    }`}
-                  >
-                    {digitalId.status === 'active' ? 'ACTIVE' : 'PENDING'}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex space-x-3 mt-6">
-              <Button onClick={handlePrint} variant="outline" className="gap-2">
-                <Printer className="h-4 w-4" />
-                Print ID
-              </Button>
-              <Button onClick={handleDownload} className="gap-2">
-                <Download className="h-4 w-4" />
-                Download Digital ID
-              </Button>
+          <div className="space-y-4">
+            <Skeleton className="h-48 w-full" />
+            <div className="flex justify-end space-x-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-24" />
             </div>
           </div>
         </CardContent>
       </Card>
-      
+    );
+  }
+
+  if (!employee) {
+    return (
       <Card>
         <CardHeader>
-          <CardTitle>ID Details</CardTitle>
+          <CardTitle>Digital ID Management</CardTitle>
+          <CardDescription>Employee data not available.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <dl className="space-y-4">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">ID Number</dt>
-              <dd className="text-lg">{digitalId.id_number}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Issue Date</dt>
-              <dd className="text-lg">{format(new Date(digitalId.issue_date), "MMMM d, yyyy")}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Expiry Date</dt>
-              <dd className="flex items-center gap-2">
-                <span className="text-lg">{format(new Date(digitalId.expiry_date), "MMMM d, yyyy")}</span>
-                {new Date(digitalId.expiry_date) < new Date() && (
-                  <Badge variant="destructive">Expired</Badge>
-                )}
-                {new Date(digitalId.expiry_date) > new Date() && (
-                  <Badge variant="outline" className="gap-1">
-                    <CalendarIcon className="h-3 w-3" />
-                    Valid
-                  </Badge>
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Status</dt>
-              <dd>
-                <Badge 
-                  className={digitalId.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'}
-                >
-                  {digitalId.status.toUpperCase()}
-                </Badge>
-              </dd>
-            </div>
-            {employee?.printed && employee.printed_at && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Last Printed</dt>
-                <dd className="text-lg">{format(new Date(employee.printed_at), "MMMM d, yyyy")}</dd>
-              </div>
-            )}
-          </dl>
-        </CardContent>
       </Card>
-    </div>
+    );
+  }
+
+  // Check if employee is eligible for an ID card
+  const isEligible = employee.status === 'approved' || 
+                     employee.status === 'active' || 
+                     employee.status === 'id_generated' || 
+                     employee.status === 'id_printed' || 
+                     employee.status === 'id_collected';
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Digital ID Management</CardTitle>
+        <CardDescription>Manage employee's digital identification cards and credentials</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isEligible ? (
+          <div className="space-y-6">
+            <div className="border rounded-lg p-6 relative overflow-hidden bg-gradient-to-r from-slate-800 to-slate-900 text-white">
+              <div className="absolute top-0 right-0 h-24 w-24 bg-gradient-to-br from-indigo-500/20 to-purple-600/20 rounded-full -mt-8 -mr-8"></div>
+              
+              <div className="flex flex-col sm:flex-row justify-between">
+                <div className="mb-4 sm:mb-0">
+                  <h3 className="text-lg font-semibold opacity-70">Employee ID Card</h3>
+                  <p className="text-2xl font-bold">{employee.employee_id}</p>
+                </div>
+                
+                <div className="text-right">
+                  <div className="text-sm opacity-70">Issue Date</div>
+                  <div>{digitalId?.issue_date ? format(new Date(digitalId.issue_date), "MMM d, yyyy") : "Pending"}</div>
+                  
+                  <div className="text-sm opacity-70 mt-2">Expiry Date</div>
+                  <div>{digitalId?.expiry_date ? format(new Date(digitalId.expiry_date), "MMM d, yyyy") : "Pending"}</div>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <div className="text-sm opacity-70">Employee Name</div>
+                <div className="text-xl font-semibold">{employee.full_name}</div>
+              </div>
+              
+              <div className="mt-4">
+                <div className="text-sm opacity-70">Position</div>
+                <div>{employee.position || "Not specified"}</div>
+              </div>
+              
+              <div className="mt-4">
+                <div className="text-sm opacity-70">Status</div>
+                <Badge className={`
+                  ${digitalId?.status === 'active' ? 'bg-green-500' : 
+                  digitalId?.status === 'pending' ? 'bg-yellow-500' : 
+                  digitalId?.status === 'expired' ? 'bg-red-500' : 'bg-blue-500'}
+                `}>
+                  {digitalId?.status || "Processing"}
+                </Badge>
+              </div>
+              
+              <div className="absolute bottom-0 right-0 mb-4 mr-4">
+                <CircleCheck className="h-8 w-8 text-indigo-400/50" />
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-between gap-2">
+              <div>
+                {employee.printed ? (
+                  <Button variant="outline" size="sm" disabled>
+                    <CircleCheck className="h-4 w-4 mr-2 text-green-500" />
+                    ID Card Printed
+                  </Button>
+                ) : (
+                  <Button size="sm">
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print ID Card
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Renew ID
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Digital ID
+                </Button>
+              </div>
+            </div>
+            
+            <div className="text-sm text-muted-foreground">
+              <p>
+                {employee.printed_at 
+                  ? `ID card last printed on ${format(new Date(employee.printed_at), "MMMM d, yyyy")}.` 
+                  : "ID card has not been printed yet."}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="py-8 text-center">
+            <div className="mx-auto h-12 w-12 text-muted-foreground opacity-50 rounded-full border-2 border-dashed flex items-center justify-center">
+              <Printer className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold">Not Eligible for ID</h3>
+            <p className="text-sm text-muted-foreground">
+              This employee is not yet approved or their status doesn't allow ID issuance.
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Current status: <Badge variant="outline">{employee.status || "Unknown"}</Badge>
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

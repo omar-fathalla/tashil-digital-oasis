@@ -1,137 +1,103 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
-import { FileText, UserCheck, UserMinus, UserPlus, Edit, Activity, Clock } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-
-interface EmployeeActivityProps {
-  employeeId?: string;
-  isLoading: boolean;
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { Activity, UserCog, Calendar } from "lucide-react";
 
 interface ActivityLog {
   id: string;
-  type: 'registration' | 'update' | 'suspension' | 'reactivation' | 'document' | 'other';
-  title: string;
-  description: string;
+  activity: string;
   timestamp: string;
-  user?: string;
+  actorName?: string;
+  actorRole?: string;
 }
 
-const EmployeeActivity = ({ employeeId, isLoading }: EmployeeActivityProps) => {
-  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
-  const [loadingActivity, setLoadingActivity] = useState(true);
-  
-  // Simulate fetching activity logs
-  useEffect(() => {
-    if (!employeeId) return;
+interface EmployeeActivityProps {
+  employeeId?: string;
+}
 
-    // This would typically be an API call to fetch activity logs
-    const timeout = setTimeout(() => {
-      // Mock data - in a real app, this would come from the API
-      const mockActivityLogs: ActivityLog[] = [
-        {
-          id: `${employeeId}-act-1`,
-          type: 'registration',
-          title: 'Employee Registered',
-          description: 'Employee record was created in the system',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 30).toISOString(),
-          user: 'System Admin',
-        },
-        {
-          id: `${employeeId}-act-2`,
-          type: 'update',
-          title: 'Profile Updated',
-          description: 'Employee information was updated',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 25).toISOString(),
-          user: 'HR Manager',
-        },
-        {
-          id: `${employeeId}-act-3`,
-          type: 'document',
-          title: 'Document Uploaded',
-          description: 'ID Card was uploaded to the system',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 20).toISOString(),
-          user: 'Document Manager',
-        },
-        {
-          id: `${employeeId}-act-4`,
-          type: 'update',
-          title: 'Position Updated',
-          description: 'Employee position was updated',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 15).toISOString(),
-          user: 'HR Manager',
-        },
-        {
-          id: `${employeeId}-act-5`,
-          type: 'suspension',
-          title: 'Account Suspended',
-          description: 'Employee account was temporarily suspended',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 10).toISOString(),
-          user: 'Security Manager',
-        },
-        {
-          id: `${employeeId}-act-6`,
-          type: 'reactivation',
-          title: 'Account Reactivated',
-          description: 'Employee account was reactivated',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
-          user: 'HR Manager',
-        },
-        {
-          id: `${employeeId}-act-7`,
-          type: 'document',
-          title: 'Document Verified',
-          description: 'ID Card was verified by HR',
-          timestamp: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
-          user: 'HR Manager',
-        },
-      ];
+const EmployeeActivity = ({ employeeId }: EmployeeActivityProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+
+  useEffect(() => {
+    // Simulate API fetch
+    const fetchActivityLogs = async () => {
+      setIsLoading(true);
       
-      setActivityLogs(mockActivityLogs);
-      setLoadingActivity(false);
-    }, 1000);
+      try {
+        // In a real implementation, this would fetch from a logs table
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mock data for demo purposes
+        const mockLogs: ActivityLog[] = [
+          {
+            id: '1',
+            activity: 'Employee profile created',
+            timestamp: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+            actorName: 'System',
+            actorRole: 'Automated'
+          },
+          {
+            id: '2',
+            activity: 'Documents uploaded',
+            timestamp: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+            actorName: 'Jane Smith',
+            actorRole: 'HR Manager'
+          },
+          {
+            id: '3',
+            activity: 'Employee status changed to "approved"',
+            timestamp: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+            actorName: 'John Davis',
+            actorRole: 'Department Manager'
+          },
+          {
+            id: '4',
+            activity: 'Digital ID generated',
+            timestamp: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+            actorName: 'System',
+            actorRole: 'Automated'
+          },
+          {
+            id: '5',
+            activity: 'ID card printed',
+            timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+            actorName: 'Sarah Johnson',
+            actorRole: 'Administrative Assistant'
+          }
+        ];
+        
+        setActivityLogs(mockLogs);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timeout);
+    if (employeeId) {
+      fetchActivityLogs();
+    }
   }, [employeeId]);
   
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'registration':
-        return <UserPlus className="h-5 w-5 text-green-600" />;
-      case 'update':
-        return <Edit className="h-5 w-5 text-blue-600" />;
-      case 'suspension':
-        return <UserMinus className="h-5 w-5 text-red-600" />;
-      case 'reactivation':
-        return <UserCheck className="h-5 w-5 text-green-600" />;
-      case 'document':
-        return <FileText className="h-5 w-5 text-yellow-600" />;
-      default:
-        return <Activity className="h-5 w-5 text-gray-600" />;
-    }
-  };
-  
-  if (isLoading || loadingActivity) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
           <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-72" />
         </CardHeader>
-        <CardContent>
-          <div className="space-y-8">
-            {Array(5).fill(null).map((_, i) => (
-              <div key={i} className="flex gap-4">
-                <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
-                <div className="space-y-2 flex-grow">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-                <Skeleton className="h-4 w-20 flex-shrink-0" />
+        <CardContent className="space-y-4">
+          {Array(5).fill(null).map((_, i) => (
+            <div key={i} className="flex gap-4 items-start">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
     );
@@ -139,34 +105,48 @@ const EmployeeActivity = ({ employeeId, isLoading }: EmployeeActivityProps) => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Activity Timeline</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Activity Log</CardTitle>
+          <CardDescription>History of actions performed on this employee record</CardDescription>
+        </div>
+        <Button variant="outline" size="sm">
+          Export History
+        </Button>
       </CardHeader>
       <CardContent>
-        {activityLogs.length === 0 ? (
-          <div className="text-center py-8">
-            <Clock className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-            <p className="mt-2 text-muted-foreground">No activity logs found</p>
-          </div>
-        ) : (
-          <div className="relative space-y-8 before:absolute before:inset-0 before:left-4 before:ml-0.5 before:h-full before:w-0.5 before:bg-muted">
+        {activityLogs.length > 0 ? (
+          <div className="space-y-8">
             {activityLogs.map((log) => (
               <div key={log.id} className="flex gap-4">
-                <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-md border">
-                  {getActivityIcon(log.type)}
+                <div className="mt-1">
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
                 </div>
-                <div className="flex-grow pt-0.5">
-                  <h6 className="font-medium">{log.title}</h6>
-                  <p className="text-sm text-muted-foreground">{log.description}</p>
-                  {log.user && (
-                    <p className="text-xs text-muted-foreground mt-1">By: {log.user}</p>
+                <div>
+                  <p className="font-medium">{log.activity}</p>
+                  <div className="flex gap-2 items-center text-sm text-muted-foreground mt-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>{format(new Date(log.timestamp), "MMMM d, yyyy 'at' h:mm a")}</span>
+                  </div>
+                  {(log.actorName || log.actorRole) && (
+                    <div className="flex gap-2 items-center text-sm text-muted-foreground mt-1">
+                      <UserCog className="h-3 w-3" />
+                      <span>{`${log.actorName}${log.actorRole ? ` (${log.actorRole})` : ''}`}</span>
+                    </div>
                   )}
-                </div>
-                <div className="flex-shrink-0 whitespace-nowrap text-xs text-muted-foreground pt-1">
-                  {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="py-8 text-center">
+            <Activity className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+            <h3 className="mt-4 text-lg font-semibold">No Activity Recorded</h3>
+            <p className="text-sm text-muted-foreground">
+              No actions have been performed on this employee record yet.
+            </p>
           </div>
         )}
       </CardContent>

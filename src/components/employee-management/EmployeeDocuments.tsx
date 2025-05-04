@@ -1,197 +1,184 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmployeeDocument, useEmployee } from "@/hooks/useEmployee";
-import { Badge } from "@/components/ui/badge";
-import { Check, FileText, Upload, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileCheck, FilePlus, FileX, Download, Eye } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { EmployeeDocument } from "@/hooks/useEmployee";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EmployeeDocumentsProps {
-  documents: EmployeeDocument[];
-  isLoading: boolean;
   employeeId?: string;
+  documents: EmployeeDocument[];
+  onUpload: (file: File, documentType: string) => void;
+  isUploading: boolean;
 }
 
-const EmployeeDocuments = ({ documents, isLoading, employeeId }: EmployeeDocumentsProps) => {
-  const [uploading, setUploading] = useState(false);
-  const { uploadDocument } = useEmployee(employeeId);
+const EmployeeDocuments = ({ employeeId, documents, onUpload, isUploading }: EmployeeDocumentsProps) => {
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentType, setDocumentType] = useState("");
   
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, documentType: string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setUploading(true);
-    
-    uploadDocument.mutate(
-      { file, documentType },
-      {
-        onSuccess: () => {
-          toast.success(`${documentType} uploaded successfully`);
-          setUploading(false);
-        },
-        onError: (error) => {
-          toast.error(`Failed to upload ${documentType}`);
-          console.error('Upload error:', error);
-          setUploading(false);
-        },
-      }
-    );
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
   };
   
-  const documentTypes = [
-    { type: 'id_card', label: 'ID Card' },
-    { type: 'passport', label: 'Passport' },
-    { type: 'resume', label: 'Resume/CV' },
-    { type: 'contract', label: 'Employment Contract' },
-    { type: 'certificate', label: 'Certificates' },
-  ];
-  
-  const formatDocumentType = (type: string) => {
-    return type
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  const handleUploadSubmit = () => {
+    if (selectedFile && documentType) {
+      onUpload(selectedFile, documentType);
+      setIsUploadDialogOpen(false);
+      setSelectedFile(null);
+      setDocumentType("");
+    }
   };
   
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-5 w-40" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array(4).fill(null).map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-4 border rounded-md">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded" />
-                  <div>
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-24 mt-1" />
-                  </div>
-                </div>
-                <Skeleton className="h-9 w-24" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Employee Documents</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {documents.length === 0 ? (
-          <div className="text-center py-6">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-            <p className="mt-2 text-muted-foreground">No documents found for this employee</p>
-            {employeeId && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Upload documents using the options below
-              </p>
-            )}
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Employee Documents</CardTitle>
+            <CardDescription>Manage employee's official documents and certificates</CardDescription>
           </div>
-        ) : (
-          <div className="space-y-4 mb-6">
-            {documents.map((document) => (
-              <div 
-                key={document.id} 
-                className="flex items-center justify-between p-4 border rounded-md hover:bg-muted/5 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="bg-muted/10 p-2 rounded">
-                    <FileText className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{formatDocumentType(document.document_type)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Uploaded: {format(new Date(document.uploaded_at), "MMM d, yyyy")}
-                    </p>
-                  </div>
+          
+          <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <FilePlus className="mr-2 h-4 w-4" />
+                Upload Document
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Upload New Document</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="document-type">Document Type</Label>
+                  <Select value={documentType} onValueChange={setDocumentType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select document type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="id_card">ID Card</SelectItem>
+                      <SelectItem value="passport">Passport</SelectItem>
+                      <SelectItem value="driver_license">Driver's License</SelectItem>
+                      <SelectItem value="contract">Employment Contract</SelectItem>
+                      <SelectItem value="certificate">Certificate</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex items-center gap-2">
-                  {document.verified ? (
-                    <Badge className="bg-green-500 gap-1">
-                      <Check className="h-3 w-3" />
-                      Verified
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="gap-1">
-                      <X className="h-3 w-3" />
-                      Not Verified
-                    </Badge>
-                  )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="document-file">File</Label>
+                  <Input 
+                    id="document-file" 
+                    type="file" 
+                    onChange={handleFileChange} 
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
                   <Button 
-                    size="sm" 
                     variant="outline"
-                    onClick={() => window.open(document.file_url, '_blank')}
+                    onClick={() => setIsUploadDialogOpen(false)}
                   >
-                    View
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleUploadSubmit} 
+                    disabled={!selectedFile || !documentType || isUploading}
+                  >
+                    {isUploading ? "Uploading..." : "Upload"}
                   </Button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-        
-        {employeeId && (
-          <>
-            <div className="border-t pt-4 mt-4">
-              <h3 className="font-medium mb-3">Upload New Documents</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {documentTypes.map((doc) => {
-                  const existing = documents.find(d => d.document_type === doc.type);
-                  
-                  return (
-                    <div key={doc.type} className="flex flex-col border rounded-md p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{doc.label}</span>
-                        {existing && (
-                          <Badge variant="outline" className="text-xs">Uploaded</Badge>
-                        )}
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          {documents.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Document Type</TableHead>
+                  <TableHead>Uploaded</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {documents.map((doc) => (
+                  <TableRow key={doc.id}>
+                    <TableCell className="font-medium">
+                      {doc.document_type.replace("_", " ").replace(/\b\w/g, (char) => char.toUpperCase())}
+                    </TableCell>
+                    <TableCell>{format(new Date(doc.uploaded_at), "MMM d, yyyy")}</TableCell>
+                    <TableCell>
+                      {doc.verified ? (
+                        <Badge className="bg-green-500">
+                          <FileCheck className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          <FileX className="h-3 w-3 mr-1" />
+                          Unverified
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" asChild>
+                          <a href={doc.file_url} target="_blank" rel="noreferrer">
+                            <Eye className="h-4 w-4" />
+                          </a>
+                        </Button>
+                        <Button size="sm" variant="ghost" asChild>
+                          <a href={doc.file_url} download>
+                            <Download className="h-4 w-4" />
+                          </a>
+                        </Button>
                       </div>
-                      
-                      <div className="mt-auto pt-3">
-                        <label htmlFor={`upload-${doc.type}`}>
-                          <div className="cursor-pointer">
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              className="w-full gap-2"
-                              disabled={uploading}
-                            >
-                              <Upload className="h-4 w-4" />
-                              {existing ? 'Replace' : 'Upload'}
-                            </Button>
-                          </div>
-                          <input 
-                            type="file"
-                            id={`upload-${doc.type}`}
-                            className="hidden"
-                            onChange={(e) => handleFileUpload(e, doc.type)}
-                            disabled={uploading}
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="py-8 text-center">
+              <FilePlus className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+              <h3 className="mt-4 text-lg font-semibold">No Documents</h3>
+              <p className="text-sm text-muted-foreground">
+                This employee doesn't have any uploaded documents yet.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground mt-4">
-              Supported formats: PDF, JPG, PNG. Maximum size: 5MB
-            </p>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 };
 
