@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/application-status/StatusBadge";
 import { format } from "date-fns";
 import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
+import type { EmployeeRequest } from "@/hooks/requests/types";
 
 interface RequestDetailsSheetProps {
   request: EmployeeRequest | null;

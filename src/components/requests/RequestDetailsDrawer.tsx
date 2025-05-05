@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
-import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
-import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
+import type { EmployeeRegistration } from "@/hooks/requests/types";
+import type { EmployeeRequest } from "@/hooks/requests/types";
 
 interface RequestDetailsDrawerProps {
   open: boolean;

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { Check, FileText, X, AlertTriangle } from "lucide-react";
@@ -14,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
 import { RequestDetailsDrawer } from "./RequestDetailsDrawer";
-import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
+import type { EmployeeRequest } from "@/hooks/requests/types";
 
 interface RequestsTableProps {
   requests: EmployeeRequest[];
