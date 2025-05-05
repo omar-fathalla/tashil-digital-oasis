@@ -18,6 +18,7 @@ export type EmployeeRequest = {
   company_number?: string;
   tax_card_number?: string;
   commercial_register_number?: string;
+  registration_id?: string | null;
 };
 
 export const REJECTION_REASONS = [
@@ -88,7 +89,7 @@ export const useEmployeeRequests = () => {
       const [employeeResponse, companyResponse] = await Promise.all([
         supabase
           .from("employee_requests")
-          .select("*")
+          .select("*, employee_registrations(*)")
           .order("request_date", { ascending: false }),
         supabase
           .from("companies")

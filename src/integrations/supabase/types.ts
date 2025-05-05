@@ -650,6 +650,7 @@ export type Database = {
           employee_name: string
           id: string
           notes: string | null
+          registration_id: string | null
           request_date: string | null
           request_type: string
           status: string | null
@@ -666,6 +667,7 @@ export type Database = {
           employee_name: string
           id?: string
           notes?: string | null
+          registration_id?: string | null
           request_date?: string | null
           request_type: string
           status?: string | null
@@ -682,6 +684,7 @@ export type Database = {
           employee_name?: string
           id?: string
           notes?: string | null
+          registration_id?: string | null
           request_date?: string | null
           request_type?: string
           status?: string | null
@@ -689,7 +692,15 @@ export type Database = {
           type?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "employee_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "employee_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       form_fields: {
         Row: {
