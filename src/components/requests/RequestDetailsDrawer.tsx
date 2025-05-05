@@ -5,9 +5,9 @@ import { X } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
 import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
-import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
+import type { EmployeeRequest } from "@/hooks/requests/types";
 
-type RequestDataType = "registration" | "employee" | "company";
+type RequestDataType = "registration" | "employee" | "company" | "request";
 
 interface RequestDetailsDrawerProps {
   open: boolean;
@@ -37,6 +37,29 @@ export function RequestDetailsDrawer({
     }
   };
 
+  // Safe access helper functions to handle type differences
+  const getSubmissionDate = () => {
+    if (isRegistration && 'submission_date' in data) {
+      return data.submission_date;
+    } else if (!isRegistration && 'request_date' in data) {
+      return data.request_date;
+    }
+    return undefined;
+  };
+
+  const getName = () => {
+    if (isRegistration && 'full_name' in data) {
+      return data.full_name;
+    } else if (!isRegistration && 'employee_name' in data) {
+      return data.employee_name;
+    }
+    return "N/A";
+  };
+
+  const getEmployeeId = () => {
+    return data.employee_id || "N/A";
+  };
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-w-3xl mx-auto">
@@ -60,7 +83,7 @@ export function RequestDetailsDrawer({
               <StatusBadge status={data.status} />
             </div>
             <div className="text-sm text-muted-foreground">
-              Submitted: {formatDate(isRegistration ? data.submission_date : (data as EmployeeRequest).request_date)}
+              Submitted: {formatDate(getSubmissionDate())}
             </div>
           </div>
           
@@ -71,23 +94,23 @@ export function RequestDetailsDrawer({
               <div className="grid grid-cols-1 gap-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Full Name</p>
-                  <p className="font-medium">{isRegistration ? data.full_name : (data as EmployeeRequest).employee_name}</p>
+                  <p className="font-medium">{getName()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">ID</p>
-                  <p className="font-medium font-mono">{data.employee_id}</p>
+                  <p className="font-medium font-mono">{getEmployeeId()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Request Type</p>
                   <p className="font-medium">{data.request_type || "Registration"}</p>
                 </div>
-                {isRegistration && data.position && (
+                {'position' in data && data.position && (
                   <div>
                     <p className="text-sm text-muted-foreground">Position</p>
                     <p className="font-medium">{data.position}</p>
                   </div>
                 )}
-                {isRegistration && data.area && (
+                {'area' in data && data.area && (
                   <div>
                     <p className="text-sm text-muted-foreground">Area/Department</p>
                     <p className="font-medium">{data.area}</p>
@@ -100,25 +123,25 @@ export function RequestDetailsDrawer({
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Contact Information</h3>
               <div className="grid grid-cols-1 gap-3">
-                {isRegistration && data.email && (
+                {'email' in data && data.email && (
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
                     <p className="font-medium break-all">{data.email}</p>
                   </div>
                 )}
-                {isRegistration && data.phone && (
+                {'phone' in data && data.phone && (
                   <div>
                     <p className="text-sm text-muted-foreground">Phone</p>
                     <p className="font-medium">{data.phone}</p>
                   </div>
                 )}
-                {isRegistration && data.address && (
+                {'address' in data && data.address && (
                   <div>
                     <p className="text-sm text-muted-foreground">Address</p>
                     <p className="font-medium">{data.address}</p>
                   </div>
                 )}
-                {isRegistration && data.national_id && (
+                {'national_id' in data && data.national_id && (
                   <div>
                     <p className="text-sm text-muted-foreground">National ID</p>
                     <p className="font-medium font-mono">{data.national_id}</p>
@@ -129,21 +152,21 @@ export function RequestDetailsDrawer({
           </div>
           
           {/* Additional Information for non-registration requests */}
-          {!isRegistration && (data as EmployeeRequest).notes && (
+          {!isRegistration && 'notes' in data && data.notes && (
             <div className="mt-6 p-4 border rounded-md">
               <h3 className="text-lg font-medium mb-2">Notes</h3>
-              <p className="text-muted-foreground">{(data as EmployeeRequest).notes}</p>
+              <p className="text-muted-foreground">{data.notes}</p>
             </div>
           )}
           
           {/* Photo if available */}
-          {isRegistration && data.photo_url && (
+          {'photo_url' in data && data.photo_url && (
             <div className="mt-6">
               <h3 className="text-lg font-medium mb-2">Photo</h3>
               <div className="w-32 h-32 rounded-md overflow-hidden border">
                 <img 
                   src={data.photo_url} 
-                  alt={`Photo of ${data.full_name}`}
+                  alt={`Photo of ${getName()}`}
                   className="w-full h-full object-cover"
                 />
               </div>

@@ -186,7 +186,7 @@ export function RequestsTable({ requests, onApprove, onReject, onView }: Request
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         data={selectedRequest}
-        type="request"
+        type="employee"
       />
     </>
   );
