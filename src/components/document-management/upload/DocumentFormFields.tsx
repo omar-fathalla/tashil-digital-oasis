@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DocumentCategory } from "@/utils/documentApi";
+import { DocumentCategory } from "@/utils/document"; // Updated import
 import { FileUploadArea } from "./FileUploadArea";
 import { KeywordsInput } from "./KeywordsInput";
 

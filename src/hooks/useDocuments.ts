@@ -1,3 +1,4 @@
+
 import { useCallback, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
@@ -6,7 +7,7 @@ import {
   DocumentSearchFilters, 
   DocumentVersion,
   documentApi 
-} from "@/utils/documentApi";
+} from "@/utils/document";
 import { useToast } from "./use-toast";
 
 export const useDocuments = (filters?: DocumentSearchFilters) => {

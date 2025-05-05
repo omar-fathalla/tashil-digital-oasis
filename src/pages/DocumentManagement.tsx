@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDocuments } from "@/hooks/useDocuments";
 import { DocumentCategories } from "@/components/document-management/DocumentCategories";
@@ -6,7 +7,7 @@ import { DocumentSearch } from "@/components/document-management/DocumentSearch"
 import { DocumentUpload } from "@/components/document-management/DocumentUpload";
 import { DocumentActions } from "@/components/document-management/DocumentActions";
 import { DocumentDetailsDialog } from "@/components/document-management/DocumentDetailsDialog";
-import { Document, DocumentSearchFilters } from "@/utils/documentApi";
+import { Document, DocumentSearchFilters } from "@/utils/document"; // Updated import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/AuthProvider";

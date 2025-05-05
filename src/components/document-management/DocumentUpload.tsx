@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { DocumentCategory } from "@/utils/documentApi";
+import { DocumentCategory } from "@/utils/document"; // Updated import
 import { useDocuments } from "@/hooks/useDocuments";
 import {
   Dialog,
