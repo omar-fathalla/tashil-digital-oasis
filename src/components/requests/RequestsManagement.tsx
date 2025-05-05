@@ -20,9 +20,10 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
-  const { requests, isLoading, error, updateRequestStatus } = useEmployeeRequests();
+  // Pass the statusFilter to the hook to enable server-side filtering
+  const { requests, isLoading, error, updateRequestStatus } = useEmployeeRequests(statusFilter);
   
-  // Filter requests based on type, search query, and status filter
+  // Filter requests based on type and search query
   const filteredRequests = requests
     ?.filter((request) => request.type === type)
     ?.filter((request) => {
@@ -34,10 +35,6 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
         request.employee_id.toLowerCase().includes(searchLower) ||
         (request.company_name && request.company_name.toLowerCase().includes(searchLower))
       );
-    })
-    ?.filter((request) => {
-      if (statusFilter === "all") return true;
-      return request.status === statusFilter;
     });
 
   // Set up realtime subscription for request updates

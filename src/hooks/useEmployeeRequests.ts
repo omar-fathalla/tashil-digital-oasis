@@ -99,24 +99,35 @@ const FAKE_COMPANIES = [
   },
 ];
 
-export const useEmployeeRequests = () => {
+export const useEmployeeRequests = (statusFilter: string = "all") => {
   const queryClient = useQueryClient();
 
   const { data: requests = [], isLoading, error } = useQuery({
-    queryKey: ["employee-requests"],
+    queryKey: ["employee-requests", statusFilter],
     queryFn: async () => {
-      console.log("Fetching employee requests with linked registration data");
+      console.log(`Fetching employee requests with status filter: ${statusFilter}`);
       try {
-        const [employeeResponse, companyResponse] = await Promise.all([
-          supabase
-            .from("employee_requests")
-            .select("*, employee_registrations(*)")
-            .order("request_date", { ascending: false }),
-          supabase
-            .from("companies")
-            .select("*")
-            .order("created_at", { ascending: false })
-        ]);
+        // Start building the employee requests query with registration data
+        let employeeQuery = supabase
+          .from("employee_requests")
+          .select("*, employee_registrations(*)");
+        
+        // Apply status filter if not "all"
+        if (statusFilter !== "all") {
+          employeeQuery = employeeQuery.eq("status", statusFilter);
+        }
+        
+        // Complete the query with ordering
+        employeeQuery = employeeQuery.order("request_date", { ascending: false });
+        
+        // Execute the employee requests query
+        const employeeResponse = await employeeQuery;
+        
+        // Get fake company data (not affected by status filter since it's hardcoded)
+        const companyResponse = await supabase
+          .from("companies")
+          .select("*")
+          .order("created_at", { ascending: false });
 
         if (employeeResponse.error) throw employeeResponse.error;
         if (companyResponse.error) throw companyResponse.error;
@@ -132,7 +143,7 @@ export const useEmployeeRequests = () => {
             }
           });
         } else {
-          console.log("No employee requests found");
+          console.log(`No employee requests found with status filter: ${statusFilter}`);
         }
 
         const employeeRequests = employeeResponse.data.map(req => ({
@@ -140,7 +151,8 @@ export const useEmployeeRequests = () => {
           type: "employee" as const
         }));
 
-        const companyRequests = FAKE_COMPANIES.map(company => ({
+        // For company requests, we filter them manually based on the status if needed
+        let companyRequests = FAKE_COMPANIES.map(company => ({
           id: company.id,
           employee_name: company.username,
           employee_id: company.company_number,
@@ -154,6 +166,11 @@ export const useEmployeeRequests = () => {
           tax_card_number: company.tax_card_number,
           commercial_register_number: company.commercial_register_number
         }));
+        
+        // Apply status filtering on company requests if needed
+        if (statusFilter !== "all") {
+          companyRequests = companyRequests.filter(req => req.status === statusFilter);
+        }
 
         return [...employeeRequests, ...companyRequests] as EmployeeRequest[];
       } catch (err) {
