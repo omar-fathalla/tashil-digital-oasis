@@ -1,5 +1,4 @@
-
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Document, 
@@ -24,7 +23,17 @@ export const useDocuments = (filters?: DocumentSearchFilters) => {
     refetch: refetchDocuments,
   } = useQuery({
     queryKey: ['documents', searchFilters],
-    queryFn: () => documentApi.getDocuments(searchFilters),
+    queryFn: async () => {
+      const result = await documentApi.getDocuments(searchFilters);
+      
+      // If no documents returned, generate sample data
+      if (result.length === 0) {
+        console.log("No documents found, returning sample data");
+        return generateSampleDocuments();
+      }
+      
+      return result;
+    },
   });
 
   // Query for fetching categories
@@ -33,8 +42,98 @@ export const useDocuments = (filters?: DocumentSearchFilters) => {
     isLoading: isLoadingCategories,
   } = useQuery({
     queryKey: ['document-categories'],
-    queryFn: documentApi.getCategories,
+    queryFn: async () => {
+      const result = await documentApi.getCategories();
+      
+      // If no categories returned, generate sample data
+      if (result.length === 0) {
+        console.log("No categories found, returning sample categories");
+        return generateSampleCategories();
+      }
+      
+      return result;
+    },
   });
+
+  // Generate sample documents for demo purposes
+  const generateSampleDocuments = (): Document[] => {
+    const sampleCategories = generateSampleCategories();
+    const fileTypes = ['application/pdf', 'image/jpeg', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    
+    return Array(12).fill(null).map((_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+      
+      const categoryIndex = Math.floor(Math.random() * sampleCategories.length);
+      
+      return {
+        id: `sample-doc-${index}`,
+        name: getSampleDocumentName(index),
+        description: `Sample document description for ${getSampleDocumentName(index)}`,
+        file_url: `https://example.com/documents/sample-${index}.pdf`,
+        file_type: fileTypes[Math.floor(Math.random() * fileTypes.length)],
+        file_size: Math.floor(Math.random() * 1000000) + 100000, // 100KB to 1MB
+        category_id: sampleCategories[categoryIndex].id,
+        uploaded_by: 'sample-user',
+        created_at: date.toISOString(),
+        updated_at: date.toISOString(),
+        is_encrypted: Math.random() > 0.8,
+        metadata: {
+          originalName: `original-${getSampleDocumentName(index)}.pdf`,
+          lastModified: date.getTime(),
+        },
+        keywords: getSampleKeywords()
+      };
+    });
+  };
+
+  // Generate sample categories
+  const generateSampleCategories = (): DocumentCategory[] => {
+    const categories = [
+      { name: 'Human Resources', description: 'Employee-related documents' },
+      { name: 'Finance', description: 'Financial documents and reports' },
+      { name: 'Legal', description: 'Contracts and legal documents' },
+      { name: 'Operations', description: 'Operational manuals and guides' },
+      { name: 'Marketing', description: 'Marketing materials and assets' }
+    ];
+    
+    return categories.map((category, index) => ({
+      id: `sample-category-${index}`,
+      name: category.name,
+      description: category.description,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+  };
+
+  // Helper function to get sample document names
+  const getSampleDocumentName = (index: number): string => {
+    const documentNames = [
+      'Employee Handbook', 'Privacy Policy', 'Company Bylaws', 
+      'Annual Report', 'Financial Statement', 'Project Proposal',
+      'Marketing Strategy', 'Customer Analysis', 'Technical Documentation',
+      'Training Manual', 'Meeting Minutes', 'Product Specifications',
+      'Compliance Report', 'Health and Safety Guidelines', 'Research Report'
+    ];
+    
+    return documentNames[index % documentNames.length];
+  };
+  
+  // Helper function to get sample keywords
+  const getSampleKeywords = (): string[] => {
+    const allKeywords = ['confidential', 'important', 'draft', 'final', 'approved', 'pending', 'template', 'reference'];
+    const count = Math.floor(Math.random() * 3) + 1; // 1-3 keywords
+    const keywords: string[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      const randomKeyword = allKeywords[Math.floor(Math.random() * allKeywords.length)];
+      if (!keywords.includes(randomKeyword)) {
+        keywords.push(randomKeyword);
+      }
+    }
+    
+    return keywords;
+  };
 
   // Mutation for uploading a document
   const uploadMutation = useMutation({

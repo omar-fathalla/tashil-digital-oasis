@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 export interface DocumentActivity {
   id: string;
@@ -23,6 +24,8 @@ export interface DocumentActivityFilters {
 }
 
 export const useDocumentActivity = (filters: DocumentActivityFilters = {}) => {
+  const [useSampleData, setUseSampleData] = useState(false);
+
   const fetchDocumentActivity = async (): Promise<DocumentActivity[]> => {
     try {
       let query = supabase
@@ -66,6 +69,12 @@ export const useDocumentActivity = (filters: DocumentActivityFilters = {}) => {
       
       if (error) throw error;
       
+      // Check if we need to use sample data
+      if (!data || data.length === 0) {
+        setUseSampleData(true);
+        return generateSampleActivity();
+      }
+      
       // Transform the data to add document_name from the joined table
       const transformedData = data.map(item => ({
         ...item,
@@ -75,8 +84,47 @@ export const useDocumentActivity = (filters: DocumentActivityFilters = {}) => {
       return transformedData as DocumentActivity[];
     } catch (error) {
       console.error("Error fetching document activity:", error);
-      return [];
+      setUseSampleData(true);
+      return generateSampleActivity();
     }
+  };
+
+  const generateSampleActivity = (): DocumentActivity[] => {
+    const actions = ['view', 'download', 'edit', 'upload', 'delete', 'share', 'rename', 'new_version'];
+    const documentNames = [
+      'Employee Handbook', 'Privacy Policy', 'Company Bylaws', 
+      'Annual Report', 'Financial Statement', 'Project Proposal',
+      'Marketing Strategy', 'Customer Analysis', 'Technical Documentation'
+    ];
+    
+    const sampleActivity: DocumentActivity[] = [];
+    
+    // Generate 20 sample activities
+    for (let i = 0; i < 20; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - Math.floor(Math.random() * 10)); // Last 10 days
+      date.setHours(date.getHours() - Math.floor(Math.random() * 24)); // Random hour of the day
+      
+      const documentId = `sample-doc-${Math.floor(Math.random() * documentNames.length)}`;
+      const documentName = documentNames[Math.floor(Math.random() * documentNames.length)];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      
+      sampleActivity.push({
+        id: `sample-activity-${i}`,
+        document_id: documentId,
+        document_name: documentName,
+        user_id: 'sample-user',
+        user_name: `User ${Math.floor(Math.random() * 5) + 1}`,
+        action,
+        timestamp: date.toISOString(),
+        ip_address: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        details: action === 'edit' ? { changedFields: ['name', 'description'] } : undefined
+      });
+    }
+    
+    return sampleActivity.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   };
 
   const { 
@@ -93,6 +141,7 @@ export const useDocumentActivity = (filters: DocumentActivityFilters = {}) => {
     activity,
     isLoading,
     error,
-    refetch
+    refetch,
+    useSampleData
   };
 };

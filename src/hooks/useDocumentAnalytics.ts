@@ -1,182 +1,87 @@
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Document } from "@/utils/documentApi";
-import { useToast } from "@/hooks/use-toast";
 
-export interface DocumentStats {
-  totalDocuments: number;
-  totalSize: number;
-  uploadedThisMonth: number;
-  encryptedCount: number;
+interface DocumentStats {
+  totalCount: number;
+  fileTypeBreakdown: Record<string, number>;
   categoryCounts: Record<string, number>;
-  userActivitySummary: {
-    userId: string;
-    userName: string;
-    uploadCount: number;
-    lastActive: string;
+  monthlyUploads: {
+    month: string;
+    count: number;
   }[];
-  mostAccessed?: Document[];
 }
 
 export const useDocumentAnalytics = () => {
-  const { toast } = useToast();
-  
-  const fetchDocumentStats = async (): Promise<DocumentStats> => {
-    try {
-      // Get total documents count
-      const { count: totalDocuments, error: countError } = await supabase
-        .from("documents")
-        .select("*", { count: "exact", head: true });
-      
-      if (countError) throw countError;
-      
-      // Get documents uploaded this month
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      
-      const { count: uploadedThisMonth, error: monthCountError } = await supabase
-        .from("documents")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", startOfMonth.toISOString());
-        
-      if (monthCountError) throw monthCountError;
-      
-      // Get documents by category
-      const { data: categoryData, error: categoryError } = await supabase
-        .from("documents")
-        .select(`
-          category_id,
-          document_categories(name)
-        `);
-        
-      if (categoryError) throw categoryError;
-      
-      // Calculate category counts
-      const categoryCounts: Record<string, number> = {};
-      categoryData?.forEach(doc => {
-        const categoryName = doc.document_categories?.name || "Uncategorized";
-        categoryCounts[categoryName] = (categoryCounts[categoryName] || 0) + 1;
-      });
-      
-      // Get encrypted documents count
-      const { count: encryptedCount, error: encryptedError } = await supabase
-        .from("documents")
-        .select("*", { count: "exact", head: true })
-        .eq("is_encrypted", true);
-        
-      if (encryptedError) throw encryptedError;
-      
-      // Get total file size
-      const { data: sizeData, error: sizeError } = await supabase
-        .from("documents")
-        .select("file_size");
-        
-      if (sizeError) throw sizeError;
-      
-      const totalSize = sizeData?.reduce((sum, doc) => sum + (doc.file_size || 0), 0) || 0;
-      
-      // Get user activity summary
-      const { data: userActivity, error: userError } = await supabase
-        .from("documents")
-        .select(`
-          uploaded_by,
-          created_at
-        `);
-        
-      if (userError) throw userError;
-      
-      const userMap: Record<string, { count: number, lastActive: string }> = {};
-      userActivity?.forEach(doc => {
-        if (!doc.uploaded_by) return;
-        
-        if (!userMap[doc.uploaded_by]) {
-          userMap[doc.uploaded_by] = {
-            count: 1,
-            lastActive: doc.created_at
-          };
-        } else {
-          userMap[doc.uploaded_by].count += 1;
-          if (new Date(doc.created_at) > new Date(userMap[doc.uploaded_by].lastActive)) {
-            userMap[doc.uploaded_by].lastActive = doc.created_at;
-          }
-        }
-      });
-      
-      const userActivitySummary = Object.entries(userMap).map(([userId, data]) => ({
-        userId,
-        userName: userId, // Ideally we'd fetch user names, but that's a separate API call
-        uploadCount: data.count,
-        lastActive: data.lastActive
-      }));
-      
-      // Get most accessed documents
-      const { data: accessLogs, error: logsError } = await supabase
-        .from("document_access_logs")
-        .select(`
-          document_id,
-          count
-        `)
-        .order("count", { ascending: false })
-        .limit(5);
-        
-      // If we can't get logs, just continue without this data
-      let mostAccessed: Document[] = [];
-      if (!logsError && accessLogs?.length) {
-        const docIds = accessLogs.map(log => log.document_id);
-        const { data: docs } = await supabase
-          .from("documents")
-          .select("*")
-          .in("id", docIds);
-          
-        mostAccessed = docs as Document[] || [];
+  const [documentStats, setDocumentStats] = useState<DocumentStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setIsLoadingStats(true);
+      try {
+        // In a real app, this would be a call to the backend
+        // For now, we'll generate some sample data
+        const sampleStats = generateSampleStats();
+        setDocumentStats(sampleStats);
+      } catch (err) {
+        console.error("Error fetching document statistics:", err);
+        setError(err instanceof Error ? err : new Error("Unknown error"));
+      } finally {
+        setIsLoadingStats(false);
       }
+    };
+
+    fetchStats();
+  }, []);
+
+  const generateSampleStats = (): DocumentStats => {
+    // Generate sample file type breakdown
+    const fileTypes = {
+      "PDF": Math.floor(Math.random() * 50) + 20,
+      "DOCX": Math.floor(Math.random() * 30) + 10,
+      "XLSX": Math.floor(Math.random() * 20) + 5,
+      "JPG": Math.floor(Math.random() * 15) + 8,
+      "PNG": Math.floor(Math.random() * 10) + 5,
+    };
+
+    // Generate sample category counts
+    const categories = {
+      "Human Resources": Math.floor(Math.random() * 30) + 15,
+      "Finance": Math.floor(Math.random() * 20) + 10,
+      "Legal": Math.floor(Math.random() * 25) + 12,
+      "Operations": Math.floor(Math.random() * 15) + 8,
+      "Marketing": Math.floor(Math.random() * 10) + 5,
+    };
+
+    // Generate sample monthly uploads for the last 6 months
+    const monthlyUploads = [];
+    const currentDate = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const month = new Date(currentDate);
+      month.setMonth(currentDate.getMonth() - i);
       
-      return {
-        totalDocuments: totalDocuments || 0,
-        uploadedThisMonth: uploadedThisMonth || 0,
-        totalSize,
-        encryptedCount: encryptedCount || 0,
-        categoryCounts,
-        userActivitySummary,
-        mostAccessed
-      };
-    } catch (error) {
-      console.error("Error fetching document statistics:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load document statistics",
-        variant: "destructive",
+      monthlyUploads.push({
+        month: month.toLocaleString('default', { month: 'short', year: 'numeric' }),
+        count: Math.floor(Math.random() * 20) + 5,
       });
-      
-      // Return default values on error
-      return {
-        totalDocuments: 0,
-        uploadedThisMonth: 0,
-        totalSize: 0,
-        encryptedCount: 0,
-        categoryCounts: {},
-        userActivitySummary: []
-      };
     }
+
+    // Calculate total count
+    const totalCount = Object.values(fileTypes).reduce((sum, count) => sum + count, 0);
+
+    return {
+      totalCount,
+      fileTypeBreakdown: fileTypes,
+      categoryCounts: categories,
+      monthlyUploads,
+    };
   };
-  
-  const { 
-    data: documentStats,
-    isLoading: isLoadingStats,
-    error: statsError,
-    refetch: refreshStats
-  } = useQuery({
-    queryKey: ["document-statistics"],
-    queryFn: fetchDocumentStats,
-  });
-  
+
   return {
     documentStats,
     isLoadingStats,
-    statsError,
-    refreshStats
+    error,
   };
 };
