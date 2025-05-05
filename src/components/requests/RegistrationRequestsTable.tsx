@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/application-status/StatusBadge";
 import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
 
 export function RegistrationRequestsTable({ 
@@ -18,17 +18,6 @@ export function RegistrationRequestsTable({
 }: { 
   requests: EmployeeRegistration[] 
 }) {
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return "bg-green-100 text-green-800 border-green-200";
-      case 'rejected':
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    }
-  };
-
   return (
     <div className="rounded-md border overflow-hidden">
       <Table>
@@ -56,12 +45,7 @@ export function RegistrationRequestsTable({
                 {format(new Date(request.submission_date), "PPP")}
               </TableCell>
               <TableCell>
-                <Badge
-                  variant="outline"
-                  className={getStatusColor(request.status)}
-                >
-                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                </Badge>
+                <StatusBadge status={request.status} />
               </TableCell>
               <TableCell>
                 <Button

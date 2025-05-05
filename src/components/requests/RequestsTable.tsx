@@ -2,7 +2,6 @@
 import { format } from "date-fns";
 import { Check, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatusBadge } from "@/components/application-status/StatusBadge";
 import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
 
 interface RequestsTableProps {
@@ -93,26 +93,15 @@ export function RequestsTable({ requests, onApprove, onReject, onView }: Request
                     </TableCell>
                   )}
                   <TableCell>
-                    <Badge variant="outline" className="bg-primary/10">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10">
                       {request.request_type}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {format(new Date(request.request_date || registration?.submission_date || new Date()), "PPP")}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        request.status === "approved"
-                          ? "bg-green-100 text-green-800 border-green-200"
-                          : request.status === "rejected"
-                          ? "bg-red-100 text-red-800 border-red-200"
-                          : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                      }
-                    >
-                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                    </Badge>
+                    <StatusBadge status={request.status} />
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     {request.status === "pending" && (

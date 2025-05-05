@@ -8,17 +8,41 @@ import { useEmployeeRequests, type EmployeeRequest } from "@/hooks/useEmployeeRe
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 
 interface RequestsManagementProps {
   type?: "employee" | "company";
+  initialSearchQuery?: string;
+  initialStatusFilter?: string;
+  onSearchChange?: (query: string) => void;
+  onStatusFilterChange?: (status: string) => void;
 }
 
-export const RequestsManagement = ({ type = "employee" }: RequestsManagementProps) => {
+export const RequestsManagement = ({ 
+  type = "employee",
+  initialSearchQuery = "",
+  initialStatusFilter = "all",
+  onSearchChange,
+  onStatusFilterChange
+}: RequestsManagementProps) => {
   const [selectedRequest, setSelectedRequest] = useState<EmployeeRequest | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter);
+  
+  // Update parent component when filters change
+  useEffect(() => {
+    if (onSearchChange) {
+      onSearchChange(searchQuery);
+    }
+  }, [searchQuery, onSearchChange]);
+
+  useEffect(() => {
+    if (onStatusFilterChange) {
+      onStatusFilterChange(statusFilter);
+    }
+  }, [statusFilter, onStatusFilterChange]);
   
   // Pass the statusFilter to the hook to enable server-side filtering
   const { requests, isLoading, error, updateRequestStatus } = useEmployeeRequests(statusFilter);
@@ -85,15 +109,25 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
     }
   };
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (onSearchChange) {
+      onSearchChange(query);
+    }
+  };
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    if (onStatusFilterChange) {
+      onStatusFilterChange(status);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <div className="space-y-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
+      <div className="flex justify-center items-center py-8">
+        <Spinner className="mr-2" />
+        <span>Loading requests...</span>
       </div>
     );
   }
@@ -106,16 +140,22 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
     );
   }
 
-  if (!filteredRequests || filteredRequests.length === 0) {
-    return (
-      <div className="space-y-4">
-        <RequestsHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          title={type === "employee" ? "Employee Requests" : "Company Requests"}
-        />
+  return (
+    <div className="space-y-4">
+      <RequestsHeader
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
+        title={type === "employee" ? "Employee Requests" : "Company Requests"}
+      />
+      
+      {/* Results summary */}
+      <div className="text-sm text-muted-foreground">
+        Showing {filteredRequests?.length || 0} {type} {filteredRequests?.length === 1 ? 'request' : 'requests'}
+      </div>
+      
+      {!filteredRequests || filteredRequests.length === 0 ? (
         <Alert>
           <AlertDescription>
             {searchQuery || statusFilter !== "all" 
@@ -123,25 +163,15 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
               : `No ${type} requests found.`}
           </AlertDescription>
         </Alert>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <RequestsHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        title={type === "employee" ? "Employee Requests" : "Company Requests"}
-      />
-      <RequestsTable
-        requests={filteredRequests || []}
-        onView={handleViewDetails}
-        onApprove={handleApprove}
-        onReject={handleReject}
-      />
+      ) : (
+        <RequestsTable
+          requests={filteredRequests || []}
+          onView={handleViewDetails}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      )}
+      
       <RequestDetailsSheet
         request={selectedRequest}
         open={isDetailsOpen}
