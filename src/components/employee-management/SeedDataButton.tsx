@@ -3,14 +3,18 @@ import { Button } from "@/components/ui/button";
 import { seedEmployeeData } from "@/utils/seedEmployeeData";
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function SeedDataButton() {
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   
   const handleSeedData = async () => {
     setIsLoading(true);
     try {
       await seedEmployeeData();
+      // Invalidate the employees query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
     } finally {
       setIsLoading(false);
     }
