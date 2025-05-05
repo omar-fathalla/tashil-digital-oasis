@@ -20,6 +20,7 @@ export interface EmployeeRegistration {
   hire_date?: string | null;
   email?: string | null;
   address?: string | null;
+  area?: string | null; // Added area field to match database schema
 }
 
 export type EmployeeRequest = {
