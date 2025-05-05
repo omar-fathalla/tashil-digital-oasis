@@ -14,6 +14,15 @@ import { format } from "date-fns";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
 import { RequestDetailsDrawer } from "./RequestDetailsDrawer";
 import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export function RegistrationRequestsTable({ 
   requests 
@@ -22,10 +31,59 @@ export function RegistrationRequestsTable({
 }) {
   const [selectedRequest, setSelectedRequest] = useState<EmployeeRegistration | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const handleViewDetails = (request: EmployeeRegistration) => {
     setSelectedRequest(request);
     setDetailsOpen(true);
+  };
+
+  // Calculate pagination values
+  const totalItems = requests.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentItems = requests.slice(startIndex, endIndex);
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      // Show all pages if there are less than maxPagesToShow
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      // Calculate range around current page
+      let start = Math.max(2, currentPage - 1);
+      let end = Math.min(totalPages - 1, currentPage + 1);
+      
+      // Add ellipsis before start if needed
+      if (start > 2) {
+        pages.push('ellipsis-start');
+      }
+      
+      // Add pages in the middle
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      // Add ellipsis after end if needed
+      if (end < totalPages - 1) {
+        pages.push('ellipsis-end');
+      }
+      
+      // Always show last page
+      pages.push(totalPages);
+    }
+    
+    return pages;
   };
 
   return (
@@ -43,7 +101,7 @@ export function RegistrationRequestsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {requests.map((request) => (
+            {currentItems.map((request) => (
               <TableRow 
                 key={request.id} 
                 className="hover:bg-muted/50 cursor-pointer"
@@ -84,6 +142,51 @@ export function RegistrationRequestsTable({
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Pagination UI */}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {startIndex + 1} to {endIndex} of {totalItems} registration {totalItems === 1 ? 'request' : 'requests'}
+        </div>
+        
+        {totalPages > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              
+              {getPageNumbers().map((page, i) => (
+                typeof page === 'number' ? (
+                  <PaginationItem key={`page-${page}`}>
+                    <PaginationLink 
+                      isActive={currentPage === page}
+                      onClick={() => setCurrentPage(page)}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={`${page}-${i}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )
+              ))}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
 
       <RequestDetailsDrawer

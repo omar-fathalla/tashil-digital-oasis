@@ -1,166 +1,154 @@
 
-import { useState } from "react";
-import { format } from "date-fns";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+import { format } from "date-fns";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
-import type { EmployeeRegistration } from "@/hooks/requests/types";
-import type { EmployeeRequest } from "@/hooks/requests/types";
+import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
+import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
+
+type RequestDataType = "registration" | "employee" | "company";
 
 interface RequestDetailsDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   data: EmployeeRegistration | EmployeeRequest | null;
-  type: "registration" | "request";
+  type: RequestDataType;
 }
 
-export function RequestDetailsDrawer({ open, onOpenChange, data, type }: RequestDetailsDrawerProps) {
+export function RequestDetailsDrawer({ 
+  open, 
+  onOpenChange, 
+  data, 
+  type 
+}: RequestDetailsDrawerProps) {
   if (!data) return null;
 
-  // Determine if this is a request with broken linked data
-  const isBrokenLink = 
-    type === "request" && 
-    (data as EmployeeRequest).registration_id && 
-    !(data as EmployeeRequest).employee_registrations;
-
-  const request = data as EmployeeRequest;
-  const registration = 
-    type === "registration" 
-      ? data as EmployeeRegistration 
-      : (data as EmployeeRequest).employee_registrations || null;
+  // Determine if we're dealing with an EmployeeRegistration or EmployeeRequest
+  const isRegistration = type === "registration";
+  
+  // Format date safely
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), "PPP");
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh] overflow-y-auto">
-        <div className="mx-auto w-full max-w-lg">
-          <DrawerHeader>
-            <DrawerTitle>
-              {type === "registration" ? "Registration Details" : "Request Details"}
+      <DrawerContent className="max-w-3xl mx-auto">
+        <div className="p-6">
+          <DrawerHeader className="flex items-center justify-between p-0 mb-4">
+            <DrawerTitle className="text-xl font-semibold">
+              {isRegistration ? "Registration Details" : "Request Details"}
             </DrawerTitle>
-            <DrawerDescription>
-              {type === "registration" 
-                ? `Viewing registration for ${(data as EmployeeRegistration).full_name}`
-                : `Viewing request from ${(data as EmployeeRequest).employee_name}`
-              }
-            </DrawerDescription>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon">
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
+            </DrawerClose>
           </DrawerHeader>
-
-          {isBrokenLink && (
-            <Alert variant="destructive" className="mx-4 mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                This request references registration ID {request.registration_id} but the linked data is missing or inaccessible.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="p-4 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">Basic Information</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  <span className="text-sm font-medium">Name:</span>
-                  <span className="text-sm col-span-2">{type === "registration" ? registration?.full_name : request.employee_name}</span>
-                  
-                  <span className="text-sm font-medium">Employee ID:</span>
-                  <span className="text-sm col-span-2 font-mono">{type === "registration" ? registration?.employee_id : request.employee_id}</span>
-                  
-                  <span className="text-sm font-medium">Status:</span>
-                  <div className="col-span-2">
-                    <StatusBadge status={type === "registration" ? registration?.status || "unknown" : request.status} />
-                  </div>
-                  
-                  <span className="text-sm font-medium">Type:</span>
-                  <span className="text-sm col-span-2">{type === "registration" ? registration?.request_type || "Registration" : request.request_type}</span>
-                  
-                  <span className="text-sm font-medium">Submission:</span>
-                  <span className="text-sm col-span-2">
-                    {format(
-                      new Date(
-                        type === "registration" 
-                          ? registration?.submission_date || new Date() 
-                          : request.request_date || new Date()
-                      ), 
-                      "PPP"
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              {registration && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Additional Details</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {registration.national_id && (
-                      <>
-                        <span className="text-sm font-medium">National ID:</span>
-                        <span className="text-sm col-span-2 font-mono">{registration.national_id}</span>
-                      </>
-                    )}
-                    
-                    {registration.position && (
-                      <>
-                        <span className="text-sm font-medium">Position:</span>
-                        <span className="text-sm col-span-2">{registration.position}</span>
-                      </>
-                    )}
-                    
-                    {registration.area && (
-                      <>
-                        <span className="text-sm font-medium">Area:</span>
-                        <span className="text-sm col-span-2">{registration.area}</span>
-                      </>
-                    )}
-                    
-                    {registration.phone && (
-                      <>
-                        <span className="text-sm font-medium">Phone:</span>
-                        <span className="text-sm col-span-2">{registration.phone}</span>
-                      </>
-                    )}
-                    
-                    {registration.email && (
-                      <>
-                        <span className="text-sm font-medium">Email:</span>
-                        <span className="text-sm col-span-2">{registration.email}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
+          
+          {/* Request Status Banner */}
+          <div className="mb-6 p-3 bg-muted/30 rounded-md flex justify-between items-center">
+            <div>
+              <span className="text-sm font-medium mr-2">Status:</span>
+              <StatusBadge status={data.status} />
             </div>
-
-            {request.notes && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">Notes</h4>
-                <p className="text-sm p-2 bg-muted rounded">{request.notes}</p>
-              </div>
-            )}
-
-            {/* Photo display if available */}
-            {registration?.photo_url && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">Photo</h4>
-                <div className="h-48 w-48 border rounded overflow-hidden">
-                  <img 
-                    src={registration.photo_url} 
-                    alt={`Photo of ${registration.full_name}`} 
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      // Handle broken image
-                      e.currentTarget.src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+            <div className="text-sm text-muted-foreground">
+              Submitted: {formatDate(isRegistration ? data.submission_date : (data as EmployeeRequest).request_date)}
+            </div>
           </div>
-
-          <DrawerFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-          </DrawerFooter>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Basic Information</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Full Name</p>
+                  <p className="font-medium">{isRegistration ? data.full_name : (data as EmployeeRequest).employee_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">ID</p>
+                  <p className="font-medium font-mono">{data.employee_id}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Request Type</p>
+                  <p className="font-medium">{data.request_type || "Registration"}</p>
+                </div>
+                {isRegistration && data.position && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Position</p>
+                    <p className="font-medium">{data.position}</p>
+                  </div>
+                )}
+                {isRegistration && data.area && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Area/Department</p>
+                    <p className="font-medium">{data.area}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Contact Information</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {isRegistration && data.email && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-medium break-all">{data.email}</p>
+                  </div>
+                )}
+                {isRegistration && data.phone && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <p className="font-medium">{data.phone}</p>
+                  </div>
+                )}
+                {isRegistration && data.address && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Address</p>
+                    <p className="font-medium">{data.address}</p>
+                  </div>
+                )}
+                {isRegistration && data.national_id && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">National ID</p>
+                    <p className="font-medium font-mono">{data.national_id}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Additional Information for non-registration requests */}
+          {!isRegistration && (data as EmployeeRequest).notes && (
+            <div className="mt-6 p-4 border rounded-md">
+              <h3 className="text-lg font-medium mb-2">Notes</h3>
+              <p className="text-muted-foreground">{(data as EmployeeRequest).notes}</p>
+            </div>
+          )}
+          
+          {/* Photo if available */}
+          {isRegistration && data.photo_url && (
+            <div className="mt-6">
+              <h3 className="text-lg font-medium mb-2">Photo</h3>
+              <div className="w-32 h-32 rounded-md overflow-hidden border">
+                <img 
+                  src={data.photo_url} 
+                  alt={`Photo of ${data.full_name}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </DrawerContent>
     </Drawer>
