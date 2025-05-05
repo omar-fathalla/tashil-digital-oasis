@@ -6,7 +6,6 @@ import { useDocumentApi } from './document/hooks/useDocumentApi';
 
 export {
   documentApi,
-  DocumentType,
   DocumentTypes,
   useDocumentApi
 };
@@ -17,5 +16,7 @@ export type {
   DocumentCategory, 
   DocumentPermission, 
   DocumentSearchFilters,
+  DocumentType,
   Role
 };
+
