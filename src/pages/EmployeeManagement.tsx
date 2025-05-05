@@ -5,6 +5,7 @@ import EmployeeDataTable from "@/components/employee-management/EmployeeDataTabl
 import EmployeeFilters from "@/components/employee-management/EmployeeFilters";
 import EmployeeExport from "@/components/employee-management/EmployeeExport";
 import { ensureDemoData } from "@/utils/seedDemoData";
+import SeedDataButton from "@/components/employee-management/SeedDataButton";
 
 const EmployeeManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +37,10 @@ const EmployeeManagement = () => {
           <h1 className="text-3xl font-bold">Employee Management</h1>
           <p className="text-muted-foreground">View, manage, and export employee records</p>
         </div>
-        <EmployeeExport />
+        <div className="flex items-center gap-3 mt-4 md:mt-0">
+          <SeedDataButton />
+          <EmployeeExport />
+        </div>
       </div>
       
       <Card className="border-none shadow-lg mb-6">
