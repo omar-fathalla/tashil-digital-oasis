@@ -1,76 +1,75 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useApplications } from "@/hooks/useApplications";
-import { useNotifications } from "@/hooks/useNotifications";
-import StatusHero from "@/components/application-status/StatusHero";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RegistrationRequestsTable } from "@/components/requests/RegistrationRequestsTable";
 import { RequestsManagement } from "@/components/requests/RequestsManagement";
-import GroupedNotifications from "@/components/application-status/GroupedNotifications";
-import { ensureDemoData } from "@/utils/seedDemoData";
+import { useEmployeeRegistrations } from "@/hooks/useEmployeeRegistrations";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ApplicationStatus = () => {
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [isDataLoading, setIsDataLoading] = useState(false);
-  
-  const { data: applications = [], isLoading: isLoadingApps } = useApplications(activeFilter);
-  const { notifications, markAsRead, isLoading: isLoadingNotifs } = useNotifications();
-
-  // Ensure we have demo data on page load
-  useEffect(() => {
-    const loadDemoData = async () => {
-      setIsDataLoading(true);
-      try {
-        await ensureDemoData();
-      } catch (error) {
-        console.error("Failed to load demo data:", error);
-      } finally {
-        setIsDataLoading(false);
-      }
-    };
-    
-    loadDemoData();
-  }, []);
-
-  const isLoading = isDataLoading || isLoadingApps || isLoadingNotifs;
+  const [activeTab, setActiveTab] = useState("registration-requests");
+  const { registrations, isLoading, error } = useEmployeeRegistrations();
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-      <StatusHero />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Application Status</h1>
       
-      <section className="py-12 bg-white flex-1">
-        <div className="container mx-auto px-4">
-          <div className="space-y-8">
-            <Card className="border-none shadow-lg">
-              <CardHeader className="pb-0">
+      <Tabs 
+        defaultValue="registration-requests" 
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
+        <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+          <TabsTrigger value="registration-requests">Registration Requests</TabsTrigger>
+          <TabsTrigger value="employee-requests">Employee Requests</TabsTrigger>
+        </TabsList>
+        
+        <div className="mt-6">
+          <TabsContent value="registration-requests" className="space-y-4">
+            <Card>
+              <CardHeader>
                 <CardTitle>Registration Requests</CardTitle>
-                <CardDescription>
-                  {isLoading ? "Loading..." : 
-                   `Showing ${applications.length} requests`}
-                </CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} className="h-12 w-full" />
+                    ))}
+                  </div>
+                ) : error ? (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      Failed to load registration requests. Please try again later.
+                    </AlertDescription>
+                  </Alert>
+                ) : registrations && registrations.length > 0 ? (
+                  <RegistrationRequestsTable requests={registrations} />
+                ) : (
+                  <Alert>
+                    <AlertDescription>
+                      No registration requests found.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="employee-requests" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Employee Requests</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <RequestsManagement type="employee" />
               </CardContent>
             </Card>
-            
-            <Card className="border-none shadow-lg">
-              <CardHeader>
-                <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  {isLoading ? "Loading..." : 
-                   `${notifications?.filter(n => !n.read).length || 0} unread notifications`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <GroupedNotifications 
-                  notifications={notifications || []}
-                  onMarkAsRead={(id) => markAsRead(id)}
-                />
-              </CardContent>
-            </Card>
-          </div>
+          </TabsContent>
         </div>
-      </section>
+      </Tabs>
     </div>
   );
 };
