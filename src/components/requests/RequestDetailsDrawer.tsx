@@ -57,7 +57,10 @@ export function RequestDetailsDrawer({
   };
 
   const getEmployeeId = () => {
-    return data.employee_id || "N/A";
+    if ('employee_id' in data) {
+      return data.employee_id || "N/A";
+    }
+    return "N/A";
   };
 
   return (
