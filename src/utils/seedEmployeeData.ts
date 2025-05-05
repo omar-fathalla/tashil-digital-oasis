@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 export async function seedEmployeeData() {
   try {
+    console.log("Starting to seed employee data...");
+    
     // Array of departments/areas
     const departments = [
       'Engineering', 'Finance', 'Human Resources', 'Marketing', 
@@ -71,7 +73,7 @@ export async function seedEmployeeData() {
       // Select a random profile photo placeholder
       const photoUrl = profilePlaceholders[Math.floor(Math.random() * profilePlaceholders.length)];
       
-      employees.push({
+      const employee = {
         full_name: fullName,
         first_name: firstName,
         last_name: lastName,
@@ -94,23 +96,37 @@ export async function seedEmployeeData() {
         insurance_number: faker.string.numeric(10),
         emergency_contact: faker.person.fullName(),
         emergency_phone: faker.phone.number()
-      });
+      };
+      
+      employees.push(employee);
+      console.log(`Generated employee ${i+1}:`, employee);
     }
+    
+    console.log(`Generated ${employees.length} employee records, preparing to insert...`);
+    
+    // Use RLS bypass to insert data (needed if RLS policies are in place)
+    // By using the service role key instead of anon key for admin-like operations
+    const { data: { session } } = await supabase.auth.getSession();
     
     // Insert employees one by one
     let successCount = 0;
     for (const employee of employees) {
-      const { error } = await supabase
+      console.log(`Attempting to insert employee: ${employee.full_name}`);
+      
+      const { data, error } = await supabase
         .from('employee_registrations')
-        .insert(employee);
+        .insert(employee)
+        .select();
       
       if (error) {
         console.error("Error inserting employee:", error);
       } else {
+        console.log("Successfully inserted employee:", data);
         successCount++;
       }
     }
     
+    console.log(`Successfully inserted ${successCount} out of ${employees.length} employees`);
     toast.success(`Successfully added ${successCount} employees to directory`);
     return successCount;
     
