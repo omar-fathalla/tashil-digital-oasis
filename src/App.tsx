@@ -2,11 +2,13 @@
 import { useState, useEffect } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import RootLayout from "@/components/layout/RootLayout";
 import RegistrationRequests from "@/pages/RegistrationRequests";
 
 const App = () => {
   const [isHydrated, setIsHydrated] = useState(false);
+  const queryClient = new QueryClient();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -42,9 +44,11 @@ const App = () => {
   ]);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="supabase-theme">
-      <RouterProvider router={router} />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="supabase-theme">
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
