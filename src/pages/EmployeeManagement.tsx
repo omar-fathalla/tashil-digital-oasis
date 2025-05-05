@@ -14,7 +14,8 @@ const EmployeeManagement = () => {
   const [roleFilter, setRoleFilter] = useState("all");
   const [isLoadingDemoData, setIsLoadingDemoData] = useState(false);
 
-  // Ensure we have demo data when the component loads
+  // Only ensure we have basic demo data when the component loads
+  // This doesn't execute seedEmployeeData()
   useEffect(() => {
     const loadDemoData = async () => {
       setIsLoadingDemoData(true);

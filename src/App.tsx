@@ -29,7 +29,7 @@ import { ensureDemoData } from "@/utils/seedDemoData";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Ensure we have demo data when the app starts
+  // This only ensures demo data is loaded but doesn't call seedEmployeeData()
   useEffect(() => {
     ensureDemoData().catch(console.error);
   }, []);

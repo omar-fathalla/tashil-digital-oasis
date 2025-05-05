@@ -1389,6 +1389,10 @@ export type Database = {
         Args: { user_id: string; role_name: string }
         Returns: boolean
       }
+      seed_linked_employee_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

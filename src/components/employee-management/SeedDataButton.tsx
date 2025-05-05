@@ -10,6 +10,7 @@ export default function SeedDataButton() {
   const queryClient = useQueryClient();
   
   const handleSeedData = async () => {
+    console.log("User manually triggered seedEmployeeData() function");
     setIsLoading(true);
     try {
       await seedEmployeeData();
