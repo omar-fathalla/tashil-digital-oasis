@@ -20,9 +20,8 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
-  const { requests, isLoading, updateRequestStatus } = useEmployeeRequests();
-  const [error, setError] = useState<Error | null>(null);
-
+  const { requests, isLoading, error, updateRequestStatus } = useEmployeeRequests();
+  
   // Filter requests based on type, search query, and status filter
   const filteredRequests = requests
     ?.filter((request) => request.type === type)
@@ -53,6 +52,7 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
         }, 
         (payload) => {
           // We'll let React Query handle refetching the data
+          console.log('Employee request changed:', payload);
         }
       )
       .subscribe();
@@ -63,6 +63,7 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
   }, []);
 
   const handleViewDetails = (request: EmployeeRequest) => {
+    console.log('Viewing request details:', request.id, 'with registration:', request.registration_id);
     setSelectedRequest(request);
     setIsDetailsOpen(true);
   };
@@ -105,6 +106,27 @@ export const RequestsManagement = ({ type = "employee" }: RequestsManagementProp
       <Alert variant="destructive">
         <AlertDescription>Failed to load requests. Please try again later.</AlertDescription>
       </Alert>
+    );
+  }
+
+  if (!filteredRequests || filteredRequests.length === 0) {
+    return (
+      <div className="space-y-4">
+        <RequestsHeader
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          title={type === "employee" ? "Employee Requests" : "Company Requests"}
+        />
+        <Alert>
+          <AlertDescription>
+            {searchQuery || statusFilter !== "all" 
+              ? "No requests match your filters. Try adjusting your search criteria."
+              : `No ${type} requests found.`}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 

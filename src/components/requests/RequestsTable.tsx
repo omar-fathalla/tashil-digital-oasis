@@ -21,6 +21,14 @@ interface RequestsTableProps {
 }
 
 export function RequestsTable({ requests, onApprove, onReject, onView }: RequestsTableProps) {
+  if (!requests || requests.length === 0) {
+    return (
+      <div className="rounded-md border p-8 text-center">
+        <p className="text-muted-foreground">No requests found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -55,6 +63,11 @@ export function RequestsTable({ requests, onApprove, onReject, onView }: Request
             requests.map((request) => {
               // Get registration data if available
               const registration = request.employee_registrations || null;
+              
+              // Log issues with missing registration data where expected
+              if (request.registration_id && !registration) {
+                console.warn(`Request ${request.id} has registration_id but missing registration data`);
+              }
               
               return (
                 <TableRow key={request.id} className="hover:bg-muted/50">

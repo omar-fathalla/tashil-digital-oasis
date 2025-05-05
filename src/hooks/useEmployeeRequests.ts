@@ -101,44 +101,64 @@ const FAKE_COMPANIES = [
 export const useEmployeeRequests = () => {
   const queryClient = useQueryClient();
 
-  const { data: requests = [], isLoading } = useQuery({
+  const { data: requests = [], isLoading, error } = useQuery({
     queryKey: ["employee-requests"],
     queryFn: async () => {
-      const [employeeResponse, companyResponse] = await Promise.all([
-        supabase
-          .from("employee_requests")
-          .select("*, employee_registrations(*)")
-          .order("request_date", { ascending: false }),
-        supabase
-          .from("companies")
-          .select("*")
-          .order("created_at", { ascending: false })
-      ]);
+      console.log("Fetching employee requests with linked registration data");
+      try {
+        const [employeeResponse, companyResponse] = await Promise.all([
+          supabase
+            .from("employee_requests")
+            .select("*, employee_registrations(*)")
+            .order("request_date", { ascending: false }),
+          supabase
+            .from("companies")
+            .select("*")
+            .order("created_at", { ascending: false })
+        ]);
 
-      if (employeeResponse.error) throw employeeResponse.error;
-      if (companyResponse.error) throw companyResponse.error;
+        if (employeeResponse.error) throw employeeResponse.error;
+        if (companyResponse.error) throw companyResponse.error;
 
-      const employeeRequests = employeeResponse.data.map(req => ({
-        ...req,
-        type: "employee" as const
-      }));
+        // Log to verify data structure
+        if (employeeResponse.data.length > 0) {
+          console.log("Sample employee request:", employeeResponse.data[0]);
+          
+          // Check for linked registration data integrity
+          employeeResponse.data.forEach(req => {
+            if (req.registration_id && !req.employee_registrations) {
+              console.warn(`Request ${req.id} has registration_id ${req.registration_id} but no linked data`);
+            }
+          });
+        } else {
+          console.log("No employee requests found");
+        }
 
-      const companyRequests = FAKE_COMPANIES.map(company => ({
-        id: company.id,
-        employee_name: company.username,
-        employee_id: company.company_number,
-        request_type: "Company Registration",
-        request_date: company.created_at,
-        status: "pending" as const,
-        notes: null,
-        type: "company" as const,
-        company_name: company.company_name,
-        company_number: company.company_number,
-        tax_card_number: company.tax_card_number,
-        commercial_register_number: company.commercial_register_number
-      }));
+        const employeeRequests = employeeResponse.data.map(req => ({
+          ...req,
+          type: "employee" as const
+        }));
 
-      return [...employeeRequests, ...companyRequests] as EmployeeRequest[];
+        const companyRequests = FAKE_COMPANIES.map(company => ({
+          id: company.id,
+          employee_name: company.username,
+          employee_id: company.company_number,
+          request_type: "Company Registration",
+          request_date: company.created_at,
+          status: "pending" as const,
+          notes: null,
+          type: "company" as const,
+          company_name: company.company_name,
+          company_number: company.company_number,
+          tax_card_number: company.tax_card_number,
+          commercial_register_number: company.commercial_register_number
+        }));
+
+        return [...employeeRequests, ...companyRequests] as EmployeeRequest[];
+      } catch (err) {
+        console.error("Error fetching employee requests:", err);
+        throw err;
+      }
     },
   });
 
@@ -172,6 +192,7 @@ export const useEmployeeRequests = () => {
   return {
     requests,
     isLoading,
+    error,
     updateRequestStatus,
   };
 };
