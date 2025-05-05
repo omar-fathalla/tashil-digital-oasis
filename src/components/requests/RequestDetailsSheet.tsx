@@ -1,18 +1,10 @@
 
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/application-status/StatusBadge";
 import { format } from "date-fns";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarIcon, FileTextIcon, UserIcon } from "lucide-react";
-import { CardSection } from "@/components/ui/card-layout/CardSection";
-import { BaseCard } from "@/components/ui/card-layout/BaseCard";
 import type { EmployeeRequest } from "@/hooks/useEmployeeRequests";
 
 interface RequestDetailsSheetProps {
@@ -22,204 +14,129 @@ interface RequestDetailsSheetProps {
 }
 
 export function RequestDetailsSheet({ request, open, onOpenChange }: RequestDetailsSheetProps) {
-  if (!request) return null;
-  
-  // Get registration data if available
-  const registration = request.employee_registrations || null;
-  
-  // Log data integrity issues - this helps debug cases where registration data is expected but missing
-  if (request.type === 'employee' && request.registration_id && !registration) {
-    console.warn(`Request ${request.id} has registration_id (${request.registration_id}) but registration data is missing`);
+  if (!request) {
+    return null;
   }
+
+  // Check if linked registration data exists
+  const registration = request.employee_registrations;
+  const hasBrokenLink = request.registration_id && !registration;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader className="space-y-1">
-          <SheetTitle className="text-xl flex items-center gap-2">
-            <FileTextIcon className="h-5 w-5 text-primary" />
-            Request Details
-          </SheetTitle>
+      <SheetContent className="sm:max-w-md overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Request Details</SheetTitle>
           <SheetDescription>
-            Viewing details for request submitted on{" "}
-            {format(new Date(request.request_date || new Date()), "PPP")}
+            View details for {request.employee_name}'s request
           </SheetDescription>
-          <div className="flex items-center gap-2 pt-1">
-            <Badge
-              variant="outline"
-              className={
-                request.status === "approved"
-                  ? "bg-green-100 text-green-800 border-green-200"
-                  : request.status === "rejected"
-                  ? "bg-red-100 text-red-800 border-red-200"
-                  : "bg-yellow-100 text-yellow-800 border-yellow-200"
-              }
-            >
-              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-            </Badge>
-            <Badge variant="outline" className="bg-primary/10">
-              {request.request_type}
-            </Badge>
-            <Badge variant="outline" className="bg-secondary/10 capitalize">
-              {request.type} Request
-            </Badge>
-          </div>
         </SheetHeader>
-        
-        <div className="mt-6 space-y-6">
-          <CardSection 
-            title="Request Information"
-            description="Basic information about this request"
-          >
-            <BaseCard className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Request ID</p>
-                  <p className="font-mono text-sm">{request.id}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Submission Date</p>
-                  <p className="font-mono text-sm">
-                    {format(new Date(request.request_date || new Date()), "PPP")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Request Type</p>
-                  <p>{request.request_type}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Status</p>
-                  <p className="capitalize">{request.status}</p>
-                </div>
-                {request.registration_id && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Registration ID</p>
-                    <p className="font-mono text-sm">{request.registration_id}</p>
-                  </div>
+
+        {hasBrokenLink && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              This request references registration ID {request.registration_id} but the linked data is missing or inaccessible.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="py-4 space-y-6">
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground">Request Information</h4>
+            <div className="grid grid-cols-3 gap-2">
+              <span className="text-sm font-medium">Request ID:</span>
+              <span className="text-sm col-span-2 font-mono">{request.id}</span>
+              
+              <span className="text-sm font-medium">Request Type:</span>
+              <span className="text-sm col-span-2">{request.request_type}</span>
+              
+              <span className="text-sm font-medium">Employee Name:</span>
+              <span className="text-sm col-span-2">{request.employee_name}</span>
+              
+              <span className="text-sm font-medium">Employee ID:</span>
+              <span className="text-sm col-span-2 font-mono">{request.employee_id}</span>
+              
+              <span className="text-sm font-medium">Date:</span>
+              <span className="text-sm col-span-2">
+                {format(new Date(request.request_date || new Date()), "PPP")}
+              </span>
+              
+              <span className="text-sm font-medium">Status:</span>
+              <div className="col-span-2">
+                <StatusBadge status={request.status} />
+              </div>
+              
+              {request.notes && (
+                <>
+                  <span className="text-sm font-medium">Notes:</span>
+                  <div className="text-sm col-span-2 bg-muted p-2 rounded">{request.notes}</div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {registration && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Registration Data</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <span className="text-sm font-medium">Full Name:</span>
+                <span className="text-sm col-span-2">{registration.full_name}</span>
+                
+                {registration.national_id && (
+                  <>
+                    <span className="text-sm font-medium">National ID:</span>
+                    <span className="text-sm col-span-2 font-mono">{registration.national_id}</span>
+                  </>
+                )}
+                
+                {registration.position && (
+                  <>
+                    <span className="text-sm font-medium">Position:</span>
+                    <span className="text-sm col-span-2">{registration.position}</span>
+                  </>
+                )}
+                
+                {registration.area && (
+                  <>
+                    <span className="text-sm font-medium">Area:</span>
+                    <span className="text-sm col-span-2">{registration.area}</span>
+                  </>
+                )}
+                
+                {registration.submission_date && (
+                  <>
+                    <span className="text-sm font-medium">Submission:</span>
+                    <span className="text-sm col-span-2">
+                      {format(new Date(registration.submission_date), "PPP")}
+                    </span>
+                  </>
                 )}
               </div>
-            </BaseCard>
-          </CardSection>
-          
-          <Separator />
-          
-          {request.type === 'employee' ? (
-            <>
-              <CardSection 
-                title="Employee Information"
-                description="Details about the employee associated with this request"
-              >
-                {request.registration_id && !registration ? (
-                  <Alert>
-                    <AlertDescription>
-                      This request has a registration ID but the linked registration data could not be found.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <BaseCard className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Employee Name</p>
-                        <p>{registration?.full_name || request.employee_name}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Employee ID</p>
-                        <p className="font-mono text-sm">{registration?.employee_id || request.employee_id}</p>
-                      </div>
-                      {registration && (
-                        <>
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">National ID</p>
-                            <p className="font-mono text-sm">{registration.national_id || "Not available"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                            <p>{registration.phone || "Not provided"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Position</p>
-                            <p>{registration.position || "Not specified"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Hire Date</p>
-                            <p>{registration.hire_date ? format(new Date(registration.hire_date), "PPP") : "Not specified"}</p>
-                          </div>
-                          {registration.email && (
-                            <div>
-                              <p className="text-sm font-medium text-muted-foreground">Email</p>
-                              <p className="break-words">{registration.email}</p>
-                            </div>
-                          )}
-                          {registration.area && (
-                            <div>
-                              <p className="text-sm font-medium text-muted-foreground">Department/Area</p>
-                              <p>{registration.area}</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                    
-                    {registration?.photo_url && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium text-muted-foreground mb-2">Photo</p>
-                        <img 
-                          src={registration.photo_url} 
-                          alt="Employee Photo" 
-                          className="w-32 h-32 object-cover rounded-md"
-                          onError={(e) => {
-                            console.error("Failed to load employee photo:", registration.photo_url);
-                            e.currentTarget.src = "https://via.placeholder.com/128?text=No+Photo";
-                          }}
-                        />
-                      </div>
-                    )}
-                  </BaseCard>
-                )}
-              </CardSection>
-            </>
-          ) : (
-            <CardSection 
-              title="Company Information"
-              description="Details about the company associated with this request"
-            >
-              <BaseCard className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Company Name</p>
-                    <p>{request.company_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Company Number</p>
-                    <p className="font-mono text-sm">{request.company_number}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Tax Card Number</p>
-                    <p className="font-mono text-sm">{request.tax_card_number || "Not available"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Commercial Register</p>
-                    <p className="font-mono text-sm">{request.commercial_register_number || "Not available"}</p>
+
+              {registration.photo_url && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Photo</h4>
+                  <div className="h-48 w-48 border rounded overflow-hidden">
+                    <img 
+                      src={registration.photo_url} 
+                      alt="Employee" 
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        // Handle broken image
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
                   </div>
                 </div>
-              </BaseCard>
-            </CardSection>
-          )}
-          
-          {request.notes && (
-            <>
-              <Separator />
-              <CardSection 
-                title="Notes"
-                description="Additional information about this request"
-              >
-                <BaseCard>
-                  <p className="text-sm whitespace-pre-line">{request.notes}</p>
-                </BaseCard>
-              </CardSection>
-            </>
+              )}
+            </div>
           )}
         </div>
+
+        <SheetFooter>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

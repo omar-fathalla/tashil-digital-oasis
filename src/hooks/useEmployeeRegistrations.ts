@@ -1,7 +1,8 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export interface EmployeeRegistration {
   id: string;
@@ -15,9 +16,34 @@ export interface EmployeeRegistration {
   national_id?: string;
   phone?: string;
   email?: string;
+  photo_url?: string;
 }
 
 export const useEmployeeRegistrations = () => {
+  const queryClient = useQueryClient();
+
+  // Set up Supabase realtime subscription for data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('registration-changes')
+      .on('postgres_changes', 
+        {
+          event: '*', 
+          schema: 'public',
+          table: 'employee_registrations',
+        }, 
+        (payload) => {
+          console.log('Registration data changed:', payload);
+          queryClient.invalidateQueries({ queryKey: ["employee-registrations"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const { data: registrations, isLoading, error } = useQuery({
     queryKey: ["employee-registrations"],
     queryFn: async () => {
@@ -35,7 +61,8 @@ export const useEmployeeRegistrations = () => {
             position,
             national_id,
             phone,
-            email
+            email,
+            photo_url
           `)
           .order("submission_date", { ascending: false });
 
