@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies, Company } from "@/hooks/useCompanies";

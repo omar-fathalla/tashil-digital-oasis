@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { faker } from '@faker-js/faker';
 
@@ -150,17 +151,17 @@ export const ensureDemoData = async () => {
     await seedDigitalIDData();
     
     // Check existing company data count and add Egyptian companies if needed
-    const { count: companyCount, error: companyError } = await supabase
+    const { count: companyDataCount, error: companyDataError } = await supabase
       .from('companies')
       .select('*', { count: 'exact', head: true });
     
-    if (companyError) {
-      console.error("Error checking companies:", companyError);
+    if (companyDataError) {
+      console.error("Error checking companies:", companyDataError);
       return;
     }
     
     // If we have fewer than 5 companies, add Egyptian companies
-    if (!companyCount || companyCount < 5) {
+    if (!companyDataCount || companyDataCount < 5) {
       console.log("Seeding Egyptian company data...");
       await seedEgyptianCompanyData();
     }
