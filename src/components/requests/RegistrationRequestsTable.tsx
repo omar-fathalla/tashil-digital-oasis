@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -13,7 +12,7 @@ import { Eye } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
 import { RequestDetailsDrawer, RequestDetailsDrawerProps } from "./RequestDetailsDrawer";
-import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
+import { EmployeeRegistration } from "@/hooks/requests/types";
 import {
   Pagination,
   PaginationContent,
@@ -24,6 +23,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+// Define a prop interface using the imported EmployeeRegistration type
 export function RegistrationRequestsTable({ 
   requests 
 }: { 
@@ -119,10 +119,10 @@ export function RegistrationRequestsTable({
                   </span>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {format(new Date(request.submission_date), "PPP")}
+                  {format(new Date(request.submission_date || new Date()), "PPP")}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={request.status} />
+                  <StatusBadge status={request.status || "pending"} />
                 </TableCell>
                 <TableCell>
                   <Button

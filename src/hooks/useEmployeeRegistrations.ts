@@ -3,21 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect } from "react";
-
-export interface EmployeeRegistration {
-  id: string;
-  full_name: string;
-  employee_id: string;
-  request_type: string;
-  status: string;
-  submission_date: string;
-  area?: string;
-  position?: string;
-  national_id?: string;
-  phone?: string;
-  email?: string;
-  photo_url?: string;
-}
+import { EmployeeRegistration } from "@/hooks/requests/types";
 
 export const useEmployeeRegistrations = () => {
   const queryClient = useQueryClient();
@@ -62,7 +48,10 @@ export const useEmployeeRegistrations = () => {
             national_id,
             phone,
             email,
-            photo_url
+            photo_url,
+            first_name,
+            last_name,
+            mid_name
           `)
           .order("submission_date", { ascending: false });
 

@@ -142,18 +142,28 @@ const Dashboard = () => {
                   </div>}
 
                 {/* Content Area */}
-                {isLoading ? <div className="flex justify-center items-center py-8">
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-8">
                     <Spinner className="mr-2" />
                     <span>Loading registration requests...</span>
-                  </div> : error ? <Alert variant="destructive">
+                  </div>
+                ) : error ? (
+                  <Alert variant="destructive">
                     <AlertDescription>
                       Failed to load registration requests. Please try again later.
                     </AlertDescription>
-                  </Alert> : filteredRegistrations && filteredRegistrations.length > 0 ? <RegistrationRequestsTable requests={filteredRegistrations} /> : <Alert>
+                  </Alert>
+                ) : filteredRegistrations && filteredRegistrations.length > 0 ? (
+                  <RegistrationRequestsTable requests={filteredRegistrations} />
+                ) : (
+                  <Alert>
                     <AlertDescription>
-                      {regSearchQuery || regStatusFilter !== "all" ? "No registration requests match your filters. Try adjusting your search criteria." : "No registration requests found."}
+                      {regSearchQuery || regStatusFilter !== "all" 
+                        ? "No registration requests match your filters. Try adjusting your search criteria." 
+                        : "No registration requests found."}
                     </AlertDescription>
-                  </Alert>}
+                  </Alert>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="company">
