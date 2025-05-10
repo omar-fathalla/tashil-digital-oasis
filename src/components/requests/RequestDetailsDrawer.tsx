@@ -229,4 +229,3 @@ export function RequestDetailsDrawer({
     </Drawer>
   );
 }
-

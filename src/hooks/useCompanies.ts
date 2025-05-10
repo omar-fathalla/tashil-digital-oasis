@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { mapPartialCompanyToInsertableCompany } from "@/utils/companyMapper";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
 export interface Company {
   id: string;
@@ -40,7 +41,8 @@ export function useCompanies() {
     if (email !== 'omar.ahmed.hassan.fathalla@gmail.com') return;
     
     try {
-      await supabase.rpc('ensure_demo_company_data', { user_email: email });
+      // Call the ensureDemoData function which now includes Egyptian companies
+      await ensureDemoData();
     } catch (error) {
       console.error("Failed to ensure demo company data:", error);
     }

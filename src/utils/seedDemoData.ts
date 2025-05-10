@@ -149,10 +149,100 @@ export const ensureDemoData = async () => {
     // Add digital ID data
     await seedDigitalIDData();
     
+    // Check existing company requests count
+    const { count: companyCount, error: companyError } = await supabase
+      .from('companies')
+      .select('*', { count: 'exact', head: true });
+    
+    if (companyError) {
+      console.error("Error checking companies:", companyError);
+      return;
+    }
+    
+    // If we have fewer than 5 companies, add Egyptian companies
+    if (!companyCount || companyCount < 5) {
+      console.log("Seeding Egyptian company data...");
+      await seedEgyptianCompanyData();
+    }
+    
     console.log("Demo data seeded successfully");
     
   } catch (error) {
     console.error("Error seeding demo data:", error);
+  }
+};
+
+// Add this new function to seed Egyptian company data
+const seedEgyptianCompanyData = async () => {
+  try {
+    // Egyptian company names
+    const egyptianCompanies = [
+      'NileWare Technologies',
+      'DeltaCorp Solutions',
+      'Luxor Innovations',
+      'CairoByte Software',
+      'Pharos Solutions'
+    ];
+    
+    // Egyptian addresses
+    const egyptianAddresses = [
+      '12 Ramses St., Cairo',
+      '45 Alexandria Corniche, Alexandria',
+      '23 Luxor Temple Rd., Luxor',
+      '78 October Bridge Blvd., Cairo',
+      '56 Aswan Dam St., Aswan'
+    ];
+    
+    const companies = [];
+    
+    // Generate companies with realistic data
+    for (let i = 0; i < egyptianCompanies.length; i++) {
+      const companyName = egyptianCompanies[i];
+      const address = egyptianAddresses[i];
+      const registerNumber = `REG-${faker.string.numeric(5)}`;
+      const taxCardNumber = `TAX-${faker.string.numeric(6)}`;
+      const companyNumber = `EG-${faker.string.numeric(6)}`;
+      
+      // Create date between 30 days and 1 year ago
+      const createdAt = faker.date.between({
+        from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+        to: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      }).toISOString();
+      
+      companies.push({
+        company_name: companyName,
+        address: address,
+        register_number: registerNumber,
+        tax_card_number: taxCardNumber,
+        company_number: companyNumber,
+        created_at: createdAt,
+        updated_at: createdAt,
+        is_dummy: false,
+        is_archived: false,
+        user_id: await getCurrentUserId()
+      });
+    }
+    
+    // Insert the companies
+    for (const company of companies) {
+      const { error } = await supabase.from('companies').insert(company);
+      if (error) console.error("Error inserting Egyptian company:", error);
+    }
+    
+    console.log("Egyptian company data seeded successfully");
+  } catch (error) {
+    console.error("Error seeding Egyptian company data:", error);
+  }
+};
+
+// Helper function to get current user ID
+const getCurrentUserId = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || '00000000-0000-0000-0000-000000000000'; // Fallback ID if no user
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return '00000000-0000-0000-0000-000000000000';
   }
 };
 

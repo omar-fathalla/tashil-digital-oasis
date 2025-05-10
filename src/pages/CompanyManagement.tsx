@@ -49,6 +49,7 @@ import {
 import { SkeletonTable } from "@/components/ui/skeleton/SkeletonTable";
 import { format } from "date-fns";
 import { CompanyDetailsDialog } from "@/components/company-management/CompanyDetailsDialog";
+import { SeedCompanyDataButton } from "@/components/company-management/SeedCompanyDataButton";
 
 export default function CompanyManagement() {
   const { user } = useAuth();
@@ -152,7 +153,7 @@ export default function CompanyManagement() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 items-center">
           <Select
             value={sortField}
             onValueChange={(value) => setSortField(value as "company_name" | "created_at")}
@@ -172,6 +173,7 @@ export default function CompanyManagement() {
           >
             <ArrowUpDown className={`h-4 w-4 ${sortDirection === "asc" ? "transform rotate-180" : ""}`} />
           </Button>
+          <SeedCompanyDataButton />
         </div>
       </div>
 
