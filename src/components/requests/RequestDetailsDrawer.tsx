@@ -133,7 +133,7 @@ export function RequestDetailsDrawer({
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Request Type</p>
-                  <p className="font-medium">{data.request_type || "Registration"}</p>
+                  <p className="font-medium">{(data.request_type as string) || "Registration"}</p>
                 </div>
                 {'position' in data && data.position && (
                   <div>
@@ -207,7 +207,7 @@ export function RequestDetailsDrawer({
           {!isRegistration && 'notes' in data && data.notes && (
             <div className="mt-6 p-4 border rounded-md">
               <h3 className="text-lg font-medium mb-2">Notes</h3>
-              <p className="text-muted-foreground">{data.notes}</p>
+              <p className="text-muted-foreground">{String(data.notes)}</p>
             </div>
           )}
           
@@ -229,3 +229,4 @@ export function RequestDetailsDrawer({
     </Drawer>
   );
 }
+
