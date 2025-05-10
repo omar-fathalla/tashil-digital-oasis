@@ -5,12 +5,12 @@ import { faker } from '@faker-js/faker';
 export const ensureDemoData = async () => {
   try {
     // Check if we already have companies and employees
-    const { count: companyCount, error: companyError } = await supabase
+    const { count: existingCompanyCount, error: existingCompanyError } = await supabase
       .from('companies')
       .select('*', { count: 'exact', head: true });
     
-    if (companyError) {
-      console.error("Error checking companies:", companyError);
+    if (existingCompanyError) {
+      console.error("Error checking companies:", existingCompanyError);
       return;
     }
     
@@ -24,7 +24,7 @@ export const ensureDemoData = async () => {
     }
     
     // If we already have data, don't seed companies but check if we need digital ID employees
-    if (companyCount && companyCount > 0 && employeeCount && employeeCount > 0) {
+    if (existingCompanyCount && existingCompanyCount > 0 && employeeCount && employeeCount > 0) {
       console.log("Demo data already exists, checking for digital ID data");
       
       // Check for approved employees (which are candidates for digital IDs)
@@ -149,7 +149,7 @@ export const ensureDemoData = async () => {
     // Add digital ID data
     await seedDigitalIDData();
     
-    // Check existing company requests count
+    // Check existing company data count and add Egyptian companies if needed
     const { count: companyCount, error: companyError } = await supabase
       .from('companies')
       .select('*', { count: 'exact', head: true });
@@ -668,6 +668,7 @@ const seedDetailedEmployeeData = async () => {
       'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
       'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
       'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
+      'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952',
       'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952',
       'https://randomuser.me/api/portraits/men/1.jpg',
       'https://randomuser.me/api/portraits/women/1.jpg',
