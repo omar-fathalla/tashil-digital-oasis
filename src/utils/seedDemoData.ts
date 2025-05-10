@@ -156,6 +156,89 @@ export const ensureDemoData = async () => {
   }
 };
 
+// Add this function to the existing seedApplicationStatusData function
+const seedCompanyRequestsData = async () => {
+  try {
+    // Check existing company requests count
+    const { count: companyRequestCount, error: companyRequestError } = await supabase
+      .from('employee_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('type', 'company');
+      
+    if (companyRequestError) {
+      console.error("Error checking company requests:", companyRequestError);
+      return;
+    }
+    
+    // If we have fewer than 5 company requests, add more
+    if (!companyRequestCount || companyRequestCount < 5) {
+      console.log("Seeding company requests data...");
+      
+      const egyptianCompanies = [
+        'NileWare Technologies',
+        'DeltaCorp Solutions',
+        'Luxor Innovations',
+        'CairoByte Software',
+        'Pharos Solutions',
+        'Alexandria Digital',
+        'Giza Tech Systems',
+        'Aswan Data Services',
+        'Sphinx Cybersecurity',
+        'Red Sea Cloud Computing'
+      ];
+      
+      const egyptianNames = [
+        'Ahmed Mohamed',
+        'Fatima Ibrahim',
+        'Omar Hassan',
+        'Layla Ahmed',
+        'Karim Mahmoud',
+        'Nour Ali',
+        'Mostafa Youssef',
+        'Aisha Mahmoud',
+        'Tarek Hussein',
+        'Mariam Abdel'
+      ];
+      
+      const statuses = ['pending', 'approved', 'rejected'];
+      const requestTypes = ['Company Registration', 'Information Update', 'Document Submission'];
+      const requests = [];
+      
+      for (let i = 0; i < 5; i++) {
+        const companyName = egyptianCompanies[i];
+        const contactName = egyptianNames[i];
+        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        const requestType = requestTypes[Math.floor(Math.random() * requestTypes.length)];
+        const companyNumber = `EG-${2024}${String(i+1).padStart(4, '0')}`;
+        
+        requests.push({
+          employee_name: contactName,
+          employee_id: companyNumber,
+          status,
+          type: 'company',
+          request_type: requestType,
+          company_name: companyName,
+          company_number: companyNumber,
+          tax_card_number: `TAX${2024}${String(i+1).padStart(4, '0')}`,
+          commercial_register_number: `CR${2024}${String(i+1).padStart(4, '0')}`,
+          notes: Math.random() > 0.7 ? `Additional information about ${companyName} registration request` : null,
+          request_date: faker.date.recent({ days: 30 }).toISOString()
+        });
+      }
+      
+      // Insert the requests
+      for (const request of requests) {
+        const { error } = await supabase.from('employee_requests').insert(request);
+        if (error) console.error("Error inserting company request:", error);
+      }
+      
+      console.log("Company requests data seeded successfully");
+    }
+  } catch (error) {
+    console.error("Error seeding company requests data:", error);
+  }
+};
+
 // Function to seed data specifically for application status page
 const seedApplicationStatusData = async () => {
   try {
@@ -318,6 +401,9 @@ const seedApplicationStatusData = async () => {
         if (error) console.error("Error inserting employee request:", error);
       }
     }
+    
+    // Seed company requests data
+    await seedCompanyRequestsData();
     
     console.log("Application status demo data seeded successfully");
     

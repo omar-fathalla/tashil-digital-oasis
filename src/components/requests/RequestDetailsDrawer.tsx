@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/application-status/StatusBadge";
 import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
 import type { EmployeeRequest } from "@/hooks/requests/types";
 
-type RequestDataType = "registration" | "employee" | "company" | "request";
+type RequestDataType = "registration" | "employee" | "company";
 
 interface RequestDetailsDrawerProps {
   open: boolean;
@@ -70,6 +70,20 @@ export function RequestDetailsDrawer({
     }
     return "N/A";
   };
+  
+  // Get additional company info for company requests
+  const getCompanyInfo = () => {
+    if (type === 'company' && 'company_number' in data) {
+      return {
+        companyNumber: data.company_number || "N/A",
+        taxCardNumber: data.tax_card_number || "N/A",
+        commercialRegisterNumber: data.commercial_register_number || "N/A"
+      };
+    }
+    return null;
+  };
+  
+  const companyInfo = getCompanyInfo();
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -77,7 +91,7 @@ export function RequestDetailsDrawer({
         <div className="p-6">
           <DrawerHeader className="flex items-center justify-between p-0 mb-4">
             <DrawerTitle className="text-xl font-semibold">
-              {isRegistration ? "Registration Details" : "Request Details"}
+              {isRegistration ? "Registration Details" : type === "company" ? "Company Request Details" : "Request Details"}
             </DrawerTitle>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon">
@@ -91,7 +105,7 @@ export function RequestDetailsDrawer({
           <div className="mb-6 p-3 bg-muted/30 rounded-md flex justify-between items-center">
             <div>
               <span className="text-sm font-medium mr-2">Status:</span>
-              <StatusBadge status={data.status} />
+              <StatusBadge status={data.status || 'pending'} />
             </div>
             <div className="text-sm text-muted-foreground">
               Submitted: {formatDate(getSubmissionDate())}
@@ -104,7 +118,9 @@ export function RequestDetailsDrawer({
               <h3 className="text-lg font-medium">Basic Information</h3>
               <div className="grid grid-cols-1 gap-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">Full Name</p>
+                  <p className="text-sm text-muted-foreground">
+                    {type === 'company' ? 'Contact Person' : 'Full Name'}
+                  </p>
                   <p className="font-medium">{getName()}</p>
                 </div>
                 <div>
@@ -165,6 +181,27 @@ export function RequestDetailsDrawer({
               </div>
             </div>
           </div>
+          
+          {/* Company Details for company requests */}
+          {type === 'company' && companyInfo && (
+            <div className="mt-6 space-y-4">
+              <h3 className="text-lg font-medium">Company Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Company Number</p>
+                  <p className="font-medium font-mono">{companyInfo.companyNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tax Card Number</p>
+                  <p className="font-medium font-mono">{companyInfo.taxCardNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Commercial Register Number</p>
+                  <p className="font-medium font-mono">{companyInfo.commercialRegisterNumber}</p>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Additional Information for non-registration requests */}
           {!isRegistration && 'notes' in data && data.notes && (

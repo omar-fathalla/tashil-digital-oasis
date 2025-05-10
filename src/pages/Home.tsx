@@ -1,4 +1,3 @@
-
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
@@ -17,6 +16,11 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { getCompanyRequests } from "@/hooks/requests/mockCompanyData";
+import { RequestsTable } from "@/components/requests/RequestsTable";
+import { RequestDetailsDrawer } from "@/components/requests/RequestDetailsDrawer";
+import { EmployeeRequest } from "@/hooks/requests/types";
+import { SeedCompanyRequestsButton } from "@/components/requests/SeedCompanyRequestsButton";
 
 const Dashboard = () => {
   const location = useLocation();
@@ -26,6 +30,12 @@ const Dashboard = () => {
   // Filters for registration requests on dashboard
   const [regSearchQuery, setRegSearchQuery] = useState("");
   const [regStatusFilter, setRegStatusFilter] = useState("all");
+  
+  // State for company requests tab
+  const [compSearchQuery, setCompSearchQuery] = useState("");
+  const [compStatusFilter, setCompStatusFilter] = useState("all");
+  const [selectedRequest, setSelectedRequest] = useState<EmployeeRequest | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: request } = useQuery({
     queryKey: ['print-request', printId],
@@ -54,7 +64,7 @@ const Dashboard = () => {
   // Filter registration requests based on search query and status
   const filteredRegistrations = registrations?.filter(reg => {
     // First apply status filter
-    if (regStatusFilter !== "all" && reg.status.toLowerCase() !== regStatusFilter.toLowerCase()) {
+    if (regStatusFilter !== "all" && reg.status?.toLowerCase() !== regStatusFilter.toLowerCase()) {
       return false;
     }
 
@@ -63,6 +73,26 @@ const Dashboard = () => {
     const searchLower = regSearchQuery.toLowerCase();
     return reg.full_name && reg.full_name.toLowerCase().includes(searchLower) || reg.employee_id && reg.employee_id.toLowerCase().includes(searchLower);
   });
+  
+  // Get company requests
+  const companyRequests = getCompanyRequests(compStatusFilter);
+  
+  // Filter company requests based on search
+  const filteredCompanyRequests = companyRequests.filter(req => {
+    if (compSearchQuery === "") return true;
+    const searchLower = compSearchQuery.toLowerCase();
+    return (
+      req.company_name?.toLowerCase().includes(searchLower) ||
+      req.employee_name?.toLowerCase().includes(searchLower) ||
+      req.employee_id?.toLowerCase().includes(searchLower)
+    );
+  });
+  
+  // Handle company request actions
+  const handleViewCompanyDetails = (request: EmployeeRequest) => {
+    setSelectedRequest(request);
+    setIsDetailsOpen(true);
+  };
 
   if (printId && request) {
     navigate(`/print/${printId}`);
@@ -142,13 +172,70 @@ const Dashboard = () => {
               </div>
             </TabsContent>
             <TabsContent value="company">
-              <div className="p-4 text-center text-muted-foreground">
-                Company Requests Management
+              <div className="space-y-4">
+                {/* Search and Filter Controls for Company Requests */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row flex-1 gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="search" 
+                        placeholder="Search company or contact..." 
+                        className="pl-8" 
+                        value={compSearchQuery} 
+                        onChange={e => setCompSearchQuery(e.target.value)} 
+                      />
+                    </div>
+                    <Select value={compStatusFilter} onValueChange={setCompStatusFilter}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <SeedCompanyRequestsButton />
+                </div>
+
+                {/* Results Summary */}
+                <div className="text-sm text-muted-foreground">
+                  Showing {filteredCompanyRequests.length} company {filteredCompanyRequests.length === 1 ? 'request' : 'requests'}
+                </div>
+
+                {/* Company Requests Table */}
+                {filteredCompanyRequests.length > 0 ? (
+                  <RequestsTable 
+                    requests={filteredCompanyRequests}
+                    onView={handleViewCompanyDetails}
+                    onApprove={() => {}}
+                    onReject={() => {}}
+                  />
+                ) : (
+                  <Alert>
+                    <AlertDescription>
+                      {compSearchQuery || compStatusFilter !== "all" ? 
+                        "No company requests match your filters. Try adjusting your search criteria." : 
+                        "No company requests found."}
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+      
+      {/* Company Request Details Drawer */}
+      <RequestDetailsDrawer
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        data={selectedRequest}
+        type="company"
+      />
     </div>
   );
 };
