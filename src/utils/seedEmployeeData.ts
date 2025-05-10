@@ -30,6 +30,25 @@ export async function seedEmployeeData() {
       'Administration': ['Administrative Assistant', 'Office Manager', 'Executive Assistant', 'Receptionist']
     };
     
+    // Array of Egyptian company names
+    const egyptianCompanies = [
+      'NileSoft Technologies',
+      'PyramidTech Solutions',
+      'Alexandria Digital',
+      'Cairo Systems',
+      'Luxor Innovations',
+      'Sphinx Software',
+      'Delta IT Group',
+      'Pharaoh Technologies',
+      'Giza Solutions',
+      'Aswan Tech',
+      'Red Sea Systems',
+      'Oasis Digital',
+      'Egyptian Valley Tech',
+      'Karnak Software',
+      'Thebes Analytics'
+    ];
+    
     const statuses = ['active', 'on leave', 'probation', 'terminated'];
     const sexOptions = ['male', 'female'];
     
@@ -57,6 +76,7 @@ export async function seedEmployeeData() {
       const position = positionsByDepartment[area][Math.floor(Math.random() * positionsByDepartment[area].length)];
       const status = statuses[Math.floor(Math.random() * statuses.length)];
       const employeeId = `EMP${faker.string.numeric(4)}`;
+      const companyName = egyptianCompanies[Math.floor(Math.random() * egyptianCompanies.length)];
       
       // Generate random dates
       const hireDate = faker.date.past({ years: 5 }).toISOString();
@@ -95,7 +115,8 @@ export async function seedEmployeeData() {
         national_id: faker.string.numeric(9),
         insurance_number: faker.string.numeric(10),
         emergency_contact: faker.person.fullName(),
-        emergency_phone: faker.phone.number()
+        emergency_phone: faker.phone.number(),
+        company_name: companyName
       };
       
       employees.push(employee);

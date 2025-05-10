@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Employee } from "@/hooks/useEmployee";
@@ -120,6 +119,12 @@ const EmployeeInformation = ({ employee, isLoading }: EmployeeInformationProps) 
               <dt className="text-sm font-medium text-muted-foreground">Employee ID</dt>
               <dd className="text-lg">{employee.employee_id}</dd>
             </div>
+            {employee.company_name && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Company</dt>
+                <dd className="text-lg">{employee.company_name}</dd>
+              </div>
+            )}
             {employee.hire_date && (
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Hire Date</dt>
@@ -156,16 +161,11 @@ const EmployeeInformation = ({ employee, isLoading }: EmployeeInformationProps) 
                 <dd className="text-lg">{employee.request_type}</dd>
               </div>
             )}
-            {employee.company_name && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Company</dt>
-                <dd className="text-lg">{employee.company_name}</dd>
-              </div>
-            )}
           </dl>
         </CardContent>
       </Card>
 
+      {/* Additional Information Card */}
       {(employee.address || employee.city || employee.state || employee.zip_code || employee.emergency_contact) && (
         <Card className="md:col-span-2">
           <CardHeader>

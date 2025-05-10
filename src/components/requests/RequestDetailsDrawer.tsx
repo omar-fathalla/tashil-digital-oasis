@@ -63,6 +63,14 @@ export function RequestDetailsDrawer({
     return "N/A";
   };
 
+  // Get company name if available
+  const getCompanyName = () => {
+    if ('company_name' in data) {
+      return data.company_name || "N/A";
+    }
+    return "N/A";
+  };
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-w-3xl mx-auto">
@@ -102,6 +110,10 @@ export function RequestDetailsDrawer({
                 <div>
                   <p className="text-sm text-muted-foreground">ID</p>
                   <p className="font-medium font-mono">{getEmployeeId()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Company</p>
+                  <p className="font-medium">{getCompanyName()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Request Type</p>

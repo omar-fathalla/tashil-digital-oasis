@@ -57,6 +57,7 @@ const EmployeeDataTable = ({
           employee.employee_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           employee.email?.toLowerCase().includes(searchQuery.toLowerCase()) || 
           employee.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          employee.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           false;
         
         const matchesStatus = statusFilter === "all" || employee.status === statusFilter;
@@ -193,6 +194,7 @@ const EmployeeDataTable = ({
               <TableHead>ID</TableHead>
               <TableHead>Position</TableHead>
               <TableHead>Department</TableHead>
+              <TableHead>Company</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Hire Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -221,6 +223,7 @@ const EmployeeDataTable = ({
                   <TableCell>{employee.employee_id}</TableCell>
                   <TableCell>{employee.position || 'Not specified'}</TableCell>
                   <TableCell>{employee.area || 'Not specified'}</TableCell>
+                  <TableCell>{employee.company_name || 'Not assigned'}</TableCell>
                   <TableCell>{getStatusBadge(employee.status)}</TableCell>
                   <TableCell>
                     {employee.hire_date 
@@ -244,7 +247,7 @@ const EmployeeDataTable = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
                   No employees found matching the selected filters
                 </TableCell>
               </TableRow>
