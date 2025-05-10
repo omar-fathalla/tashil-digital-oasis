@@ -21,6 +21,7 @@ import { RequestsTable } from "@/components/requests/RequestsTable";
 import { RequestDetailsDrawer } from "@/components/requests/RequestDetailsDrawer";
 import { EmployeeRequest } from "@/hooks/requests/types";
 import { SeedCompanyRequestsButton } from "@/components/requests/SeedCompanyRequestsButton";
+
 const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -197,7 +198,13 @@ const Dashboard = () => {
       </Card>
       
       {/* Company Request Details Drawer */}
-      <RequestDetailsDrawer open={isDetailsOpen} onOpenChange={setIsDetailsOpen} data={selectedRequest} type="company" />
+      <RequestDetailsDrawer 
+        open={isDetailsOpen} 
+        onOpenChange={setIsDetailsOpen} 
+        data={selectedRequest} 
+        type="company" 
+      />
     </div>;
 };
+
 export default Dashboard;

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
-import { RequestDetailsDrawer } from "./RequestDetailsDrawer";
+import { RequestDetailsDrawer, RequestDetailsDrawerProps } from "./RequestDetailsDrawer";
 import type { EmployeeRegistration } from "@/hooks/useEmployeeRegistrations";
 import {
   Pagination,
