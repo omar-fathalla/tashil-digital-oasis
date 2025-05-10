@@ -21,33 +21,30 @@ import { RequestsTable } from "@/components/requests/RequestsTable";
 import { RequestDetailsDrawer } from "@/components/requests/RequestDetailsDrawer";
 import { EmployeeRequest } from "@/hooks/requests/types";
 import { SeedCompanyRequestsButton } from "@/components/requests/SeedCompanyRequestsButton";
-
 const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const printId = new URLSearchParams(location.search).get('print');
-  
+
   // Filters for registration requests on dashboard
   const [regSearchQuery, setRegSearchQuery] = useState("");
   const [regStatusFilter, setRegStatusFilter] = useState("all");
-  
+
   // State for company requests tab
   const [compSearchQuery, setCompSearchQuery] = useState("");
   const [compStatusFilter, setCompStatusFilter] = useState("all");
   const [selectedRequest, setSelectedRequest] = useState<EmployeeRequest | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  
-  const { data: request } = useQuery({
+  const {
+    data: request
+  } = useQuery({
     queryKey: ['print-request', printId],
     queryFn: async () => {
       if (!printId) return null;
-      
-      const { data, error } = await supabase
-        .from('registration_requests')
-        .select('*')
-        .eq('id', printId)
-        .single();
-      
+      const {
+        data,
+        error
+      } = await supabase.from('registration_requests').select('*').eq('id', printId).single();
       if (error) throw error;
       return data;
     },
@@ -73,34 +70,27 @@ const Dashboard = () => {
     const searchLower = regSearchQuery.toLowerCase();
     return reg.full_name && reg.full_name.toLowerCase().includes(searchLower) || reg.employee_id && reg.employee_id.toLowerCase().includes(searchLower);
   });
-  
+
   // Get company requests
   const companyRequests = getCompanyRequests(compStatusFilter);
-  
+
   // Filter company requests based on search
   const filteredCompanyRequests = companyRequests.filter(req => {
     if (compSearchQuery === "") return true;
     const searchLower = compSearchQuery.toLowerCase();
-    return (
-      req.company_name?.toLowerCase().includes(searchLower) ||
-      req.employee_name?.toLowerCase().includes(searchLower) ||
-      req.employee_id?.toLowerCase().includes(searchLower)
-    );
+    return req.company_name?.toLowerCase().includes(searchLower) || req.employee_name?.toLowerCase().includes(searchLower) || req.employee_id?.toLowerCase().includes(searchLower);
   });
-  
+
   // Handle company request actions
   const handleViewCompanyDetails = (request: EmployeeRequest) => {
     setSelectedRequest(request);
     setIsDetailsOpen(true);
   };
-
   if (printId && request) {
     navigate(`/print/${printId}`);
     return null;
   }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
+  return <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatsCards />
         <QuickActions />
@@ -121,7 +111,7 @@ const Dashboard = () => {
         <CardContent>
           <Tabs defaultValue="registration" className="w-full">
             <TabsList>
-              <TabsTrigger value="registration">Registration Requests</TabsTrigger>
+              <TabsTrigger value="registration">Employee Requests</TabsTrigger>
               <TabsTrigger value="company">Company Requests</TabsTrigger>
             </TabsList>
             <TabsContent value="registration">
@@ -130,13 +120,7 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      type="search" 
-                      placeholder="Search by name or ID..." 
-                      className="pl-8" 
-                      value={regSearchQuery} 
-                      onChange={e => setRegSearchQuery(e.target.value)} 
-                    />
+                    <Input type="search" placeholder="Search by name or ID..." className="pl-8" value={regSearchQuery} onChange={e => setRegSearchQuery(e.target.value)} />
                   </div>
                   <Select value={regStatusFilter} onValueChange={setRegStatusFilter}>
                     <SelectTrigger className="w-full sm:w-[180px]">
@@ -178,13 +162,7 @@ const Dashboard = () => {
                   <div className="flex flex-col sm:flex-row flex-1 gap-4">
                     <div className="relative flex-1">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        type="search" 
-                        placeholder="Search company or contact..." 
-                        className="pl-8" 
-                        value={compSearchQuery} 
-                        onChange={e => setCompSearchQuery(e.target.value)} 
-                      />
+                      <Input type="search" placeholder="Search company or contact..." className="pl-8" value={compSearchQuery} onChange={e => setCompSearchQuery(e.target.value)} />
                     </div>
                     <Select value={compStatusFilter} onValueChange={setCompStatusFilter}>
                       <SelectTrigger className="w-full sm:w-[180px]">
@@ -207,22 +185,11 @@ const Dashboard = () => {
                 </div>
 
                 {/* Company Requests Table */}
-                {filteredCompanyRequests.length > 0 ? (
-                  <RequestsTable 
-                    requests={filteredCompanyRequests}
-                    onView={handleViewCompanyDetails}
-                    onApprove={() => {}}
-                    onReject={() => {}}
-                  />
-                ) : (
-                  <Alert>
+                {filteredCompanyRequests.length > 0 ? <RequestsTable requests={filteredCompanyRequests} onView={handleViewCompanyDetails} onApprove={() => {}} onReject={() => {}} /> : <Alert>
                     <AlertDescription>
-                      {compSearchQuery || compStatusFilter !== "all" ? 
-                        "No company requests match your filters. Try adjusting your search criteria." : 
-                        "No company requests found."}
+                      {compSearchQuery || compStatusFilter !== "all" ? "No company requests match your filters. Try adjusting your search criteria." : "No company requests found."}
                     </AlertDescription>
-                  </Alert>
-                )}
+                  </Alert>}
               </div>
             </TabsContent>
           </Tabs>
@@ -230,14 +197,7 @@ const Dashboard = () => {
       </Card>
       
       {/* Company Request Details Drawer */}
-      <RequestDetailsDrawer
-        open={isDetailsOpen}
-        onOpenChange={setIsDetailsOpen}
-        data={selectedRequest}
-        type="company"
-      />
-    </div>
-  );
+      <RequestDetailsDrawer open={isDetailsOpen} onOpenChange={setIsDetailsOpen} data={selectedRequest} type="company" />
+    </div>;
 };
-
 export default Dashboard;
