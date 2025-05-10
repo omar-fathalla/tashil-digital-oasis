@@ -6,12 +6,12 @@ import { faker } from '@faker-js/faker';
 export const ensureDemoData = async () => {
   try {
     // Check if we already have companies and employees
-    const { count: existingCompanyCount, error: existingCompanyError } = await supabase
+    const { count: existingCompanies, error: companyCheckError } = await supabase
       .from('companies')
       .select('*', { count: 'exact', head: true });
     
-    if (existingCompanyError) {
-      console.error("Error checking companies:", existingCompanyError);
+    if (companyCheckError) {
+      console.error("Error checking companies:", companyCheckError);
       return;
     }
     
@@ -25,7 +25,7 @@ export const ensureDemoData = async () => {
     }
     
     // If we already have data, don't seed companies but check if we need digital ID employees
-    if (existingCompanyCount && existingCompanyCount > 0 && employeeCount && employeeCount > 0) {
+    if (existingCompanies && existingCompanies > 0 && employeeCount && employeeCount > 0) {
       console.log("Demo data already exists, checking for digital ID data");
       
       // Check for approved employees (which are candidates for digital IDs)
@@ -150,7 +150,7 @@ export const ensureDemoData = async () => {
     // Add digital ID data
     await seedDigitalIDData();
     
-    // Check existing company data count and add Egyptian companies if needed
+    // Check existing company data count and add Egyptian companies
     const { count: companyDataCount, error: companyDataError } = await supabase
       .from('companies')
       .select('*', { count: 'exact', head: true });
@@ -173,49 +173,66 @@ export const ensureDemoData = async () => {
   }
 };
 
-// Add this new function to seed Egyptian company data
+// Updated Egyptian company data seeding function with more realistic data
 const seedEgyptianCompanyData = async () => {
   try {
-    // Egyptian company names
+    // Egyptian company names, addresses and more specific data
     const egyptianCompanies = [
-      'NileWare Technologies',
-      'DeltaCorp Solutions',
-      'Luxor Innovations',
-      'CairoByte Software',
-      'Pharos Solutions'
-    ];
-    
-    // Egyptian addresses
-    const egyptianAddresses = [
-      '12 Ramses St., Cairo',
-      '45 Alexandria Corniche, Alexandria',
-      '23 Luxor Temple Rd., Luxor',
-      '78 October Bridge Blvd., Cairo',
-      '56 Aswan Dam St., Aswan'
+      {
+        name: 'NileWare Technologies',
+        address: '15 Tahrir Square, Cairo',
+        registerNumber: 'REG-1001',
+        taxCardNumber: 'TAX-5823',
+        companyNumber: 'EGY-7124'
+      },
+      {
+        name: 'CairoByte Software',
+        address: '27 El-Giza Street, Giza',
+        registerNumber: 'REG-1002',
+        taxCardNumber: 'TAX-6134',
+        companyNumber: 'EGY-8235'
+      },
+      {
+        name: 'Luxor Innovations',
+        address: '8 Valley of Kings Road, Luxor',
+        registerNumber: 'REG-1003',
+        taxCardNumber: 'TAX-9472',
+        companyNumber: 'EGY-3469'
+      },
+      {
+        name: 'DeltaCorp Solutions',
+        address: '41 Corniche Road, Alexandria',
+        registerNumber: 'REG-1004',
+        taxCardNumber: 'TAX-2857',
+        companyNumber: 'EGY-5762'
+      },
+      {
+        name: 'Pharos Solutions',
+        address: '12 El-Nasr Street, Aswan',
+        registerNumber: 'REG-1005',
+        taxCardNumber: 'TAX-1498',
+        companyNumber: 'EGY-9213'
+      }
     ];
     
     const companies = [];
     
-    // Generate companies with realistic data
+    // Generate companies with realistic dates between January and April 2025
     for (let i = 0; i < egyptianCompanies.length; i++) {
-      const companyName = egyptianCompanies[i];
-      const address = egyptianAddresses[i];
-      const registerNumber = `REG-${faker.string.numeric(5)}`;
-      const taxCardNumber = `TAX-${faker.string.numeric(6)}`;
-      const companyNumber = `EG-${faker.string.numeric(6)}`;
+      const company = egyptianCompanies[i];
       
-      // Create date between 30 days and 1 year ago
+      // Create date between Jan 1, 2025 and April 30, 2025
       const createdAt = faker.date.between({
-        from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-        to: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        from: new Date('2025-01-01'),
+        to: new Date('2025-04-30')
       }).toISOString();
       
       companies.push({
-        company_name: companyName,
-        address: address,
-        register_number: registerNumber,
-        tax_card_number: taxCardNumber,
-        company_number: companyNumber,
+        company_name: company.name,
+        address: company.address,
+        register_number: company.registerNumber,
+        tax_card_number: company.taxCardNumber,
+        company_number: company.companyNumber,
         created_at: createdAt,
         updated_at: createdAt,
         is_dummy: false,
@@ -251,18 +268,18 @@ const getCurrentUserId = async () => {
 const seedCompanyRequestsData = async () => {
   try {
     // Check existing company requests count
-    const { count: companyRequestCount, error: companyRequestError } = await supabase
+    const { count: existingRequests, error: requestQueryError } = await supabase
       .from('employee_requests')
       .select('*', { count: 'exact', head: true })
       .eq('type', 'company');
       
-    if (companyRequestError) {
-      console.error("Error checking company requests:", companyRequestError);
+    if (requestQueryError) {
+      console.error("Error checking company requests:", requestQueryError);
       return;
     }
     
     // If we have fewer than 5 company requests, add more
-    if (!companyRequestCount || companyRequestCount < 5) {
+    if (!existingRequests || existingRequests < 5) {
       console.log("Seeding company requests data...");
       
       const egyptianCompanies = [
