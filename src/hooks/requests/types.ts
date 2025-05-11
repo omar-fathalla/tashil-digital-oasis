@@ -1,50 +1,49 @@
 
-export type RequestType = "employee" | "company";
+// Define various request types used throughout the application
 
-export interface EmployeeRegistration {
-  id: string;
-  employee_id: string;
-  full_name: string;
-  first_name: string;
-  last_name: string;
-  mid_name?: string | null;
-  national_id?: string | null;
-  submission_date?: string | null;
-  photo_url?: string | null;
-  phone?: string | null;
-  position?: string | null;
-  hire_date?: string | null;
-  email?: string | null;
-  address?: string | null;
-  area?: string | null;
-  status?: string;
-  request_type?: string;
-}
-
-export type EmployeeRequest = {
+export interface EmployeeRequest {
   id: string;
   employee_name: string;
   employee_id: string;
   request_type: string;
+  status: string;
   request_date: string;
-  status: "pending" | "approved" | "rejected";
-  notes: string | null;
-  type: RequestType;
   company_name?: string;
   company_number?: string;
   tax_card_number?: string;
   commercial_register_number?: string;
-  registration_id?: string | null;
-  employee_registrations?: EmployeeRegistration | null;
-};
+  notes?: string;
+  type: string;
+}
 
-export const REJECTION_REASONS = [
-  "Incomplete Information",
-  "Invalid Documentation",
-  "Duplicate Request",
-  "Not Eligible",
-  "Request Expired",
-  "Other"
-] as const;
+export interface EmployeeRegistration {
+  id: string;
+  full_name: string;
+  first_name: string;
+  last_name: string;
+  mid_name?: string;
+  employee_id: string;
+  request_type?: string;
+  status?: string;
+  submission_date?: string;
+  area?: string;
+  position?: string;
+  national_id?: string;
+  phone?: string;
+  email?: string;
+  photo_url?: string;
+  company_id?: string;
+  company_name?: string;
+  sex?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  hire_date?: string;
+  printed?: boolean;
+  printed_at?: string;
+  collected_at?: string;
+  collector_name?: string;
+}
 
-export type RejectionReason = typeof REJECTION_REASONS[number] | string;
+export type RequestDetailsData = EmployeeRequest | EmployeeRegistration;

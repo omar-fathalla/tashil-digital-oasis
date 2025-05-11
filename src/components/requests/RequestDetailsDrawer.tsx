@@ -1,216 +1,201 @@
 
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState, Dispatch, SetStateAction } from "react";
-import { Loader2Icon } from "lucide-react";
-import { toast } from "sonner";
-import { ensureDemoData } from "@/utils/seedDemoData";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { StatusBadge } from "@/components/application-status/StatusBadge";
+import { 
+  Calendar, 
+  FileText, 
+  Info, 
+  User, 
+  Building, 
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase
+} from "lucide-react";
 import { format } from "date-fns";
-import { AlertTriangle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { EmployeeRequest, EmployeeRegistration } from "@/hooks/requests/types";
+import { EmployeeRequest, EmployeeRegistration, RequestDetailsData } from "@/hooks/requests/types";
+import { Dispatch, SetStateAction } from "react";
 
-export function SeedCompanyDataButton() {
-  const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
-  
-  const handleSeedCompanyData = async () => {
-    setIsLoading(true);
-    try {
-      await ensureDemoData();
-      
-      // Refresh any cached data
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      
-      toast.success("Successfully added company data");
-    } catch (error) {
-      console.error("Error seeding company data:", error);
-      toast.error("Failed to add company data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  return (
-    <Button 
-      variant="outline" 
-      size="sm"
-      onClick={handleSeedCompanyData}
-      disabled={isLoading}
-    >
-      {isLoading ? (
-        <>
-          <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-          Adding Companies...
-        </>
-      ) : (
-        'Add Sample Companies'
-      )}
-    </Button>
-  );
-}
-
-// Define the props interface for RequestDetailsDrawer
 export interface RequestDetailsDrawerProps {
   open: boolean;
   onOpenChange: Dispatch<SetStateAction<boolean>>;
-  data: EmployeeRequest | EmployeeRegistration | null;
-  type: "employee" | "registration" | "company";
+  data: RequestDetailsData | null;
+  type: "registration" | "company";
 }
 
-export const RequestDetailsDrawer = ({ open, onOpenChange, data, type }: RequestDetailsDrawerProps) => {
-  if (!data) {
-    return null;
-  }
-
-  // Check if it's a registration request
+export function RequestDetailsDrawer({ 
+  open, 
+  onOpenChange, 
+  data, 
+  type 
+}: RequestDetailsDrawerProps) {
+  if (!data) return null;
+  
+  // Determine if the data is an EmployeeRegistration or EmployeeRequest
   const isRegistration = type === "registration";
   
-  // Check if linked registration data exists for employee requests
-  const registration = isRegistration 
-    ? data as EmployeeRegistration
-    : (data as EmployeeRequest).employee_registrations;
+  // Get the correct fields based on data type
+  const displayName = isRegistration
+    ? (data as EmployeeRegistration).full_name
+    : (data as EmployeeRequest).employee_name;
     
-  const hasBrokenLink = !isRegistration && (data as EmployeeRequest).registration_id && !registration;
+  const employeeId = isRegistration
+    ? (data as EmployeeRegistration).employee_id
+    : (data as EmployeeRequest).employee_id;
+    
+  const status = isRegistration
+    ? (data as EmployeeRegistration).status || "pending"
+    : (data as EmployeeRequest).status;
+    
+  const requestType = isRegistration
+    ? (data as EmployeeRegistration).request_type || "Registration"
+    : (data as EmployeeRequest).request_type;
+    
+  const date = isRegistration
+    ? (data as EmployeeRegistration).submission_date
+    : (data as EmployeeRequest).request_date;
+    
+  const companyName = isRegistration
+    ? (data as EmployeeRegistration).company_name
+    : (data as EmployeeRequest).company_name;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Request Details</SheetTitle>
-          <SheetDescription>
-            View details for {isRegistration 
-              ? (data as EmployeeRegistration).full_name 
-              : (data as EmployeeRequest).employee_name}'s request
-          </SheetDescription>
-        </SheetHeader>
-
-        {hasBrokenLink && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              This request references registration ID {(data as EmployeeRequest).registration_id} but the linked data is missing or inaccessible.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <div className="py-4 space-y-6">
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Request Information</h4>
-            <div className="grid grid-cols-3 gap-2">
-              <span className="text-sm font-medium">ID:</span>
-              <span className="text-sm col-span-2 font-mono">{data.id}</span>
-              
-              {!isRegistration && (
-                <>
-                  <span className="text-sm font-medium">Request Type:</span>
-                  <span className="text-sm col-span-2">{(data as EmployeeRequest).request_type}</span>
-                </>
-              )}
-              
-              <span className="text-sm font-medium">Name:</span>
-              <span className="text-sm col-span-2">
-                {isRegistration 
-                  ? (data as EmployeeRegistration).full_name 
-                  : (data as EmployeeRequest).employee_name}
-              </span>
-              
-              <span className="text-sm font-medium">ID Number:</span>
-              <span className="text-sm col-span-2 font-mono">
-                {isRegistration 
-                  ? (data as EmployeeRegistration).employee_id 
-                  : (data as EmployeeRequest).employee_id}
-              </span>
-              
-              <span className="text-sm font-medium">Date:</span>
-              <span className="text-sm col-span-2">
-                {format(new Date(
-                  isRegistration 
-                    ? (data as EmployeeRegistration).submission_date || new Date()
-                    : (data as EmployeeRequest).request_date || new Date()
-                ), "PPP")}
-              </span>
-              
-              <span className="text-sm font-medium">Status:</span>
-              <div className="col-span-2">
-                <StatusBadge status={data.status} />
+        <div className="space-y-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-1">{displayName}</h2>
+              <div className="flex items-center text-sm text-muted-foreground space-x-2">
+                <span>ID: {employeeId}</span>
+                <StatusBadge status={status} />
               </div>
-              
-              {!isRegistration && (data as EmployeeRequest).notes && (
-                <>
-                  <span className="text-sm font-medium">Notes:</span>
-                  <div className="text-sm col-span-2 bg-muted p-2 rounded">
-                    {String((data as EmployeeRequest).notes || "")}
-                  </div>
-                </>
-              )}
             </div>
+            <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
           </div>
 
-          {registration && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-muted-foreground">Registration Data</h4>
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-sm font-medium">Full Name:</span>
-                <span className="text-sm col-span-2">{registration.full_name}</span>
+          <div className="border rounded-lg p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm">
+              <FileText className="h-4 w-4 text-primary" />
+              <span className="font-medium">Request Type:</span>
+              <span>{requestType}</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4 text-primary" />
+              <span className="font-medium">Date:</span>
+              <span>{date ? format(new Date(date), "PPP") : "N/A"}</span>
+            </div>
+
+            {companyName && (
+              <div className="flex items-center gap-2 text-sm">
+                <Building className="h-4 w-4 text-primary" />
+                <span className="font-medium">Company:</span>
+                <span>{companyName}</span>
+              </div>
+            )}
+
+            {!isRegistration && (data as EmployeeRequest).notes && (
+              <div className="flex items-start gap-2 text-sm">
+                <Info className="h-4 w-4 text-primary mt-0.5" />
+                <span className="font-medium">Notes:</span>
+                <span>{(data as EmployeeRequest).notes}</span>
+              </div>
+            )}
+            
+            {!isRegistration && (data as EmployeeRequest).type === "company" && (
+              <div className="mt-3 border-t pt-3 space-y-3">
+                <h3 className="font-medium">Company Information</h3>
                 
-                {registration.national_id && (
-                  <>
-                    <span className="text-sm font-medium">National ID:</span>
-                    <span className="text-sm col-span-2 font-mono">{registration.national_id}</span>
-                  </>
+                {(data as EmployeeRequest).company_number && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Building className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Company Number:</span>
+                    <span>{(data as EmployeeRequest).company_number}</span>
+                  </div>
                 )}
                 
-                {registration.position && (
-                  <>
-                    <span className="text-sm font-medium">Position:</span>
-                    <span className="text-sm col-span-2">{registration.position}</span>
-                  </>
+                {(data as EmployeeRequest).tax_card_number && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Tax Card Number:</span>
+                    <span>{(data as EmployeeRequest).tax_card_number}</span>
+                  </div>
                 )}
                 
-                {registration.area && (
-                  <>
-                    <span className="text-sm font-medium">Area:</span>
-                    <span className="text-sm col-span-2">{registration.area}</span>
-                  </>
-                )}
-                
-                {registration.submission_date && (
-                  <>
-                    <span className="text-sm font-medium">Submission:</span>
-                    <span className="text-sm col-span-2">
-                      {format(new Date(registration.submission_date), "PPP")}
-                    </span>
-                  </>
+                {(data as EmployeeRequest).commercial_register_number && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Commercial Register:</span>
+                    <span>{(data as EmployeeRequest).commercial_register_number}</span>
+                  </div>
                 )}
               </div>
-
-              {registration.photo_url && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Photo</h4>
-                  <div className="h-48 w-48 border rounded overflow-hidden">
-                    <img 
-                      src={registration.photo_url} 
-                      alt="Employee" 
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        // Handle broken image
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
+            )}
+            
+            {isRegistration && (
+              <div className="mt-3 border-t pt-3 space-y-3">
+                <h3 className="font-medium">Personal Information</h3>
+                
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-primary" />
+                  <span className="font-medium">Full Name:</span>
+                  <span>{(data as EmployeeRegistration).full_name}</span>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+                
+                {(data as EmployeeRegistration).position && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Briefcase className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Position:</span>
+                    <span>{(data as EmployeeRegistration).position}</span>
+                  </div>
+                )}
+                
+                {(data as EmployeeRegistration).area && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Briefcase className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Department/Area:</span>
+                    <span>{(data as EmployeeRegistration).area}</span>
+                  </div>
+                )}
+                
+                {(data as EmployeeRegistration).email && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Email:</span>
+                    <span>{(data as EmployeeRegistration).email}</span>
+                  </div>
+                )}
+                
+                {(data as EmployeeRegistration).phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Phone:</span>
+                    <span>{(data as EmployeeRegistration).phone}</span>
+                  </div>
+                )}
+                
+                {(data as EmployeeRegistration).address && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Address:</span>
+                    <span>{(data as EmployeeRegistration).address}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-        <SheetFooter>
-          <Button onClick={() => onOpenChange(false)}>Close</Button>
-        </SheetFooter>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
   );
-};
+}
