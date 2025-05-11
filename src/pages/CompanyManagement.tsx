@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCompanies, Company } from "@/hooks/useCompanies";
@@ -27,28 +28,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { 
-  Building2, 
-  Download, 
-  FileText, 
-  Trash2, 
-  Search, 
-  Edit, 
-  ArrowUpDown,
-  Eye
-} from "lucide-react";
+import { Building2, Search, ArrowUpDown } from "lucide-react";
 import { SkeletonTable } from "@/components/ui/skeleton/SkeletonTable";
-import { format } from "date-fns";
 import { CompanyDetailsDialog } from "@/components/company-management/CompanyDetailsDialog";
 import { SeedCompanyDataButton } from "@/components/company-management/SeedCompanyDataButton";
+import { CompaniesTable } from "@/components/company-management/CompaniesTable";
 
 export default function CompanyManagement() {
   const { user } = useAuth();
@@ -122,9 +106,22 @@ export default function CompanyManagement() {
     }
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "N/A";
-    return format(new Date(dateString), "PPP");
+  const handleViewDetails = (company: Company) => {
+    setSelectedCompany(company);
+    setDetailsOpen(true);
+    setIsEditMode(false);
+  };
+
+  const handleEditCompany = (company: Company) => {
+    setSelectedCompany(company);
+    setDetailsOpen(true);
+    // Set edit mode to true after dialog is opened
+    setTimeout(() => setIsEditMode(true), 100);
+  };
+
+  const handleDeleteDialog = (company: Company) => {
+    setSelectedCompany(company);
+    setDeleteDialogOpen(true);
   };
 
   if (isLoading) {
@@ -181,121 +178,19 @@ export default function CompanyManagement() {
           <CardTitle>Registered Companies</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-medium">
-                    <Button variant="ghost" className="p-0 font-medium" onClick={() => toggleSort("company_name")}>
-                      Company Name
-                      <ArrowUpDown className="h-3 w-3 ml-1" />
-                    </Button>
-                  </th>
-                  <th className="text-left p-3 font-medium">Address</th>
-                  <th className="text-left p-3 font-medium">Register Number</th>
-                  <th className="text-left p-3 font-medium">
-                    <Button variant="ghost" className="p-0 font-medium" onClick={() => toggleSort("created_at")}>
-                      Created
-                      <ArrowUpDown className="h-3 w-3 ml-1" />
-                    </Button>
-                  </th>
-                  <th className="text-left p-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedCompanies.length > 0 ? (
-                  paginatedCompanies.map((company) => (
-                    <tr key={company.id} className="border-b hover:bg-accent/10">
-                      <td className="p-3">{company.company_name}</td>
-                      <td className="p-3">{company.address}</td>
-                      <td className="p-3">{company.register_number}</td>
-                      <td className="p-3">{formatDate(company.created_at)}</td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedCompany(company);
-                              setDetailsOpen(true);
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Details
-                          </Button>
-                          
-                          {canManageCompanies && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedCompany(company);
-                                  setDetailsOpen(true);
-                                  // Set edit mode to true after dialog is opened
-                                  setTimeout(() => setIsEditMode(true), 100);
-                                }}
-                                className="bg-blue-50 text-blue-600 hover:bg-blue-100"
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedCompany(company);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                className="bg-red-50 text-red-600 hover:bg-red-100"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="text-center py-4">
-                      No companies found. Try adjusting your search.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          {totalPages > 1 && (
-            <Pagination className="mt-4">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      isActive={currentPage === page}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
+          <CompaniesTable
+            companies={paginatedCompanies}
+            onViewDetails={handleViewDetails}
+            onEdit={handleEditCompany}
+            onDelete={handleDeleteDialog}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            toggleSort={toggleSort}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            canManageCompanies={canManageCompanies}
+          />
         </CardContent>
       </Card>
 
