@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { seedSampleCompanies } from "@/utils/api/companyApi";
+import { supabase } from "@/integrations/supabase/client";
 
 export function SeedCompanyDataButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,16 +21,37 @@ export function SeedCompanyDataButton() {
         return;
       }
       
-      // Call the API function to seed companies
-      const success = await seedSampleCompanies();
+      // Get the current session for auth token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
       
-      if (success) {
+      if (!accessToken) {
+        toast.error("Authentication error. Please log in again.");
+        return;
+      }
+      
+      // Call the Edge Function to seed companies
+      const { data, error } = await supabase.functions.invoke('insert-sample-companies', {
+        method: 'POST',
+      });
+      
+      if (error) {
+        console.error("Error calling seed companies function:", error);
+        toast.error(`Failed to add sample companies: ${error.message || "Unknown error"}`);
+        return;
+      }
+      
+      if (data.success) {
         // Refresh the companies data
         queryClient.invalidateQueries({ queryKey: ['companies'] });
+        toast.success(data.message || "Sample companies added successfully");
+      } else {
+        toast.info(data.message || "No new companies were added");
       }
+      
     } catch (error) {
       console.error("Error seeding company data:", error);
-      toast.error("Failed to add sample companies");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
