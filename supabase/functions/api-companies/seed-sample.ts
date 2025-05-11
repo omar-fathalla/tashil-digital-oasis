@@ -16,19 +16,20 @@ serve(async (req: Request) => {
     );
   }
 
-  // Verify authentication
-  const { isAuthorized, userId } = await verifyAuth(req);
-  if (!isAuthorized || !userId) {
-    return new Response(
-      JSON.stringify(createApiResponse(false, null, 'You must be logged in to add sample companies')),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-
-  // Initialize Supabase client
-  const supabase = getSupabaseClient(req.headers.get('Authorization') || '');
-
   try {
+    // Verify authentication
+    const { isAuthorized, userId } = await verifyAuth(req);
+    if (!isAuthorized || !userId) {
+      console.error("Authentication failed: User not authenticated or missing user ID");
+      return new Response(
+        JSON.stringify(createApiResponse(false, null, 'You must be logged in to add sample companies')),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Initialize Supabase client
+    const supabase = getSupabaseClient(req.headers.get('Authorization') || '');
+
     // Egyptian company data with realistic information
     const egyptianCompanies = [
       {
@@ -107,11 +108,13 @@ serve(async (req: Request) => {
         .single();
 
       if (checkError && !checkError.message.includes('No rows found')) {
+        console.error(`Error checking for company ${company.company_name}:`, checkError);
         errors.push(`Error checking for company ${company.company_name}: ${checkError.message}`);
         continue;
       }
 
       if (existingCompany) {
+        console.log(`Company with register/company number already exists: ${company.company_name}`);
         duplicateCount++;
         continue;
       }
@@ -122,9 +125,11 @@ serve(async (req: Request) => {
         .insert(company);
 
       if (insertError) {
+        console.error(`Error inserting company ${company.company_name}:`, insertError);
         errors.push(`Error inserting company ${company.company_name}: ${insertError.message}`);
       } else {
         successCount++;
+        console.log(`Successfully added company: ${company.company_name}`);
       }
     }
 
@@ -140,12 +145,15 @@ serve(async (req: Request) => {
 
     // Add error information if any
     if (errors.length > 0) {
+      console.error("Errors during company insertion:", errors);
       message += ` Encountered ${errors.length} errors.`;
     }
 
+    const statusCode = successCount > 0 ? 200 : (duplicateCount === egyptianCompanies.length ? 200 : 400);
+    
     return new Response(
       JSON.stringify(createApiResponse(successCount > 0, { successCount, duplicateCount, errors }, message)),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
     
   } catch (error) {
