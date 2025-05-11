@@ -4,8 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { seedSampleCompanies } from "@/utils/api/companyApi";
 
 export function SeedCompanyDataButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,107 +21,13 @@ export function SeedCompanyDataButton() {
         return;
       }
       
-      // Egyptian company data with realistic information
-      const egyptianCompanies = [
-        {
-          company_name: 'NileWare Technologies',
-          address: '15 Tahrir Square, Cairo',
-          register_number: 'REG-1001',
-          tax_card_number: 'TAX-5823',
-          company_number: 'EGY-7124',
-          created_at: new Date('2025-01-15').toISOString(),
-          updated_at: new Date('2025-01-15').toISOString(),
-          is_dummy: false,
-          is_archived: false
-        },
-        {
-          company_name: 'CairoByte Software',
-          address: '27 El-Giza Street, Giza',
-          register_number: 'REG-1002',
-          tax_card_number: 'TAX-6134',
-          company_number: 'EGY-8235',
-          created_at: new Date('2025-02-03').toISOString(),
-          updated_at: new Date('2025-02-03').toISOString(),
-          is_dummy: false,
-          is_archived: false
-        },
-        {
-          company_name: 'Luxor Innovations',
-          address: '8 Valley of Kings Road, Luxor',
-          register_number: 'REG-1003',
-          tax_card_number: 'TAX-9472',
-          company_number: 'EGY-3469',
-          created_at: new Date('2025-02-22').toISOString(),
-          updated_at: new Date('2025-02-22').toISOString(),
-          is_dummy: false,
-          is_archived: false
-        },
-        {
-          company_name: 'DeltaCorp Solutions',
-          address: '41 Corniche Road, Alexandria',
-          register_number: 'REG-1004',
-          tax_card_number: 'TAX-2857',
-          company_number: 'EGY-5762',
-          created_at: new Date('2025-03-10').toISOString(),
-          updated_at: new Date('2025-03-10').toISOString(),
-          is_dummy: false,
-          is_archived: false
-        },
-        {
-          company_name: 'Pharos Solutions',
-          address: '12 El-Nasr Street, Aswan',
-          register_number: 'REG-1005',
-          tax_card_number: 'TAX-1498',
-          company_number: 'EGY-9213',
-          created_at: new Date('2025-04-05').toISOString(),
-          updated_at: new Date('2025-04-05').toISOString(),
-          is_dummy: false,
-          is_archived: false
-        }
-      ];
+      // Call the API function to seed companies
+      const success = await seedSampleCompanies();
       
-      // Add user_id to each company object
-      const companiesWithUserId = egyptianCompanies.map(company => ({
-        ...company,
-        user_id: user.id
-      }));
-      
-      // Insert the companies into the database
-      let successCount = 0;
-      let duplicateCount = 0;
-      
-      for (const company of companiesWithUserId) {
-        const { error } = await supabase.from('companies').insert(company);
-        if (error) {
-          console.error("Error inserting company:", error);
-          if (error.message.includes('duplicate key value')) {
-            duplicateCount++;
-            
-            // Check which unique constraint was violated
-            if (error.message.includes('companies_register_number_key')) {
-              toast.error(`Company with register number ${company.register_number} already exists`);
-            } else if (error.message.includes('companies_company_number_key')) {
-              toast.error(`Company with company number ${company.company_number} already exists`);
-            } else {
-              throw error;
-            }
-          } else {
-            throw error;
-          }
-        } else {
-          successCount++;
-        }
+      if (success) {
+        // Refresh the companies data
+        queryClient.invalidateQueries({ queryKey: ['companies'] });
       }
-      
-      // Refresh any cached data
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      
-      if (successCount > 0) {
-        toast.success(`Successfully added ${successCount} Egyptian ${successCount === 1 ? 'company' : 'companies'}`);
-      } else if (duplicateCount === egyptianCompanies.length) {
-        toast.warning("All companies already exist in the database");
-      }
-      
     } catch (error) {
       console.error("Error seeding company data:", error);
       toast.error("Failed to add sample companies");
