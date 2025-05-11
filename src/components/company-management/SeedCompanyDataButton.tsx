@@ -33,6 +33,9 @@ export function SeedCompanyDataButton() {
       // Call the Edge Function to seed companies
       const { data, error } = await supabase.functions.invoke('insert-sample-companies', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       });
       
       if (error) {

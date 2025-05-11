@@ -32,7 +32,7 @@ serve(async (req: Request) => {
     
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Authorization header is required' }),
+        JSON.stringify({ success: false, message: 'Authorization header is required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -56,7 +56,7 @@ serve(async (req: Request) => {
     if (authError || !user) {
       console.error("Authentication error:", authError);
       return new Response(
-        JSON.stringify({ error: 'You must be logged in to add sample companies' }),
+        JSON.stringify({ success: false, message: 'You must be logged in to add sample companies' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
