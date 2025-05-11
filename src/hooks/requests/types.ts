@@ -14,6 +14,8 @@ export interface EmployeeRequest {
   commercial_register_number?: string;
   notes?: string;
   type: string;
+  registration_id?: string;
+  employee_registrations?: EmployeeRegistration;
 }
 
 export interface EmployeeRegistration {

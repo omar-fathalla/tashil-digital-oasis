@@ -5,14 +5,22 @@ import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 
 export function SeedCompanyDataButton() {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   const handleSeedCompanyData = async () => {
     setIsLoading(true);
     try {
+      // Check for active session
+      if (!user?.id) {
+        toast.error("You must be logged in to add sample companies");
+        return;
+      }
+      
       // Egyptian company data with realistic information
       const egyptianCompanies = [
         {
@@ -72,19 +80,10 @@ export function SeedCompanyDataButton() {
         }
       ];
       
-      // Get the current user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id;
-      
-      if (!userId) {
-        toast.error("You must be logged in to add sample companies");
-        return;
-      }
-      
       // Add user_id to each company object
       const companiesWithUserId = egyptianCompanies.map(company => ({
         ...company,
-        user_id: userId
+        user_id: user.id
       }));
       
       // Insert the companies into the database
@@ -117,7 +116,7 @@ export function SeedCompanyDataButton() {
       variant="outline" 
       size="sm"
       onClick={handleSeedCompanyData}
-      disabled={isLoading}
+      disabled={isLoading || !user?.id}
     >
       {isLoading ? (
         <>

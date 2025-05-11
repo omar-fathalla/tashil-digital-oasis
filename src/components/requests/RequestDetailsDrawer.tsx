@@ -21,7 +21,7 @@ export interface RequestDetailsDrawerProps {
   open: boolean;
   onOpenChange: Dispatch<SetStateAction<boolean>>;
   data: RequestDetailsData | null;
-  type: "registration" | "company";
+  type: "registration" | "company" | "employee";
 }
 
 export function RequestDetailsDrawer({ 
