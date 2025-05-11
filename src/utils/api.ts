@@ -63,7 +63,8 @@ export const api = {
     getById: (id: string) => callApi<any>(`companies/${id}`),
     create: (data: any) => callApi<any>('companies', 'POST', data),
     update: (id: string, data: any) => callApi<any>(`companies/${id}`, 'PUT', data),
-    delete: (id: string) => callApi<void>(`companies/${id}`, 'DELETE')
+    delete: (id: string) => callApi<void>(`companies/${id}`, 'DELETE'),
+    seedSample: () => callApi<void>('companies/seed-sample', 'POST')
   },
   
   // Notifications API

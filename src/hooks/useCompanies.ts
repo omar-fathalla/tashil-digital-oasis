@@ -29,6 +29,19 @@ const validateCompany = (company: Partial<Company>): string | null => {
   if (company.company_name.trim().length === 0) {
     return "Company name cannot be empty";
   }
+  
+  if (!company.address || company.address.trim().length === 0) {
+    return "Address is required";
+  }
+  
+  if (!company.register_number || company.register_number.trim().length === 0) {
+    return "Registration number is required";
+  }
+  
+  if (!company.company_number || company.company_number.trim().length === 0) {
+    return "Company number is required";
+  }
+  
   return null;
 };
 
@@ -65,7 +78,11 @@ export function useCompanies() {
         .eq('is_archived', false)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching companies:", error);
+        toast.error("Failed to load companies");
+        throw error;
+      }
       
       return (data || []).map(company => ({
         id: company.id,
@@ -113,12 +130,21 @@ export function useCompanies() {
     if (message.includes('companies_register_number_key')) {
       return "This commercial register number is already in use.";
     }
+    if (message.includes('companies_tax_card_number_key')) {
+      return "This tax card number is already in use.";
+    }
     return message;
   };
 
   const updateCompany = useMutation({
     mutationFn: async (updates: Partial<Company> & { id: string }) => {
       const { id, ...companyUpdates } = updates;
+      
+      // Validate required fields
+      const validationError = validateCompany(updates);
+      if (validationError) {
+        throw new Error(validationError);
+      }
       
       const { data, error } = await supabase
         .from('companies')
@@ -140,6 +166,8 @@ export function useCompanies() {
       if (selectedCompany && selectedCompany.id === data.id) {
         setSelectedCompany(data as Company);
       }
+      
+      toast.success("Company updated successfully");
     },
     onError: (error) => {
       toast.error("Failed to update company", {
@@ -155,7 +183,6 @@ export function useCompanies() {
         throw new Error(validationError);
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) {
         throw new Error('You must be logged in to create a company');
       }

@@ -87,22 +87,41 @@ export function SeedCompanyDataButton() {
       }));
       
       // Insert the companies into the database
+      let successCount = 0;
+      let duplicateCount = 0;
+      
       for (const company of companiesWithUserId) {
         const { error } = await supabase.from('companies').insert(company);
         if (error) {
           console.error("Error inserting company:", error);
           if (error.message.includes('duplicate key value')) {
-            toast.error(`Company with register number ${company.register_number} already exists`);
+            duplicateCount++;
+            
+            // Check which unique constraint was violated
+            if (error.message.includes('companies_register_number_key')) {
+              toast.error(`Company with register number ${company.register_number} already exists`);
+            } else if (error.message.includes('companies_company_number_key')) {
+              toast.error(`Company with company number ${company.company_number} already exists`);
+            } else {
+              throw error;
+            }
           } else {
             throw error;
           }
+        } else {
+          successCount++;
         }
       }
       
       // Refresh any cached data
       queryClient.invalidateQueries({ queryKey: ['companies'] });
       
-      toast.success("Successfully added sample Egyptian companies");
+      if (successCount > 0) {
+        toast.success(`Successfully added ${successCount} Egyptian ${successCount === 1 ? 'company' : 'companies'}`);
+      } else if (duplicateCount === egyptianCompanies.length) {
+        toast.warning("All companies already exist in the database");
+      }
+      
     } catch (error) {
       console.error("Error seeding company data:", error);
       toast.error("Failed to add sample companies");
