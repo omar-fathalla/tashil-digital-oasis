@@ -15,11 +15,19 @@ import { Building2 } from "lucide-react";
 import { useRetry } from "@/hooks/useRetry";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { mapPartialCompanyToInsertableCompany } from "@/utils/companyMapper";
+import { DocumentUploadsForm } from "@/components/company-registration/DocumentUploadsForm";
 
 const CompanyRegistration = () => {
   const [formStep, setFormStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    commercialRegister: File | null;
+    taxCard: File | null;
+  }>({
+    commercialRegister: null,
+    taxCard: null,
+  });
   const navigate = useNavigate();
   const { retry } = useRetry();
   
@@ -44,7 +52,22 @@ const CompanyRegistration = () => {
     saveInterval: 2000,
   });
 
+  const handleFileUpload = (type: 'commercialRegister' | 'taxCard', file: File) => {
+    setUploadedFiles(prev => ({
+      ...prev,
+      [type]: file
+    }));
+  };
+
   const onSubmit = async (values: CompanyRegistrationFormData) => {
+    // Validate that all necessary files are uploaded before submitting
+    if (!uploadedFiles.commercialRegister || !uploadedFiles.taxCard) {
+      toast.error("Missing required documents", {
+        description: "Please upload both Commercial Register and Tax Card documents"
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       console.log("Starting registration transaction simulation...");
@@ -78,7 +101,41 @@ const CompanyRegistration = () => {
       console.log(`User created successfully with ID: ${authData.user.id}`);
 
       try {
-        // Step 2: Create company record with the newly created user ID
+        // Step 2: Upload the documents to storage
+        let commercialRegisterUrl = "";
+        let taxCardUrl = "";
+        
+        if (uploadedFiles.commercialRegister) {
+          const commercialRegisterFilename = `${authData.user.id}/commercial_register_${Date.now()}_${uploadedFiles.commercialRegister.name}`;
+          const { error: commercialRegisterError } = await supabase.storage
+            .from('company-documents')
+            .upload(commercialRegisterFilename, uploadedFiles.commercialRegister);
+          
+          if (commercialRegisterError) throw commercialRegisterError;
+          
+          const { data: commercialRegisterData } = supabase.storage
+            .from('company-documents')
+            .getPublicUrl(commercialRegisterFilename);
+            
+          commercialRegisterUrl = commercialRegisterData.publicUrl;
+        }
+        
+        if (uploadedFiles.taxCard) {
+          const taxCardFilename = `${authData.user.id}/tax_card_${Date.now()}_${uploadedFiles.taxCard.name}`;
+          const { error: taxCardError } = await supabase.storage
+            .from('company-documents')
+            .upload(taxCardFilename, uploadedFiles.taxCard);
+          
+          if (taxCardError) throw taxCardError;
+          
+          const { data: taxCardData } = supabase.storage
+            .from('company-documents')
+            .getPublicUrl(taxCardFilename);
+            
+          taxCardUrl = taxCardData.publicUrl;
+        }
+
+        // Step 3: Create company record with the newly created user ID and document URLs
         const companyData = {
           company_name: values.companyName,
           address: values.address,
@@ -89,9 +146,16 @@ const CompanyRegistration = () => {
 
         const insertableCompany = mapPartialCompanyToInsertableCompany(companyData, authData.user.id);
 
+        // Add document URLs to the company record
+        const companyWithDocs = {
+          ...insertableCompany,
+          commercial_register_url: commercialRegisterUrl,
+          tax_card_url: taxCardUrl,
+        };
+
         const { error: companyError } = await supabase
           .from('companies')
-          .insert(insertableCompany)
+          .insert(companyWithDocs)
           .select()
           .single();
 
@@ -152,6 +216,8 @@ const CompanyRegistration = () => {
           .then(isValid => {
             if (isValid) setFormStep(2);
           });
+      case 2:
+        return form.handleSubmit(onSubmit)();
       default:
         return Promise.resolve();
     }
@@ -170,6 +236,15 @@ const CompanyRegistration = () => {
           title: "Company Information",
           description: "Enter your company's basic information",
           content: <CompanyInformationForm form={form} />
+        };
+      case 2:
+        return {
+          title: "Required Documents",
+          description: "Upload the necessary company documents",
+          content: <DocumentUploadsForm 
+            uploadedFiles={uploadedFiles} 
+            onFileUpload={handleFileUpload} 
+          />
         };
       default:
         return {
@@ -217,7 +292,8 @@ const CompanyRegistration = () => {
             onPrevious={() => setFormStep(formStep - 1)}
             onNext={() => validateStep(formStep)}
             onSubmit={onSubmit}
-            showSubmit={formStep === 1}
+            showSubmit={formStep === 2}
+            disableSubmit={formStep === 2 && (!uploadedFiles.commercialRegister || !uploadedFiles.taxCard)}
           >
             {content}
           </RegistrationFormWrapper>

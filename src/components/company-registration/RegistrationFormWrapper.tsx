@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { CompanyRegistrationFormData } from "@/schemas/companyRegistration";
+import { RegistrationSteps } from "./RegistrationSteps";
 
 interface RegistrationFormWrapperProps {
   children: React.ReactNode;
@@ -36,13 +37,10 @@ export function RegistrationFormWrapper({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <RegistrationSteps currentStep={formStep} />
+
         <div className="mb-6">
           <Progress value={((formStep + 1) / 3) * 100} className="h-2" />
-          <div className="flex justify-between text-xs text-muted-foreground mt-2">
-            <span>Account</span>
-            <span>Company</span>
-            <span>Documents</span>
-          </div>
         </div>
 
         {children}

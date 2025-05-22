@@ -23,6 +23,7 @@ import DocumentManagement from "./pages/DocumentManagement";
 import DocumentAnalytics from "./pages/DocumentAnalytics";
 import Accounting from "./pages/Accounting";
 import CompanyManagement from "./pages/CompanyManagement";
+import Auth from "./pages/Auth";
 import { useEffect } from "react";
 import { ensureDemoData } from "@/utils/seedDemoData";
 
@@ -61,6 +62,7 @@ const App = () => {
               <Route path="/company-management" element={<CompanyManagement />} />
               <Route path="*" element={<NotFound />} />
             </Route>
+            <Route path="/auth" element={<Auth />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
