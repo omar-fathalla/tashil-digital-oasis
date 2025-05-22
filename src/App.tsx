@@ -1,34 +1,71 @@
 
-import { Routes, Route } from "react-router-dom";
-import Home from "@/pages/Home";
-import Auth from "@/pages/Auth";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import ForgotPassword from "@/pages/ForgotPassword";
-import NotFound from "@/pages/NotFound";
-import RootLayout from "@/components/layout/RootLayout";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import RootLayout from "./components/layout/RootLayout";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import CompanyRegistration from "./pages/CompanyRegistration";
+import RequestSubmission from "./pages/RequestSubmission";
+import ApplicationStatus from "./pages/ApplicationStatus";
+import Report from "./pages/Report";
+import ProjectOverview from "./pages/ProjectOverview";
+import FAQ from "./pages/FAQ";
+import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
+import PrintBatch from "./pages/PrintBatch";
+import EmployeeManagement from "./pages/EmployeeManagement";
+import EmployeeProfile from "./pages/EmployeeProfile";
+import DocumentManagement from "./pages/DocumentManagement";
+import DocumentAnalytics from "./pages/DocumentAnalytics";
+import Accounting from "./pages/Accounting";
+import CompanyManagement from "./pages/CompanyManagement";
+import { useEffect } from "react";
+import { ensureDemoData } from "@/utils/seedDemoData";
 
-function App() {
+const queryClient = new QueryClient();
+
+const App = () => {
+  // This only ensures demo data is loaded but doesn't call seedEmployeeData()
+  useEffect(() => {
+    ensureDemoData().catch(console.error);
+  }, []);
+
   return (
-    <Routes>
-      <Route element={<RootLayout />}>
-        <Route path="/" element={<Home />} />
-      </Route>
-      
-      {/* Auth routes outside of main layout */}
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      
-      {/* Protected routes */}
-      <Route element={<ProtectedRoute />}>
-      </Route>
-
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route element={<RootLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/company-registration" element={<CompanyRegistration />} />
+              <Route path="/request-submission" element={<RequestSubmission />} />
+              <Route path="/application-status" element={<ApplicationStatus />} />
+              <Route path="/report" element={<Report />} />
+              <Route path="/project-overview" element={<ProjectOverview />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/print-batch" element={<PrintBatch />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/employee-management" element={<EmployeeManagement />} />
+              <Route path="/employee-profile/:employeeId" element={<EmployeeProfile />} />
+              <Route path="/document-management" element={<DocumentManagement />} />
+              <Route path="/document-analytics" element={<DocumentAnalytics />} />
+              <Route path="/accounting" element={<Accounting />} />
+              <Route path="/company-management" element={<CompanyManagement />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
-}
+};
 
 export default App;
