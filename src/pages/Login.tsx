@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -62,10 +61,6 @@ const Login = () => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
-        options: {
-          // Store session for 30 days if rememberMe is checked
-          expiresIn: values.rememberMe ? 60 * 60 * 24 * 30 : undefined
-        }
       });
 
       if (error) {
